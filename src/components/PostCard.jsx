@@ -1,120 +1,184 @@
 import { useState } from 'react';
-import { ChevronLeft, ChevronRight, Trash2 } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { FileText, MoreHorizontal, Trash2, Send } from 'lucide-react';
+import { formatDistanceToNow } from 'date-fns';
 
 const COLUMNS = ['ideas', 'drafts', 'finalized'];
-const mono = "'IBM Plex Mono', monospace";
+const COLUMN_LABELS = { ideas: 'Scratchpad', drafts: 'Drafts', finalized: 'Published' };
+const inter  = "'Inter', sans-serif";
+const serif  = "'Libre Baskerville', Georgia, serif";
 
-const wordCount = (text) => text.trim() ? text.trim().split(/\s+/).length : 0;
+const wordCount = (text) => text?.trim() ? text.trim().split(/\s+/).length : 0;
 
-export default function PostCard({ post, onMove, onDelete, onEdit, isFirst, isLast }) {
-  const [hovered, setHovered] = useState(false);
+export default function PostCard({ post, onMove, onDelete, onEdit, onPublish, linkedin, isFirst, isLast }) {
+  const [menuOpen, setMenuOpen] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
-  const currentIndex = COLUMNS.indexOf(post.column);
+  const [hovered, setHovered] = useState(false);
+  const totalWords = wordCount((post.title ?? '') + ' ' + (post.body ?? ''));
+  const isFinalized = post.column === 'finalized';
+  const isPublished = post.publishedTo?.includes('linkedin');
 
-  const moveLeft = (e) => {
+  const handleDelete = (e) => {
     e.stopPropagation();
-    if (currentIndex > 0) onMove(post.id, COLUMNS[currentIndex - 1]);
+    if (confirmDelete) {
+      onDelete(post.id);
+    } else {
+      setConfirmDelete(true);
+    }
   };
 
-  const moveRight = (e) => {
+  const handleMove = (e, targetCol) => {
     e.stopPropagation();
-    if (currentIndex < COLUMNS.length - 1) onMove(post.id, COLUMNS[currentIndex + 1]);
+    onMove(post.id, targetCol);
+    setMenuOpen(false);
   };
 
-  const handleDeleteClick = (e) => {
+  const handlePublish = async (e) => {
     e.stopPropagation();
-    setConfirmDelete(true);
-  };
-
-  const handleDeleteConfirm = (e) => {
-    e.stopPropagation();
-    onDelete(post.id);
-  };
-
-  const handleDeleteCancel = (e) => {
-    e.stopPropagation();
-    setConfirmDelete(false);
+    setMenuOpen(false);
+    await onPublish(post);
   };
 
   return (
-    <div
-      onClick={() => !confirmDelete && onEdit(post)}
+    <motion.div
+      layout
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -8 }}
+      transition={{ duration: 0.18 }}
+      onClick={() => !menuOpen && onEdit(post)}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => { setHovered(false); setConfirmDelete(false); }}
       style={{
-        border: '1px solid #ede9e3',
-        borderRadius: '4px',
-        background: '#fdfcfb',
-        padding: '11px 12px',
-        cursor: confirmDelete ? 'default' : 'pointer',
-        transition: 'box-shadow 0.12s',
-        boxShadow: hovered && !confirmDelete ? 'inset 3px 0 0 #1a1714' : 'none',
+        border: '1px solid hsl(var(--border) / 0.5)',
+        borderRadius: 'var(--radius-md)',
+        background: 'hsl(var(--card))',
+        padding: '14px',
+        cursor: 'pointer',
+        position: 'relative',
+        transition: 'box-shadow 0.15s',
+        boxShadow: hovered ? '0 2px 8px hsl(var(--foreground) / 0.06)' : 'none',
       }}
     >
-      <p style={{ fontSize: '12px', fontWeight: 500, color: '#1a1714', lineHeight: '1.5', marginBottom: post.body ? '5px' : 0, fontFamily: mono }}>
+      {/* Top row: word count badge + three-dot menu */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+        <span style={{
+          fontSize: '10px', fontFamily: inter, fontWeight: 500,
+          color: 'hsl(var(--muted-foreground))',
+          background: 'hsl(var(--secondary))',
+          borderRadius: '999px', padding: '1px 8px',
+        }}>
+          {totalWords} words
+        </span>
+
+        <div style={{ position: 'relative' }}>
+          <button
+            onClick={e => { e.stopPropagation(); setMenuOpen(m => !m); }}
+            style={{
+              background: 'none', border: 'none', cursor: 'pointer',
+              color: hovered ? 'hsl(var(--muted-foreground))' : 'transparent',
+              padding: '2px', lineHeight: 0, transition: 'color 0.1s',
+            }}
+          >
+            <MoreHorizontal size={14} />
+          </button>
+
+          {menuOpen && (
+            <div
+              onClick={e => e.stopPropagation()}
+              style={{
+                position: 'absolute', right: 0, top: '100%', zIndex: 50,
+                background: 'hsl(var(--card))',
+                border: '1px solid hsl(var(--border))',
+                borderRadius: 'var(--radius-md)',
+                boxShadow: '0 4px 16px hsl(var(--foreground) / 0.1)',
+                padding: '4px', minWidth: '160px',
+                fontFamily: inter, fontSize: '12px',
+              }}
+            >
+              {COLUMNS.filter(c => c !== post.column).map(col => (
+                <button key={col} onClick={e => handleMove(e, col)} style={menuItemStyle}>
+                  Move to {COLUMN_LABELS[col]}
+                </button>
+              ))}
+
+              {isFinalized && linkedin?.isConnected && !isPublished && (
+                <button onClick={handlePublish} style={{ ...menuItemStyle, color: '#0077B5' }}>
+                  <Send size={12} style={{ marginRight: '6px' }} />
+                  Publish to LinkedIn
+                </button>
+              )}
+
+              <div style={{ height: '1px', background: 'hsl(var(--border))', margin: '4px 0' }} />
+
+              {confirmDelete ? (
+                <div style={{ padding: '4px 8px', display: 'flex', gap: '8px', alignItems: 'center' }}>
+                  <span style={{ fontSize: '11px', color: 'hsl(var(--muted-foreground))' }}>Delete?</span>
+                  <button onClick={handleDelete} style={{ ...menuItemStyle, color: 'hsl(var(--destructive))', padding: '2px 4px' }}>Yes</button>
+                  <button onClick={e => { e.stopPropagation(); setConfirmDelete(false); }} style={{ ...menuItemStyle, padding: '2px 4px' }}>No</button>
+                </div>
+              ) : (
+                <button onClick={handleDelete} style={{ ...menuItemStyle, color: 'hsl(var(--destructive))' }}>
+                  <Trash2 size={12} style={{ marginRight: '6px' }} />
+                  Delete
+                </button>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Title */}
+      <p style={{
+        fontSize: '14px', fontWeight: 700, fontFamily: serif,
+        color: 'hsl(var(--foreground))', lineHeight: '1.4',
+        marginBottom: post.body ? '6px' : '10px',
+        transition: 'color 0.1s',
+      }}>
         {post.title}
       </p>
+
+      {/* Body preview */}
       {post.body && (
-        <p style={{ fontSize: '11px', color: '#b0a99e', lineHeight: '1.7', overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', fontFamily: mono }}>
+        <p style={{
+          fontSize: '12px', fontFamily: inter,
+          color: 'hsl(var(--muted-foreground))', lineHeight: '1.6',
+          overflow: 'hidden', display: '-webkit-box',
+          WebkitLineClamp: 3, WebkitBoxOrient: 'vertical',
+          marginBottom: '10px',
+        }}>
           {post.body}
         </p>
       )}
 
-      {confirmDelete ? (
-        <div
-          onClick={e => e.stopPropagation()}
-          style={{ marginTop: '10px', display: 'flex', alignItems: 'center', gap: '8px' }}
-        >
-          <span style={{ fontSize: '10px', color: '#9a8f88', fontFamily: mono, letterSpacing: '0.05em' }}>Delete?</span>
-          <button
-            onClick={handleDeleteConfirm}
-            style={{ fontSize: '10px', fontFamily: mono, letterSpacing: '0.05em', color: '#c0392b', background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontWeight: 500 }}
-          >
-            Yes
-          </button>
-          <button
-            onClick={handleDeleteCancel}
-            style={{ fontSize: '10px', fontFamily: mono, letterSpacing: '0.05em', color: '#b0a99e', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
-          >
-            No
-          </button>
+      {/* Bottom row: timestamp + icon + published badge */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <span style={{ fontSize: '10px', color: 'hsl(var(--muted-foreground))', fontFamily: inter }}>
+          {formatDistanceToNow(new Date(post.updatedAt), { addSuffix: true })}
+        </span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+          {isPublished && (
+            <span style={{
+              fontSize: '9px', fontFamily: inter, fontWeight: 600,
+              color: '#fff', background: '#0077B5',
+              borderRadius: '3px', padding: '2px 6px', letterSpacing: '0.04em',
+            }}>
+              LinkedIn
+            </span>
+          )}
+          <FileText size={13} color="hsl(var(--muted-foreground))" />
         </div>
-      ) : (
-        <div style={{ marginTop: '10px', display: 'flex', alignItems: 'center', gap: '2px' }}>
-          <span style={{ fontSize: '10px', color: '#c8c2b8', fontFamily: mono, letterSpacing: '0.06em', marginRight: 'auto' }}>
-            {wordCount((post.title + ' ' + (post.body || '')).trim())} words
-          </span>
-          <button
-            onClick={moveLeft}
-            disabled={isFirst}
-            title="Move left"
-            style={{ padding: '2px', background: 'none', border: 'none', cursor: isFirst ? 'not-allowed' : 'pointer', color: isFirst ? '#e8e4dd' : '#ccc8c2', lineHeight: 0, transition: 'color 0.1s' }}
-            onMouseEnter={e => { if (!isFirst) e.currentTarget.style.color = '#1a1714'; }}
-            onMouseLeave={e => { e.currentTarget.style.color = isFirst ? '#e8e4dd' : '#ccc8c2'; }}
-          >
-            <ChevronLeft size={13} />
-          </button>
-          <button
-            onClick={moveRight}
-            disabled={isLast}
-            title="Move right"
-            style={{ padding: '2px', background: 'none', border: 'none', cursor: isLast ? 'not-allowed' : 'pointer', color: isLast ? '#e8e4dd' : '#ccc8c2', lineHeight: 0, transition: 'color 0.1s' }}
-            onMouseEnter={e => { if (!isLast) e.currentTarget.style.color = '#1a1714'; }}
-            onMouseLeave={e => { e.currentTarget.style.color = isLast ? '#e8e4dd' : '#ccc8c2'; }}
-          >
-            <ChevronRight size={13} />
-          </button>
-          <button
-            onClick={handleDeleteClick}
-            title="Delete"
-            style={{ padding: '2px', background: 'none', border: 'none', cursor: 'pointer', color: '#ccc8c2', lineHeight: 0, transition: 'color 0.1s' }}
-            onMouseEnter={e => { e.currentTarget.style.color = '#c0392b'; }}
-            onMouseLeave={e => { e.currentTarget.style.color = '#ccc8c2'; }}
-          >
-            <Trash2 size={13} />
-          </button>
-        </div>
-      )}
-    </div>
+      </div>
+    </motion.div>
   );
 }
+
+const menuItemStyle = {
+  display: 'flex', alignItems: 'center',
+  width: '100%', padding: '6px 8px',
+  background: 'none', border: 'none', cursor: 'pointer',
+  color: 'hsl(var(--foreground))',
+  borderRadius: 'var(--radius-sm)',
+  fontSize: '12px', fontFamily: "'Inter', sans-serif",
+  textAlign: 'left', transition: 'background 0.1s',
+};
