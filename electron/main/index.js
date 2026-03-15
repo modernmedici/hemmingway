@@ -48,7 +48,6 @@ function createWindow() {
       preload: path.join(__dirname, '../preload/index.js'),
       contextIsolation: true,
       nodeIntegration: false,
-      sandbox: false,
     },
   })
 
@@ -96,8 +95,11 @@ ipcMain.handle('linkedin:connect', () => {
 
     authWindow.loadURL(`${LINKEDIN_AUTH_URL}?${params}`)
 
+    let handled = false
     const handleNavigation = async (url) => {
       if (!url.startsWith(LINKEDIN_REDIRECT_URI)) return
+      if (handled) return
+      handled = true
       authWindow.destroy()
 
       const { searchParams } = new URL(url)
