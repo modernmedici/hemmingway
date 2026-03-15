@@ -7,6 +7,9 @@ export default defineConfig({
     build: {
       outDir: 'dist/main',
       lib: { entry: 'electron/main/index.js' },
+      rollupOptions: {
+        external: ['electron-store'],
+      },
     },
   },
   preload: {
