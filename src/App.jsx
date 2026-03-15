@@ -9,7 +9,7 @@ import PublishModal from './components/PublishModal';
 import './index.css';
 
 export default function App() {
-  const { posts, createPost, updatePost, movePost, deletePost } = useKanban();
+  const { posts, loading, createPost, updatePost, movePost, deletePost } = useKanban();
   const linkedin = useLinkedIn();
   const [view, setView] = useState('board');
   const [editingPost, setEditingPost] = useState(null);
@@ -24,16 +24,6 @@ export default function App() {
     document.documentElement.classList.toggle('dark', isDark);
     localStorage.setItem('hemingway-dark', isDark);
   }, [isDark]);
-
-  // Detect LinkedIn OAuth callback
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const token = params.get('linkedin_token');
-    const error = params.get('linkedin_error');
-    if (token) linkedin.receiveToken(token);
-    if (error) console.error('[LinkedIn] OAuth error:', error);
-    if (token || error) window.history.replaceState({}, '', window.location.pathname);
-  }, []);
 
   const handleNewPost = (columnId) => {
     setEditingPost(null);
@@ -90,6 +80,7 @@ export default function App() {
       <main style={{ flex: 1, padding: '32px 36px', overflow: 'hidden' }}>
         <Board
           posts={posts}
+          loading={loading}
           onMovePost={movePost}
           onDeletePost={deletePost}
           onNewPost={handleNewPost}

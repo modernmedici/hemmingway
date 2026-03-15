@@ -1,0 +1,39 @@
+appId: com.hemingway.app
+productName: Hemingway
+copyright: Copyright © 2025
+
+directories:
+  output: dist-electron
+
+files:
+  - dist/main/**
+  - dist/preload/**
+  - dist/renderer/**
+  - node_modules/electron-store/**
+  - node_modules/conf/**
+  - node_modules/env-paths/**
+  - node_modules/dot-prop/**
+  - node_modules/type-fest/**
+  - node_modules/atomically/**
+  - node_modules/debounce-fn/**
+  - node_modules/mimic-fn/**
+  - node_modules/semver/**
+  # gray-matter deps (Workstream 3)
+  - node_modules/gray-matter/**
+  - node_modules/js-yaml/**
+  - node_modules/strip-bom-string/**
+  - node_modules/extend-shallow/**
+  - node_modules/section-matter/**
+  - package.json
+
+mac:
+  category: public.app-category.productivity
+  target:
+    - target: dmg
+      arch: [arm64, x64]
+
+dmg:
+  title: Hemingway
+  contents:
+    - { x: 130, y: 220, type: file }
+    - { x: 410, y: 220, type: link, path: /Applications }

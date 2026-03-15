@@ -1,35 +1,20 @@
 import { useState, useEffect, useCallback } from 'react';
 
-const STORAGE_KEY = 'hemingway-posts';
-
 const generateId = () =>
   Date.now().toString(36) + Math.random().toString(36).slice(2);
 
-function loadFromStorage() {
-  try {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored) {
-      const parsed = JSON.parse(stored);
-      if (Array.isArray(parsed)) return parsed;
-    }
-  } catch {
-    // Corrupted JSON — start fresh
-  }
-  return [];
-}
-
 export function useKanban() {
-  const [posts, setPosts] = useState(loadFromStorage);
+  const [posts,   setPosts]   = useState([]);
+  const [loading, setLoading] = useState(true);
 
+  // Load all posts from ~/Desktop/Hemingway/ on mount
   useEffect(() => {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(posts));
-    } catch {
-      // Storage full or unavailable
-    }
-  }, [posts]);
+    window.api.posts.list()
+      .then(p => { setPosts(p); setLoading(false); })
+      .catch(e => { console.error('[Posts] Failed to load:', e); setLoading(false); });
+  }, []);
 
-  const createPost = useCallback((title, body, column = 'ideas') => {
+  const createPost = useCallback(async (title, body, column = 'ideas') => {
     const now = new Date().toISOString();
     const newPost = {
       id: generateId(),
@@ -38,34 +23,43 @@ export function useKanban() {
       column,
       createdAt: now,
       updatedAt: now,
+      publishedTo: [],
     };
-    setPosts((prev) => [...prev, newPost]);
+    await window.api.posts.save(newPost);
+    setPosts(prev => [...prev, newPost]);
     return newPost;
   }, []);
 
-  const updatePost = useCallback((id, updates) => {
-    setPosts((prev) =>
-      prev.map((post) =>
+  const updatePost = useCallback(async (id, updates) => {
+    setPosts(prev => {
+      const next = prev.map(post =>
         post.id === id
           ? { ...post, ...updates, updatedAt: new Date().toISOString() }
           : post
-      )
-    );
+      );
+      const updated = next.find(p => p.id === id);
+      if (updated) window.api.posts.save(updated);
+      return next;
+    });
   }, []);
 
-  const movePost = useCallback((id, column) => {
-    setPosts((prev) =>
-      prev.map((post) =>
+  const movePost = useCallback(async (id, column) => {
+    setPosts(prev => {
+      const next = prev.map(post =>
         post.id === id
           ? { ...post, column, updatedAt: new Date().toISOString() }
           : post
-      )
-    );
+      );
+      const moved = next.find(p => p.id === id);
+      if (moved) window.api.posts.save(moved);
+      return next;
+    });
   }, []);
 
-  const deletePost = useCallback((id) => {
-    setPosts((prev) => prev.filter((post) => post.id !== id));
+  const deletePost = useCallback(async (id) => {
+    await window.api.posts.delete(id);
+    setPosts(prev => prev.filter(p => p.id !== id));
   }, []);
 
-  return { posts, createPost, updatePost, movePost, deletePost };
+  return { posts, loading, createPost, updatePost, movePost, deletePost };
 }
