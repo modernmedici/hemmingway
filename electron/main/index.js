@@ -2,6 +2,11 @@ const { app, BrowserWindow, ipcMain } = require('electron')
 const path = require('path')
 const { createHash, randomBytes } = require('crypto')
 const Store = require('electron-store')
+const fs      = require('fs')
+const os      = require('os')
+const matter  = require('gray-matter')
+
+const POSTS_DIR = path.join(os.homedir(), 'Desktop', 'Hemingway')
 
 const store = new Store({ name: 'linkedin' })
 
@@ -25,6 +30,10 @@ function generateChallenge(verifier) {
     .replace(/\+/g, '-')
     .replace(/\//g, '_')
     .replace(/=/g, '')
+}
+
+function ensurePostsDir() {
+  if (!fs.existsSync(POSTS_DIR)) fs.mkdirSync(POSTS_DIR, { recursive: true })
 }
 
 function createWindow() {
@@ -163,4 +172,31 @@ ipcMain.handle('linkedin:request', async (_e, { method, path: apiPath, body }) =
   const text = await res.text()
   if (!res.ok) throw new Error(`LinkedIn API ${res.status}: ${text}`)
   try { return JSON.parse(text) } catch { return text }
+})
+
+// ── IPC: posts:list ────────────────────────────────────────────────────────────
+ipcMain.handle('posts:list', () => {
+  ensurePostsDir()
+  return fs.readdirSync(POSTS_DIR)
+    .filter(f => f.endsWith('.md'))
+    .map(filename => {
+      const raw = fs.readFileSync(path.join(POSTS_DIR, filename), 'utf8')
+      const { data, content } = matter(raw)
+      return { ...data, body: content.trim() }
+    })
+    .filter(p => p.id) // skip malformed files
+})
+
+// ── IPC: posts:save ────────────────────────────────────────────────────────────
+ipcMain.handle('posts:save', (_e, post) => {
+  ensurePostsDir()
+  const { body, ...frontmatter } = post
+  const fileContent = matter.stringify(body ?? '', frontmatter)
+  fs.writeFileSync(path.join(POSTS_DIR, `${post.id}.md`), fileContent, 'utf8')
+})
+
+// ── IPC: posts:delete ──────────────────────────────────────────────────────────
+ipcMain.handle('posts:delete', (_e, id) => {
+  const filepath = path.join(POSTS_DIR, `${id}.md`)
+  if (fs.existsSync(filepath)) fs.unlinkSync(filepath)
 })
