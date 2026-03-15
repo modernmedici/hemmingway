@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import Column from './Column';
 
 const COLUMNS = [
@@ -7,11 +6,9 @@ const COLUMNS = [
   { id: 'finalized', label: 'Finalized Posts' },
 ];
 
-export default function Board({ posts, onCreatePost, onUpdatePost, onMovePost, onDeletePost }) {
-  const [activeNewPostColumn, setActiveNewPostColumn] = useState(null);
-
+export default function Board({ posts, onMovePost, onDeletePost, onNewPost, onEditPost }) {
   return (
-    <div className="grid grid-cols-3 gap-4 h-full">
+    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '24px', height: '100%' }}>
       {COLUMNS.map((column) => {
         const columnPosts = posts.filter((p) => p.column === column.id);
         return (
@@ -19,13 +16,10 @@ export default function Board({ posts, onCreatePost, onUpdatePost, onMovePost, o
             key={column.id}
             column={column}
             posts={columnPosts}
-            onCreatePost={onCreatePost}
-            onUpdatePost={onUpdatePost}
             onMovePost={onMovePost}
             onDeletePost={onDeletePost}
-            showNewForm={activeNewPostColumn === column.id}
-            onShowNewForm={() => setActiveNewPostColumn(column.id)}
-            onHideNewForm={() => setActiveNewPostColumn(null)}
+            onNewPost={onNewPost}
+            onEditPost={onEditPost}
           />
         );
       })}

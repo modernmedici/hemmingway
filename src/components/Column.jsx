@@ -1,68 +1,62 @@
 import PostCard from './PostCard';
-import NewPostForm from './NewPostForm';
 
-export default function Column({
-  column,
-  posts,
-  onCreatePost,
-  onUpdatePost,
-  onMovePost,
-  onDeletePost,
-  showNewForm,
-  onShowNewForm,
-  onHideNewForm,
-}) {
-  const COLUMNS = ['ideas', 'drafts', 'finalized'];
+const COLUMNS = ['ideas', 'drafts', 'finalized'];
+
+export default function Column({ column, posts, onMovePost, onDeletePost, onNewPost, onEditPost }) {
   const colIndex = COLUMNS.indexOf(column.id);
 
   return (
-    <div className="flex flex-col bg-stone-100 rounded-xl p-3 min-w-0">
+    <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
       {/* Header */}
-      <div className="flex items-center justify-between mb-3 px-1">
-        <h2 className="text-xs font-semibold tracking-widest uppercase text-stone-500">
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px', paddingBottom: '10px', borderBottom: '1px solid #e5e5e5' }}>
+        <h2 style={{ fontSize: '10px', fontWeight: 500, letterSpacing: '0.16em', textTransform: 'uppercase', color: '#999' }}>
           {column.label}
         </h2>
-        <span className="text-xs text-stone-400 tabular-nums">
+        <span style={{ fontSize: '11px', color: '#ccc', fontVariantNumeric: 'tabular-nums' }}>
           {posts.length > 0 ? posts.length : ''}
         </span>
       </div>
 
       {/* Cards */}
-      <div className="flex-1 overflow-y-auto max-h-[calc(100vh-12rem)] space-y-2 pr-0.5">
-        {posts.length === 0 && !showNewForm && (
-          <p className="text-xs italic text-stone-300 px-1 pt-2">Nothing here yet.</p>
+      <div style={{ flex: 1, overflowY: 'auto', maxHeight: 'calc(100vh - 14rem)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+        {posts.length === 0 && (
+          <p style={{ fontSize: '11px', fontStyle: 'italic', color: '#ccc', paddingTop: '8px' }}>Nothing here yet.</p>
         )}
         {posts.map((post) => (
           <PostCard
             key={post.id}
             post={post}
-            onUpdate={onUpdatePost}
             onMove={onMovePost}
             onDelete={onDeletePost}
+            onEdit={onEditPost}
             isFirst={colIndex === 0}
             isLast={colIndex === COLUMNS.length - 1}
           />
         ))}
-        {showNewForm && (
-          <NewPostForm
-            onCreate={(title, body) => {
-              onCreatePost(title, body, column.id);
-              onHideNewForm();
-            }}
-            onCancel={onHideNewForm}
-          />
-        )}
       </div>
 
       {/* Footer */}
-      {!showNewForm && (
-        <button
-          onClick={onShowNewForm}
-          className="mt-3 w-full rounded-lg border border-dashed border-stone-300 py-2 text-xs text-stone-400 hover:border-stone-400 hover:text-stone-600 transition-colors"
-        >
-          + New post
-        </button>
-      )}
+      <button
+        onClick={() => onNewPost(column.id)}
+        style={{
+          marginTop: '12px',
+          width: '100%',
+          border: '1px dashed #d4d4d4',
+          borderRadius: '4px',
+          padding: '8px 0',
+          fontSize: '11px',
+          color: '#bbb',
+          background: 'none',
+          cursor: 'pointer',
+          letterSpacing: '0.05em',
+          transition: 'border-color 0.15s, color 0.15s',
+          fontFamily: "'IBM Plex Mono', monospace",
+        }}
+        onMouseEnter={e => { e.currentTarget.style.borderColor = '#aaa'; e.currentTarget.style.color = '#666'; }}
+        onMouseLeave={e => { e.currentTarget.style.borderColor = '#d4d4d4'; e.currentTarget.style.color = '#bbb'; }}
+      >
+        + New post
+      </button>
     </div>
   );
 }
