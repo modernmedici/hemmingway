@@ -9,6 +9,15 @@ files:
   - dist/main/**
   - dist/preload/**
   - dist/renderer/**
+  - node_modules/electron-store/**
+  - node_modules/conf/**
+  - node_modules/env-paths/**
+  - node_modules/dot-prop/**
+  - node_modules/type-fest/**
+  - node_modules/atomically/**
+  - node_modules/debounce-fn/**
+  - node_modules/mimic-fn/**
+  - node_modules/semver/**
   - package.json
 
 mac:
