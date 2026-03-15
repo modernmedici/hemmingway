@@ -7,4 +7,9 @@ contextBridge.exposeInMainWorld('api', {
     getProfile: ()                   => ipcRenderer.invoke('linkedin:get-profile'),
     request:    (method, path, body) => ipcRenderer.invoke('linkedin:request', { method, path, body }),
   },
+  posts: {
+    list:   ()     => ipcRenderer.invoke('posts:list'),
+    save:   (post) => ipcRenderer.invoke('posts:save', post),
+    delete: (id)   => ipcRenderer.invoke('posts:delete', id),
+  },
 })
