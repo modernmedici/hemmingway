@@ -9,7 +9,7 @@ import PublishModal from './components/PublishModal';
 import './index.css';
 
 export default function App() {
-  const { posts, createPost, updatePost, movePost, deletePost } = useKanban();
+  const { posts, loading, createPost, updatePost, movePost, deletePost } = useKanban();
   const linkedin = useLinkedIn();
   const [view, setView] = useState('board');
   const [editingPost, setEditingPost] = useState(null);
@@ -80,6 +80,7 @@ export default function App() {
       <main style={{ flex: 1, padding: '32px 36px', overflow: 'hidden' }}>
         <Board
           posts={posts}
+          loading={loading}
           onMovePost={movePost}
           onDeletePost={deletePost}
           onNewPost={handleNewPost}
