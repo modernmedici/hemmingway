@@ -8,7 +8,7 @@ export default defineConfig({
       outDir: 'dist/main',
       lib: { entry: 'electron/main/index.js' },
       rollupOptions: {
-        external: ['electron-store'],
+        external: ['electron-store', 'gray-matter'],
       },
     },
   },
