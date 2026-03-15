@@ -2,15 +2,14 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { FileText, MoreHorizontal, Trash2, Send } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
+import { COLUMN_IDS, COLUMN_LABELS, FONTS, LINKEDIN } from '../lib/constants';
 
-const COLUMNS = ['ideas', 'drafts', 'finalized'];
-const COLUMN_LABELS = { ideas: 'Scratchpad', drafts: 'Drafts', finalized: 'Published' };
-const inter  = "'Inter', sans-serif";
-const serif  = "'Libre Baskerville', Georgia, serif";
+const wordCount = (text) => {
+  const trimmed = text?.trim();
+  return trimmed ? trimmed.split(/\s+/).length : 0;
+};
 
-const wordCount = (text) => text?.trim() ? text.trim().split(/\s+/).length : 0;
-
-export default function PostCard({ post, onMove, onDelete, onEdit, onPublish, linkedin, isFirst, isLast }) {
+export default function PostCard({ post, onMove, onDelete, onEdit, onPublish, linkedin }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [hovered, setHovered] = useState(false);
@@ -63,7 +62,7 @@ export default function PostCard({ post, onMove, onDelete, onEdit, onPublish, li
       {/* Top row: word count badge + three-dot menu */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
         <span style={{
-          fontSize: '10px', fontFamily: inter, fontWeight: 500,
+          fontSize: '10px', fontFamily: FONTS.inter, fontWeight: 500,
           color: 'hsl(var(--muted-foreground))',
           background: 'hsl(var(--secondary))',
           borderRadius: '999px', padding: '1px 8px',
@@ -93,17 +92,17 @@ export default function PostCard({ post, onMove, onDelete, onEdit, onPublish, li
                 borderRadius: 'var(--radius-md)',
                 boxShadow: '0 4px 16px hsl(var(--foreground) / 0.1)',
                 padding: '4px', minWidth: '160px',
-                fontFamily: inter, fontSize: '12px',
+                fontFamily: FONTS.inter, fontSize: '12px',
               }}
             >
-              {COLUMNS.filter(c => c !== post.column).map(col => (
+              {COLUMN_IDS.filter(c => c !== post.column).map(col => (
                 <button key={col} onClick={e => handleMove(e, col)} style={menuItemStyle}>
                   Move to {COLUMN_LABELS[col]}
                 </button>
               ))}
 
               {isFinalized && linkedin?.isConnected && !isPublished && (
-                <button onClick={handlePublish} style={{ ...menuItemStyle, color: '#0077B5' }}>
+                <button onClick={handlePublish} style={{ ...menuItemStyle, color: LINKEDIN.primary }}>
                   <Send size={12} style={{ marginRight: '6px' }} />
                   Publish to LinkedIn
                 </button>
@@ -130,7 +129,7 @@ export default function PostCard({ post, onMove, onDelete, onEdit, onPublish, li
 
       {/* Title */}
       <p style={{
-        fontSize: '14px', fontWeight: 700, fontFamily: serif,
+        fontSize: '14px', fontWeight: 700, fontFamily: FONTS.serif,
         color: 'hsl(var(--foreground))', lineHeight: '1.4',
         marginBottom: post.body ? '6px' : '10px',
         transition: 'color 0.1s',
@@ -141,7 +140,7 @@ export default function PostCard({ post, onMove, onDelete, onEdit, onPublish, li
       {/* Body preview */}
       {post.body && (
         <p style={{
-          fontSize: '12px', fontFamily: inter,
+          fontSize: '12px', fontFamily: FONTS.inter,
           color: 'hsl(var(--muted-foreground))', lineHeight: '1.6',
           overflow: 'hidden', display: '-webkit-box',
           WebkitLineClamp: 3, WebkitBoxOrient: 'vertical',
@@ -153,14 +152,14 @@ export default function PostCard({ post, onMove, onDelete, onEdit, onPublish, li
 
       {/* Bottom row: timestamp + icon + published badge */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <span style={{ fontSize: '10px', color: 'hsl(var(--muted-foreground))', fontFamily: inter }}>
+        <span style={{ fontSize: '10px', color: 'hsl(var(--muted-foreground))', fontFamily: FONTS.inter }}>
           {formatDistanceToNow(new Date(post.updatedAt), { addSuffix: true })}
         </span>
         <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
           {isPublished && (
             <span style={{
-              fontSize: '9px', fontFamily: inter, fontWeight: 600,
-              color: '#fff', background: '#0077B5',
+              fontSize: '9px', fontFamily: FONTS.inter, fontWeight: 600,
+              color: '#fff', background: LINKEDIN.primary,
               borderRadius: '3px', padding: '2px 6px', letterSpacing: '0.04em',
             }}>
               LinkedIn

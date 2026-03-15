@@ -1,8 +1,7 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { Send, X } from 'lucide-react';
-
-const inter = "'Inter', sans-serif";
-const serif = "'Libre Baskerville', Georgia, serif";
+import { FONTS, LINKEDIN } from '../lib/constants';
+import LinkedInLogo from './LinkedInLogo';
 
 export default function PublishModal({ post, onConfirm, onCancel, publishing, error }) {
   const preview = `${post.title}\n\n${post.body ?? ''}`.trim();
@@ -35,15 +34,13 @@ export default function PublishModal({ post, onConfirm, onCancel, publishing, er
             padding: '28px',
             maxWidth: '480px',
             width: '100%',
-            fontFamily: inter,
+            fontFamily: FONTS.inter,
           }}
         >
           {/* Header */}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <div style={{ width: '28px', height: '28px', borderRadius: '4px', background: '#0077B5', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <span style={{ fontFamily: serif, fontWeight: 700, fontSize: '13px', color: '#fff' }}>in</span>
-              </div>
+              <LinkedInLogo radius="4px" />
               <p style={{ fontSize: '14px', fontWeight: 600, color: 'hsl(var(--foreground))' }}>Publish to LinkedIn</p>
             </div>
             <button onClick={onCancel} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'hsl(var(--muted-foreground))', lineHeight: 0 }}>
@@ -56,7 +53,7 @@ export default function PublishModal({ post, onConfirm, onCancel, publishing, er
             background: 'hsl(var(--secondary))',
             borderRadius: 'var(--radius-md)',
             padding: '16px', marginBottom: '16px',
-            fontSize: '13px', fontFamily: inter, color: 'hsl(var(--foreground))',
+            fontSize: '13px', fontFamily: FONTS.inter, color: 'hsl(var(--foreground))',
             lineHeight: '1.6', whiteSpace: 'pre-wrap',
             maxHeight: '200px', overflowY: 'auto',
           }}>
@@ -78,7 +75,7 @@ export default function PublishModal({ post, onConfirm, onCancel, publishing, er
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
             <button
               onClick={onCancel}
-              style={{ fontSize: '13px', fontFamily: inter, color: 'hsl(var(--muted-foreground))', background: 'none', border: '1px solid hsl(var(--border))', borderRadius: 'var(--radius-sm)', padding: '7px 16px', cursor: 'pointer' }}
+              style={{ fontSize: '13px', fontFamily: FONTS.inter, color: 'hsl(var(--muted-foreground))', background: 'none', border: '1px solid hsl(var(--border))', borderRadius: 'var(--radius-sm)', padding: '7px 16px', cursor: 'pointer' }}
             >
               Cancel
             </button>
@@ -87,8 +84,8 @@ export default function PublishModal({ post, onConfirm, onCancel, publishing, er
               disabled={overLimit || publishing}
               style={{
                 display: 'flex', alignItems: 'center', gap: '6px',
-                fontSize: '13px', fontFamily: inter, fontWeight: 500,
-                background: overLimit || publishing ? 'hsl(var(--muted))' : '#0077B5',
+                fontSize: '13px', fontFamily: FONTS.inter, fontWeight: 500,
+                background: overLimit || publishing ? 'hsl(var(--muted))' : LINKEDIN.primary,
                 color: overLimit || publishing ? 'hsl(var(--muted-foreground))' : '#fff',
                 border: 'none', borderRadius: 'var(--radius-sm)',
                 padding: '7px 16px', cursor: overLimit || publishing ? 'not-allowed' : 'pointer',

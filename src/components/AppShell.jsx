@@ -1,6 +1,5 @@
 import { BookOpen, LayoutDashboard } from 'lucide-react';
-
-const inter = "'Inter', sans-serif";
+import { FONTS } from '../lib/constants';
 
 export default function AppShell({ children, onNewIdea, onToggleDark, isDark, linkedinSlot }) {
   return (
@@ -14,7 +13,7 @@ export default function AppShell({ children, onNewIdea, onToggleDark, isDark, li
         display: 'flex',
         flexDirection: 'column',
         padding: '24px 16px',
-        fontFamily: inter,
+        fontFamily: FONTS.inter,
       }}>
         {/* Logo */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '32px', paddingLeft: '8px' }}>
@@ -54,7 +53,7 @@ export default function AppShell({ children, onNewIdea, onToggleDark, isDark, li
               border: '1px solid hsl(var(--border))',
               background: 'none', cursor: 'pointer',
               fontSize: '12px', fontWeight: 500, color: 'hsl(var(--foreground))',
-              fontFamily: inter, transition: 'background 0.12s',
+              fontFamily: FONTS.inter, transition: 'background 0.12s',
             }}
             onMouseEnter={e => { e.currentTarget.style.background = 'hsl(var(--accent))'; }}
             onMouseLeave={e => { e.currentTarget.style.background = 'none'; }}
@@ -62,7 +61,6 @@ export default function AppShell({ children, onNewIdea, onToggleDark, isDark, li
             + New Idea
           </button>
 
-          {/* LinkedIn accounts slot */}
           {linkedinSlot && (
             <div style={{ marginTop: '24px', paddingTop: '24px', borderTop: '1px solid hsl(var(--sidebar-border))' }}>
               {linkedinSlot}

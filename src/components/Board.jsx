@@ -1,10 +1,5 @@
+import { COLUMNS } from '../lib/constants';
 import Column from './Column';
-
-const COLUMNS = [
-  { id: 'ideas',     label: 'Scratchpad' },
-  { id: 'drafts',    label: 'Drafts' },
-  { id: 'finalized', label: 'Published' },
-];
 
 export default function Board({ posts, onMovePost, onDeletePost, onNewPost, onEditPost, onPublish, linkedin }) {
   return (

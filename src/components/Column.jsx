@@ -1,12 +1,8 @@
 import { motion, AnimatePresence } from 'framer-motion';
+import { COLUMN_IDS, FONTS } from '../lib/constants';
 import PostCard from './PostCard';
 
-const COLUMNS = ['ideas', 'drafts', 'finalized'];
-const inter = "'Inter', sans-serif";
-
 export default function Column({ column, posts, onMovePost, onDeletePost, onNewPost, onEditPost, onPublish, linkedin }) {
-  const colIndex = COLUMNS.indexOf(column.id);
-
   return (
     <div style={{
       display: 'flex', flexDirection: 'column', minWidth: 0,
@@ -20,7 +16,7 @@ export default function Column({ column, posts, onMovePost, onDeletePost, onNewP
         <h2 style={{
           fontSize: '11px', fontWeight: 500, letterSpacing: '0.1em',
           textTransform: 'uppercase', color: 'hsl(var(--muted-foreground))',
-          fontFamily: inter,
+          fontFamily: FONTS.inter,
         }}>
           {column.label}
         </h2>
@@ -30,7 +26,7 @@ export default function Column({ column, posts, onMovePost, onDeletePost, onNewP
             background: 'hsl(var(--secondary))',
             color: 'hsl(var(--muted-foreground))',
             borderRadius: '999px', padding: '1px 8px',
-            fontFamily: inter,
+            fontFamily: FONTS.inter,
           }}>
             {posts.length}
           </span>
@@ -54,7 +50,7 @@ export default function Column({ column, posts, onMovePost, onDeletePost, onNewP
                 textAlign: 'center',
                 fontSize: '12px',
                 color: 'hsl(var(--muted-foreground))',
-                fontFamily: inter,
+                fontFamily: FONTS.inter,
               }}
             >
               Empty
@@ -69,8 +65,6 @@ export default function Column({ column, posts, onMovePost, onDeletePost, onNewP
               onEdit={onEditPost}
               onPublish={onPublish}
               linkedin={linkedin}
-              isFirst={colIndex === 0}
-              isLast={colIndex === COLUMNS.length - 1}
             />
           ))}
         </AnimatePresence>
@@ -86,7 +80,7 @@ export default function Column({ column, posts, onMovePost, onDeletePost, onNewP
           padding: '8px 0', fontSize: '12px',
           color: 'hsl(var(--muted-foreground))',
           background: 'none', cursor: 'pointer',
-          fontFamily: inter, transition: 'background 0.12s, color 0.12s',
+          fontFamily: FONTS.inter, transition: 'background 0.12s, color 0.12s',
         }}
         onMouseEnter={e => { e.currentTarget.style.background = 'hsl(var(--secondary))'; e.currentTarget.style.color = 'hsl(var(--foreground))'; }}
         onMouseLeave={e => { e.currentTarget.style.background = 'none'; e.currentTarget.style.color = 'hsl(var(--muted-foreground))'; }}

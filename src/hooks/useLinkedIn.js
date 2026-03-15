@@ -16,7 +16,7 @@ async function generateChallenge(verifier) {
 }
 
 export function useLinkedIn() {
-  const [token,   setToken]   = useState(() => localStorage.getItem(LS_TOKEN) ?? null);
+  const [token,   setToken]   = useState(() => localStorage.getItem(LS_TOKEN));
   const [profile, setProfile] = useState(() => {
     try { return JSON.parse(localStorage.getItem(LS_PROFILE) ?? 'null'); }
     catch { return null; }

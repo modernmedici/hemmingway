@@ -30,14 +30,9 @@ export default function App() {
     const params = new URLSearchParams(window.location.search);
     const token = params.get('linkedin_token');
     const error = params.get('linkedin_error');
-    if (token) {
-      linkedin.receiveToken(token);
-      window.history.replaceState({}, '', window.location.pathname);
-    }
-    if (error) {
-      console.error('[LinkedIn] OAuth error:', error);
-      window.history.replaceState({}, '', window.location.pathname);
-    }
+    if (token) linkedin.receiveToken(token);
+    if (error) console.error('[LinkedIn] OAuth error:', error);
+    if (token || error) window.history.replaceState({}, '', window.location.pathname);
   }, []);
 
   const handleNewPost = (columnId) => {
