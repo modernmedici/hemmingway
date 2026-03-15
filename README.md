@@ -1,4 +1,4 @@
-# Hemingway
+# Hemmingway
 
 I wanted to stop procrastinating about my public writing so I made this tool, as a way to capture ideas, and shape them into fully fleshed thoughts.
 
