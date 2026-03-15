@@ -4,9 +4,12 @@ import Board from './components/Board';
 import WritingView from './components/WritingView';
 import './index.css';
 
+const mono = "'IBM Plex Mono', monospace";
+const serif = "'Playfair Display', Georgia, serif";
+
 export default function App() {
   const { posts, createPost, updatePost, movePost, deletePost } = useKanban();
-  const [view, setView] = useState('board'); // 'board' | 'editor'
+  const [view, setView] = useState('board');
   const [editingPost, setEditingPost] = useState(null);
   const [pendingColumn, setPendingColumn] = useState('ideas');
 
@@ -25,16 +28,10 @@ export default function App() {
   const handleSave = (title, body, column) => {
     if (editingPost) {
       updatePost(editingPost.id, { title, body });
-      if (column !== editingPost.column) {
-        movePost(editingPost.id, column);
-      }
+      if (column !== editingPost.column) movePost(editingPost.id, column);
     } else {
       createPost(title, body, column);
     }
-    setView('board');
-  };
-
-  const handleCancel = () => {
     setView('board');
   };
 
@@ -44,23 +41,23 @@ export default function App() {
         post={editingPost}
         defaultColumn={pendingColumn}
         onSave={handleSave}
-        onCancel={handleCancel}
+        onCancel={() => setView('board')}
       />
     );
   }
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ background: '#fff', fontFamily: "'IBM Plex Mono', monospace" }}>
-      <header style={{ borderBottom: '1px solid #e5e5e5', padding: '20px 32px' }}>
-        <h1 style={{ fontSize: '18px', fontWeight: 600, letterSpacing: '0.15em', color: '#111', fontFamily: "'IBM Plex Mono', monospace" }}>
+    <div className="view-enter" style={{ minHeight: '100vh', background: '#f7f5f0', display: 'flex', flexDirection: 'column', fontFamily: mono }}>
+      <header style={{ padding: '28px 40px 24px', borderBottom: '1px solid #e8e4dd' }}>
+        <h1 style={{ fontFamily: serif, fontSize: '28px', fontWeight: 700, color: '#1a1714', letterSpacing: '0.01em', lineHeight: 1 }}>
           Hemingway
         </h1>
-        <p style={{ marginTop: '2px', fontSize: '11px', letterSpacing: '0.12em', color: '#aaa', textTransform: 'uppercase', fontFamily: "'IBM Plex Mono', monospace" }}>
-          Write. Draft. Publish.
+        <p style={{ marginTop: '6px', fontSize: '10px', letterSpacing: '0.18em', color: '#b0a99e', textTransform: 'uppercase', fontFamily: mono }}>
+          Write · Draft · Publish
         </p>
       </header>
 
-      <main style={{ flex: 1, padding: '32px', overflow: 'hidden' }}>
+      <main style={{ flex: 1, padding: '36px 40px', overflow: 'hidden' }}>
         <Board
           posts={posts}
           onMovePost={movePost}

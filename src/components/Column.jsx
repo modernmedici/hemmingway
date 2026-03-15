@@ -6,21 +6,33 @@ export default function Column({ column, posts, onMovePost, onDeletePost, onNewP
   const colIndex = COLUMNS.indexOf(column.id);
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+    <div style={{
+      display: 'flex',
+      flexDirection: 'column',
+      minWidth: 0,
+      background: '#fff',
+      border: '1px solid #e8e4dd',
+      borderRadius: '6px',
+      padding: '20px',
+    }}>
       {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px', paddingBottom: '10px', borderBottom: '1px solid #e5e5e5' }}>
-        <h2 style={{ fontSize: '10px', fontWeight: 500, letterSpacing: '0.16em', textTransform: 'uppercase', color: '#999' }}>
+      <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: '16px', paddingBottom: '12px', borderBottom: '1px solid #f0ece6' }}>
+        <h2 style={{ fontSize: '10px', fontWeight: 500, letterSpacing: '0.18em', textTransform: 'uppercase', color: '#b0a99e', fontFamily: "'IBM Plex Mono', monospace" }}>
           {column.label}
         </h2>
-        <span style={{ fontSize: '11px', color: '#ccc', fontVariantNumeric: 'tabular-nums' }}>
-          {posts.length > 0 ? posts.length : ''}
-        </span>
+        {posts.length > 0 && (
+          <span style={{ fontSize: '11px', color: '#d4cfc9', fontVariantNumeric: 'tabular-nums', fontFamily: "'IBM Plex Mono', monospace" }}>
+            {posts.length}
+          </span>
+        )}
       </div>
 
       {/* Cards */}
-      <div style={{ flex: 1, overflowY: 'auto', maxHeight: 'calc(100vh - 14rem)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+      <div style={{ flex: 1, overflowY: 'auto', maxHeight: 'calc(100vh - 16rem)', display: 'flex', flexDirection: 'column', gap: '6px' }}>
         {posts.length === 0 && (
-          <p style={{ fontSize: '11px', fontStyle: 'italic', color: '#ccc', paddingTop: '8px' }}>Nothing here yet.</p>
+          <p style={{ fontSize: '11px', fontStyle: 'italic', color: '#d4cfc9', paddingTop: '4px', fontFamily: "'IBM Plex Mono', monospace" }}>
+            Nothing here yet.
+          </p>
         )}
         {posts.map((post) => (
           <PostCard
@@ -39,21 +51,21 @@ export default function Column({ column, posts, onMovePost, onDeletePost, onNewP
       <button
         onClick={() => onNewPost(column.id)}
         style={{
-          marginTop: '12px',
+          marginTop: '14px',
           width: '100%',
-          border: '1px dashed #d4d4d4',
+          border: '1px dashed #ddd8d0',
           borderRadius: '4px',
-          padding: '8px 0',
+          padding: '9px 0',
           fontSize: '11px',
-          color: '#bbb',
+          color: '#c8c2b8',
           background: 'none',
           cursor: 'pointer',
-          letterSpacing: '0.05em',
+          letterSpacing: '0.08em',
           transition: 'border-color 0.15s, color 0.15s',
           fontFamily: "'IBM Plex Mono', monospace",
         }}
-        onMouseEnter={e => { e.currentTarget.style.borderColor = '#aaa'; e.currentTarget.style.color = '#666'; }}
-        onMouseLeave={e => { e.currentTarget.style.borderColor = '#d4d4d4'; e.currentTarget.style.color = '#bbb'; }}
+        onMouseEnter={e => { e.currentTarget.style.borderColor = '#b0a99e'; e.currentTarget.style.color = '#6b6460'; }}
+        onMouseLeave={e => { e.currentTarget.style.borderColor = '#ddd8d0'; e.currentTarget.style.color = '#c8c2b8'; }}
       >
         + New post
       </button>
