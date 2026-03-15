@@ -25,16 +25,6 @@ export default function App() {
     localStorage.setItem('hemingway-dark', isDark);
   }, [isDark]);
 
-  // Detect LinkedIn OAuth callback
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const token = params.get('linkedin_token');
-    const error = params.get('linkedin_error');
-    if (token) linkedin.receiveToken(token);
-    if (error) console.error('[LinkedIn] OAuth error:', error);
-    if (token || error) window.history.replaceState({}, '', window.location.pathname);
-  }, []);
-
   const handleNewPost = (columnId) => {
     setEditingPost(null);
     setPendingColumn(columnId);
