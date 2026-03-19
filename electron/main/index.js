@@ -21,6 +21,7 @@ const LINKEDIN_AUTH_URL      = 'https://www.linkedin.com/oauth/v2/authorization'
 const LINKEDIN_API_BASE      = 'https://api.linkedin.com/v2'
 
 let mainWindow
+let transcribeProcess = null
 
 function generateVerifier() {
   return randomBytes(64).toString('hex')
@@ -207,4 +208,36 @@ ipcMain.handle('posts:save', (_e, post) => {
 ipcMain.handle('posts:delete', (_e, id) => {
   const filepath = path.join(POSTS_DIR, `${id}.md`)
   if (fs.existsSync(filepath)) fs.unlinkSync(filepath)
+})
+
+// ── IPC: transcription:start ───────────────────────────────────────────────────
+// Requires Python 3.10+ (moonshine-voice dependency). The system python3 may be
+// older; ensure python3 on PATH resolves to 3.10+ or set PATH before launching.
+ipcMain.handle('transcription:start', () => {
+  if (transcribeProcess) return  // already running
+
+  const scriptPath = path.join(__dirname, '../../electron/transcribe.py')
+  transcribeProcess = require('child_process').spawn('python3', [scriptPath])
+
+  transcribeProcess.stdout.on('data', (data) => {
+    const lines = data.toString().split('\n').filter(Boolean)
+    lines.forEach(line => {
+      try {
+        const { text } = JSON.parse(line)
+        if (text && mainWindow) mainWindow.webContents.send('transcription:line', text)
+      } catch (_) {}
+    })
+  })
+
+  transcribeProcess.stderr.on('data', d => console.error('[Transcription]', d.toString()))
+
+  transcribeProcess.on('exit', () => { transcribeProcess = null })
+})
+
+// ── IPC: transcription:stop ────────────────────────────────────────────────────
+ipcMain.handle('transcription:stop', () => {
+  if (transcribeProcess) {
+    transcribeProcess.kill()
+    transcribeProcess = null
+  }
 })
