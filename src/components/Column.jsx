@@ -2,7 +2,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { COLUMN_IDS, FONTS } from '../lib/constants';
 import PostCard from './PostCard';
 
-export default function Column({ column, posts, onMovePost, onDeletePost, onNewPost, onEditPost, onPublish, linkedin }) {
+export default function Column({ column, posts, onMovePost, onDeletePost, onNewPost, onEditPost }) {
   return (
     <div style={{
       display: 'flex', flexDirection: 'column', minWidth: 0,
@@ -63,30 +63,12 @@ export default function Column({ column, posts, onMovePost, onDeletePost, onNewP
               onMove={onMovePost}
               onDelete={onDeletePost}
               onEdit={onEditPost}
-              onPublish={onPublish}
-              linkedin={linkedin}
+
             />
           ))}
         </AnimatePresence>
       </div>
 
-      {/* Footer */}
-      <button
-        onClick={() => onNewPost(column.id)}
-        style={{
-          marginTop: '12px', width: '100%',
-          border: '1px dashed hsl(var(--border))',
-          borderRadius: 'var(--radius-md)',
-          padding: '8px 0', fontSize: '12px',
-          color: 'hsl(var(--muted-foreground))',
-          background: 'none', cursor: 'pointer',
-          fontFamily: FONTS.inter, transition: 'background 0.12s, color 0.12s',
-        }}
-        onMouseEnter={e => { e.currentTarget.style.background = 'hsl(var(--secondary))'; e.currentTarget.style.color = 'hsl(var(--foreground))'; }}
-        onMouseLeave={e => { e.currentTarget.style.background = 'none'; e.currentTarget.style.color = 'hsl(var(--muted-foreground))'; }}
-      >
-        + New post
-      </button>
     </div>
   );
 }

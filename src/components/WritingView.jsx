@@ -1,25 +1,33 @@
-import { useState, useRef, useEffect } from 'react';
-import { ArrowLeft, Send } from 'lucide-react';
-import { COLUMNS, FONTS, LINKEDIN } from '../lib/constants';
+import { useState, useRef, useEffect, useCallback } from 'react';
+import { ArrowLeft } from 'lucide-react';
+import { FONTS } from '../lib/constants';
 
-export default function WritingView({ post, defaultColumn, onSave, onCancel, linkedin, onPublish }) {
+export default function WritingView({ post, defaultColumn, onSave, onCancel }) {
   const [title,  setTitle]  = useState(post?.title ?? '');
   const [body,   setBody]   = useState(post?.body  ?? '');
-  const [column, setColumn] = useState(defaultColumn ?? 'ideas');
   const titleRef = useRef(null);
 
   // Keep latest values accessible in the keydown handler without re-registering
-  const latestRef = useRef({ title, body, column, onSave, onCancel });
-  latestRef.current = { title, body, column, onSave, onCancel };
+  const latestRef = useRef({ title, body, onSave, onCancel });
+  latestRef.current = { title, body, onSave, onCancel };
 
   useEffect(() => { titleRef.current?.focus(); }, []);
+
+  const autoResizeTitle = useCallback(() => {
+    const el = titleRef.current;
+    if (!el) return;
+    el.style.height = 'auto';
+    el.style.height = el.scrollHeight + 'px';
+  }, []);
+
+  useEffect(() => { autoResizeTitle(); }, [title, autoResizeTitle]);
 
   useEffect(() => {
     const handler = (e) => {
       if (e.key === 'Escape') latestRef.current.onCancel();
       if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
-        const { title, body, column, onSave } = latestRef.current;
-        if (title.trim()) onSave(title.trim(), body.trim(), column);
+        const { title, body, onSave } = latestRef.current;
+        if (title.trim()) onSave(title.trim(), body.trim(), defaultColumn);
       }
     };
     window.addEventListener('keydown', handler);
@@ -28,15 +36,10 @@ export default function WritingView({ post, defaultColumn, onSave, onCancel, lin
 
   const handleSave = () => {
     if (!title.trim()) return;
-    onSave(title.trim(), body.trim(), column);
-  };
-
-  const handlePublish = async () => {
-    await onPublish({ ...post, title: title.trim(), body: body.trim() });
+    onSave(title.trim(), body.trim(), defaultColumn);
   };
 
   const canSave = title.trim().length > 0;
-  const canPublish = column === 'finalized' && linkedin?.isConnected && post;
 
   return (
     <div className="view-enter" style={{ minHeight: '100vh', background: 'hsl(var(--background))', display: 'flex', flexDirection: 'column', fontFamily: FONTS.inter }}>
@@ -46,7 +49,7 @@ export default function WritingView({ post, defaultColumn, onSave, onCancel, lin
         background: 'hsl(var(--background) / 0.8)',
         backdropFilter: 'blur(8px)',
         borderBottom: '1px solid hsl(var(--border))',
-        padding: '12px 40px',
+        padding: '14px 40px 14px 88px',
         display: 'flex', alignItems: 'center',
       }}>
         <button
@@ -60,45 +63,6 @@ export default function WritingView({ post, defaultColumn, onSave, onCancel, lin
         </button>
 
         <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '10px' }}>
-          {/* Column selector */}
-          <select
-            value={column}
-            onChange={e => setColumn(e.target.value)}
-            style={{
-              fontSize: '11px', fontFamily: FONTS.inter,
-              color: 'hsl(var(--foreground))',
-              border: '1px solid hsl(var(--border))',
-              borderRadius: 'var(--radius-sm)',
-              padding: '4px 8px',
-              background: 'hsl(var(--background))',
-              cursor: 'pointer', outline: 'none',
-            }}
-          >
-            {COLUMNS.map(col => (
-              <option key={col.id} value={col.id}>{col.label}</option>
-            ))}
-          </select>
-
-          {/* Publish to LinkedIn */}
-          {canPublish && (
-            <button
-              onClick={handlePublish}
-              disabled={linkedin.publishing}
-              style={{
-                display: 'flex', alignItems: 'center', gap: '5px',
-                fontSize: '11px', fontFamily: FONTS.inter, fontWeight: 500,
-                background: LINKEDIN.primary, color: '#fff',
-                border: 'none', borderRadius: 'var(--radius-sm)',
-                padding: '5px 12px', cursor: 'pointer', transition: 'background 0.12s',
-              }}
-              onMouseEnter={e => { e.currentTarget.style.background = LINKEDIN.hover; }}
-              onMouseLeave={e => { e.currentTarget.style.background = LINKEDIN.primary; }}
-            >
-              <Send size={11} />
-              Publish to LinkedIn
-            </button>
-          )}
-
           {/* Save */}
           <button
             onClick={handleSave}
@@ -119,12 +83,12 @@ export default function WritingView({ post, defaultColumn, onSave, onCancel, lin
 
       {/* Editor */}
       <div style={{ flex: 1, maxWidth: '768px', width: '100%', margin: '0 auto', padding: '64px 32px 48px' }}>
-        <input
+        <textarea
           ref={titleRef}
-          type="text"
           value={title}
-          onChange={e => setTitle(e.target.value)}
+          onChange={e => { setTitle(e.target.value); autoResizeTitle(); }}
           placeholder="Essay Title"
+          rows={1}
           style={{
             display: 'block', width: '100%',
             fontSize: 'clamp(28px, 4vw, 40px)',
@@ -133,6 +97,7 @@ export default function WritingView({ post, defaultColumn, onSave, onCancel, lin
             border: 'none', outline: 'none',
             background: 'transparent',
             marginBottom: '32px', lineHeight: '1.2',
+            resize: 'none', overflow: 'hidden',
           }}
         />
         <textarea
