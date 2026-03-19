@@ -217,7 +217,13 @@ ipcMain.handle('transcription:start', () => {
   if (transcribeProcess) return  // already running
 
   const scriptPath = path.join(__dirname, '../../electron/transcribe.py')
-  transcribeProcess = require('child_process').spawn('python3', [scriptPath])
+  try {
+    transcribeProcess = require('child_process').spawn('python3', [scriptPath])
+  } catch (e) {
+    console.error('[Transcription] spawn failed:', e.message)
+    if (mainWindow) mainWindow.webContents.send('transcription:error', e.message)
+    return
+  }
 
   transcribeProcess.stdout.on('data', (data) => {
     const lines = data.toString().split('\n').filter(Boolean)
@@ -231,11 +237,23 @@ ipcMain.handle('transcription:start', () => {
 
   transcribeProcess.stderr.on('data', d => console.error('[Transcription]', d.toString()))
 
-  transcribeProcess.on('exit', () => { transcribeProcess = null })
+  transcribeProcess.on('exit', (code) => {
+    if (code !== 0 && code !== null && mainWindow) {
+      mainWindow.webContents.send('transcription:error', `Process exited with code ${code}`)
+    }
+    transcribeProcess = null
+  })
 })
 
 // ── IPC: transcription:stop ────────────────────────────────────────────────────
 ipcMain.handle('transcription:stop', () => {
+  if (transcribeProcess) {
+    transcribeProcess.kill()
+    // transcribeProcess will be nulled by the exit handler
+  }
+})
+
+app.on('before-quit', () => {
   if (transcribeProcess) {
     transcribeProcess.kill()
     transcribeProcess = null
