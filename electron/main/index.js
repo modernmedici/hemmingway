@@ -8,6 +8,9 @@ const matter  = require('gray-matter')
 
 const POSTS_DIR = path.join(os.homedir(), 'Desktop', 'Hemingway')
 
+// Set app name early so macOS dock tooltip shows correctly
+app.setName('Hemingway')
+
 const store = new Store({ name: 'linkedin' })
 
 const LINKEDIN_CLIENT_ID     = process.env.VITE_LINKEDIN_CLIENT_ID
@@ -45,7 +48,7 @@ function createWindow() {
     titleBarStyle: 'hiddenInset',
     backgroundColor: '#ffffff',
     webPreferences: {
-      preload: path.join(__dirname, '../preload/index.js'),
+      preload: path.join(__dirname, '../preload/index.cjs'),
       contextIsolation: true,
       nodeIntegration: false,
     },
@@ -60,6 +63,9 @@ function createWindow() {
 }
 
 app.whenReady().then(() => {
+  if (process.platform === 'darwin') {
+    app.dock.setIcon(path.join(__dirname, '../../build/icon.png'))
+  }
   createWindow()
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow()

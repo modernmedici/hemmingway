@@ -15,7 +15,7 @@ export default defineConfig({
   preload: {
     build: {
       outDir: 'dist/preload',
-      lib: { entry: 'electron/preload/index.js' },
+      lib: { entry: 'electron/preload/index.js', formats: ['cjs'], fileName: () => 'index.js' },
     },
   },
   renderer: {
