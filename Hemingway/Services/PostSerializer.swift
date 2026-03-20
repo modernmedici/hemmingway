@@ -30,15 +30,23 @@ struct PostSerializer {
     }
 
     static func encode(_ post: Post) throws -> String {
-        let frontmatter: [String: Any] = [
-            "id":        post.id,
-            "title":     post.title,
-            "column":    post.column.rawValue,
-            "createdAt": iso8601.string(from: post.createdAt),
-            "updatedAt": iso8601.string(from: post.updatedAt),
-        ]
-        let yaml = try Yams.dump(object: frontmatter)
-        return "---\n\(yaml)---\n\(post.body)\n"
+        func yamlString(_ s: String) -> String {
+            // Quote strings containing special YAML characters
+            if s.isEmpty || s.contains(":") || s.contains("#") || s.contains("\n") || s.hasPrefix(" ") || s.hasSuffix(" ") {
+                let escaped = s.replacingOccurrences(of: "\\", with: "\\\\")
+                               .replacingOccurrences(of: "\"", with: "\\\"")
+                return "\"\(escaped)\""
+            }
+            return s
+        }
+        let yaml = """
+            id: \(yamlString(post.id))
+            title: \(yamlString(post.title))
+            column: \(post.column.rawValue)
+            createdAt: \(iso8601.string(from: post.createdAt))
+            updatedAt: \(iso8601.string(from: post.updatedAt))
+            """
+        return "---\n\(yaml)\n---\n\(post.body)\n"
     }
 
     enum SerializerError: Error {

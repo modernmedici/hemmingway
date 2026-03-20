@@ -14,8 +14,7 @@ struct ContentView: View {
                     defaultColumn: pendingColumn,
                     onSave: { title, body, col in
                         if let existing = editingPost {
-                            store.update(existing, title: title, body: body)
-                            if existing.column != col { store.move(existing, to: col) }
+                            store.update(existing, title: title, body: body, column: col)
                         } else {
                             store.create(title: title, body: body, column: col)
                         }
@@ -38,5 +37,6 @@ struct ContentView: View {
                 )
             }
         }
+        .animation(.easeInOut(duration: 0.15), value: showEditor)
     }
 }

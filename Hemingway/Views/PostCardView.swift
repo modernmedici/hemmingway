@@ -14,10 +14,14 @@ struct PostCardView: View {
             .split(separator: " ").count
     }
 
-    private var relativeDate: String {
+    private static let relativeDateFormatter: RelativeDateTimeFormatter = {
         let f = RelativeDateTimeFormatter()
         f.unitsStyle = .abbreviated
-        return f.localizedString(for: post.updatedAt, relativeTo: Date())
+        return f
+    }()
+
+    private var relativeDate: String {
+        Self.relativeDateFormatter.localizedString(for: post.updatedAt, relativeTo: Date())
     }
 
     var body: some View {

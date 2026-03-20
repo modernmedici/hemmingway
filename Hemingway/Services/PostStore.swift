@@ -63,6 +63,15 @@ final class PostStore: ObservableObject {
         apply(updated)
     }
 
+    func update(_ post: Post, title: String, body: String, column: Column) {
+        var updated = post
+        updated.title     = title
+        updated.body      = body
+        updated.column    = column
+        updated.updatedAt = Date()
+        apply(updated)
+    }
+
     func move(_ post: Post, to column: Column) {
         var updated = post
         updated.column    = column

@@ -23,19 +23,27 @@ struct BoardView: View {
             .background(.background)
             .overlay(alignment: .bottom) { Divider() }
 
-            HStack(alignment: .top, spacing: 0) {
-                ForEach(Column.allCases, id: \.self) { column in
-                    ColumnView(
-                        column: column,
-                        posts: store.posts.filter { $0.column == column },
-                        onNewPost: { onNewPost(column) },
-                        onEditPost: onEditPost,
-                        onMove: { post, to in store.move(post, to: to) },
-                        onDelete: { store.delete($0) }
-                    )
-                    if column != Column.allCases.last {
-                        Divider()
+            Group {
+                if store.isLoading {
+                    ProgressView("Loading posts…")
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                } else {
+                    HStack(alignment: .top, spacing: 0) {
+                        ForEach(Column.allCases, id: \.self) { column in
+                            ColumnView(
+                                column: column,
+                                posts: store.posts.filter { $0.column == column },
+                                onNewPost: { onNewPost(column) },
+                                onEditPost: onEditPost,
+                                onMove: { post, to in store.move(post, to: to) },
+                                onDelete: { store.delete($0) }
+                            )
+                            if column != Column.allCases.last {
+                                Divider()
+                            }
+                        }
                     }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
