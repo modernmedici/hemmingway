@@ -7,7 +7,7 @@ struct EditorView: View {
     var onCancel: () -> Void
 
     @State private var title: String
-    @State private var body: String
+    @State private var bodyText: String
     @FocusState private var titleFocused: Bool
     @StateObject private var transcription = TranscriptionService()
 
@@ -19,7 +19,7 @@ struct EditorView: View {
         self.onSave = onSave
         self.onCancel = onCancel
         _title = State(initialValue: post?.title ?? "")
-        _body  = State(initialValue: post?.body  ?? "")
+        _bodyText = State(initialValue: post?.body ?? "")
     }
 
     private var canSave: Bool {
@@ -29,7 +29,7 @@ struct EditorView: View {
     private func save() {
         guard canSave else { return }
         onSave(title.trimmingCharacters(in: .whitespaces),
-               body.trimmingCharacters(in: .whitespacesAndNewlines),
+               bodyText.trimmingCharacters(in: .whitespacesAndNewlines),
                defaultColumn)
     }
 
@@ -87,7 +87,7 @@ struct EditorView: View {
                         .focused($titleFocused)
                         .padding(.bottom, 28)
 
-                    TextEditor(text: $body)
+                    TextEditor(text: $bodyText)
                         .font(.custom("Georgia", size: 17))
                         .lineSpacing(8)
                         .frame(minHeight: 500)
@@ -112,7 +112,7 @@ struct EditorView: View {
         .onExitCommand { onCancel() }
         .onChange(of: transcription.lastLine) { _, line in
             guard let line else { return }
-            body = body.isEmpty ? line : body + " " + line
+            bodyText = bodyText.isEmpty ? line : bodyText + " " + line
         }
     }
 }
