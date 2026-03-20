@@ -220,7 +220,9 @@ ipcMain.handle('transcription:start', () => {
     ? path.join(process.resourcesPath, 'app', 'electron', 'transcribe.py')
     : path.join(__dirname, '../../electron/transcribe.py')
   try {
-    transcribeProcess = require('child_process').spawn('python3', [scriptPath])
+    // Use python3.14+ since moonshine-voice requires Python 3.10+
+    const python = require('fs').existsSync('/usr/local/bin/python3.14') ? '/usr/local/bin/python3.14' : 'python3'
+    transcribeProcess = require('child_process').spawn(python, [scriptPath])
   } catch (e) {
     console.error('[Transcription] spawn failed:', e.message)
     if (mainWindow) mainWindow.webContents.send('transcription:error', e.message)
