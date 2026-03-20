@@ -1,5 +1,9 @@
 const { contextBridge, ipcRenderer } = require('electron')
 
+// Preload-scoped listener maps for proper cleanup
+const _lineListeners = new Map()
+const _errorListeners = new Map()
+
 contextBridge.exposeInMainWorld('api', {
   linkedin: {
     connect:    ()                   => ipcRenderer.invoke('linkedin:connect'),
@@ -15,8 +19,22 @@ contextBridge.exposeInMainWorld('api', {
   transcription: {
     start:   ()         => ipcRenderer.invoke('transcription:start'),
     stop:    ()         => ipcRenderer.invoke('transcription:stop'),
-    onLine:  (callback) => ipcRenderer.on('transcription:line', (_, text) => callback(text)),
-    offLine: (callback) => ipcRenderer.removeListener('transcription:line', callback),
-    onError: (callback) => ipcRenderer.on('transcription:error', (_, msg) => callback(msg)),
+    onLine:  (callback) => {
+      const wrapped = (_, text) => callback(text)
+      _lineListeners.set(callback, wrapped)
+      ipcRenderer.on('transcription:line', wrapped)
+    },
+    offLine: (callback) => {
+      const wrapped = _lineListeners.get(callback)
+      if (wrapped) {
+        ipcRenderer.removeListener('transcription:line', wrapped)
+        _lineListeners.delete(callback)
+      }
+    },
+    onError: (callback) => {
+      const wrapped = (_, msg) => callback(msg)
+      _errorListeners.set(callback, wrapped)
+      ipcRenderer.on('transcription:error', wrapped)
+    },
   },
 })
