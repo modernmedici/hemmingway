@@ -36,5 +36,12 @@ contextBridge.exposeInMainWorld('api', {
       _errorListeners.set(callback, wrapped)
       ipcRenderer.on('transcription:error', wrapped)
     },
+    offError: (callback) => {
+      const wrapped = _errorListeners.get(callback)
+      if (wrapped) {
+        ipcRenderer.removeListener('transcription:error', wrapped)
+        _errorListeners.delete(callback)
+      }
+    },
   },
 })
