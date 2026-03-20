@@ -12,4 +12,11 @@ contextBridge.exposeInMainWorld('api', {
     save:   (post) => ipcRenderer.invoke('posts:save', post),
     delete: (id)   => ipcRenderer.invoke('posts:delete', id),
   },
+  transcription: {
+    start:   ()         => ipcRenderer.invoke('transcription:start'),
+    stop:    ()         => ipcRenderer.invoke('transcription:stop'),
+    onLine:  (callback) => ipcRenderer.on('transcription:line', (_, text) => callback(text)),
+    offLine: (callback) => ipcRenderer.removeListener('transcription:line', callback),
+    onError: (callback) => ipcRenderer.on('transcription:error', (_, msg) => callback(msg)),
+  },
 })
