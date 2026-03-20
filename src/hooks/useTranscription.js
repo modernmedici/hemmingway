@@ -25,9 +25,9 @@ export function useTranscription() {
     setRecording(false);
   }, []);
 
-  const toggle = useCallback(() => {
-    if (recording) stopRecording();
-    else startRecording();
+  const toggle = useCallback(async () => {
+    if (recording) await stopRecording();
+    else await startRecording();
   }, [recording, startRecording, stopRecording]);
 
   return { recording, lastLine, toggle };
