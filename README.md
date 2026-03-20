@@ -1,4 +1,4 @@
-# Hemingway
+# Hemmingway
 
 I wanted to stop procrastinating about my public writing so I made this tool, as a way to capture ideas, and shape them into fully fleshed thoughts.
 
@@ -10,14 +10,17 @@ A minimal kanban board for writers. Move your ideas from spark to published post
 
 | Version | Branch | Description |
 |---|---|---|
+| **Native macOS app (SwiftUI)** | `feature/swift-rewrite` | Pure SwiftUI, no Electron |
+| **Desktop app (Electron)** | `feature/electron-migration` | React + Electron |
 | **Web app** | `main` | React + Vite, runs in the browser |
-| **Native macOS app** | `feature/swift-rewrite` | SwiftUI, saves `.md` files to `~/Desktop/Hemingway/` |
 
-Both versions share the same file format — notes written in either app are readable by the other.
+All three versions share the same file format — posts saved as YAML-frontmatter `.md` files in `~/Desktop/Hemingway/` are readable across all versions.
 
 ---
 
 ## Native macOS App (SwiftUI)
+
+The cleanest version. A proper native macOS app with voice dictation.
 
 ### Requirements
 
@@ -28,8 +31,8 @@ Both versions share the same file format — notes written in either app are rea
 ### Getting Started
 
 ```bash
-git clone https://github.com/modernmedici/hemingway.git
-cd hemingway
+git clone https://github.com/modernmedici/hemmingway.git
+cd hemmingway
 git checkout feature/swift-rewrite
 xcodegen generate
 open Hemingway.xcodeproj
@@ -41,7 +44,7 @@ Hit **⌘R** to build and run. The first build downloads the Yams dependency (~1
 
 - **Three-stage kanban** — Scratchpad → Drafts → Published
 - **Full-page editor** — Georgia type, distraction-free, ⌘↵ to save, Esc to go back
-- **Voice dictation** — click the mic to transcribe speech directly into the editor (on-device, no data sent to Apple servers)
+- **Voice dictation** — click the mic to transcribe speech directly into the editor (on-device, no audio sent to Apple)
 - **File-based persistence** — posts saved as YAML-frontmatter `.md` files in `~/Desktop/Hemingway/`
 - **Native dark mode** — follows macOS system appearance automatically
 
@@ -77,13 +80,62 @@ Hemingway/
 
 ---
 
+## Desktop App (Electron)
+
+### Getting Started
+
+```bash
+git clone https://github.com/modernmedici/hemmingway.git
+cd hemmingway
+git checkout feature/electron-migration
+npm install
+npm run dev
+```
+
+The app opens as a native macOS window. Posts are saved to `~/Desktop/Hemingway/` as markdown files.
+
+### Building
+
+```bash
+npm run dist:mac   # produces a .dmg in dist-electron/
+```
+
+### Stack
+
+- [Electron](https://www.electronjs.org) + [electron-vite](https://electron-vite.org)
+- [React 19](https://react.dev) + [Vite 7](https://vite.dev)
+- [Tailwind CSS v4](https://tailwindcss.com)
+- [gray-matter](https://github.com/jonschlinkert/gray-matter) for markdown frontmatter
+- [electron-store](https://github.com/sindresorhus/electron-store) for persistence
+
+### Project Structure
+
+```
+electron/
+├── main/index.js       # Main process: IPC handlers, file I/O, app setup
+└── preload/index.js    # contextBridge: exposes window.api to renderer
+src/
+├── hooks/
+│   └── useKanban.js    # Post CRUD, syncs to ~/Desktop/Hemingway/ via IPC
+├── styles/
+│   └── tokens.css      # HSL color tokens
+└── components/
+    ├── AppShell.jsx    # Sidebar layout
+    ├── Board.jsx       # Three-column kanban grid
+    ├── Column.jsx      # Column header + card list
+    ├── PostCard.jsx    # Card with word count, timestamp, three-dot menu
+    └── WritingView.jsx # Distraction-free editor
+```
+
+---
+
 ## Web App (React)
 
 ### Getting Started
 
 ```bash
-git clone https://github.com/modernmedici/hemingway.git
-cd hemingway
+git clone https://github.com/modernmedici/hemmingway.git
+cd hemmingway
 npm install
 npm run dev
 ```
@@ -94,53 +146,19 @@ Open [http://localhost:5173](http://localhost:5173).
 
 - **Three-stage workflow** — Scratchpad → Drafts → Published
 - **Warm academic design** — Libre Baskerville + Inter, HSL color tokens, light/dark mode
-- **Full writing view** — distraction-free editor with sticky header and keyboard shortcuts
-- **Word count badge** — always visible on each card
-- **Relative timestamps** — "2 minutes ago" style on every post
-- **Three-dot card menu** — move, delete (with confirm), or publish from any card
 - **LinkedIn publishing** — connect once via OAuth, publish finalized posts directly to your feed
-- **Persistent** — everything saved to `localStorage`, survives page refreshes
+- **Persistent** — everything saved to `localStorage`
 
 ### LinkedIn Publishing (optional)
 
 1. Create a LinkedIn Developer App at https://www.linkedin.com/developers/apps
 2. Add `http://localhost:5173/auth/linkedin/callback` as an Authorized Redirect URL
 3. Request scopes: `openid profile w_member_social`
-4. Create `.env.local` in the project root:
+4. Create `.env.local`:
 
 ```
 VITE_LINKEDIN_CLIENT_ID=your_client_id_here
 LINKEDIN_CLIENT_SECRET=your_client_secret_here
-```
-
-Then connect your account from the sidebar and publish any post in the **Published** column.
-
-### Stack
-
-- [React 19](https://react.dev) + [Vite 7](https://vite.dev)
-- [Tailwind CSS v4](https://tailwindcss.com) (CSS-first, no config file)
-- [framer-motion](https://www.framer.com/motion/) for card animations
-- [Lucide React](https://lucide.dev) for icons
-- [date-fns](https://date-fns.org) for relative timestamps
-- LinkedIn OAuth 2.0 (PKCE) + UGC Posts API v2
-
-### Project Structure
-
-```
-src/
-├── hooks/
-│   ├── useKanban.js        # State + localStorage persistence
-│   └── useLinkedIn.js      # PKCE OAuth, token state, publishPost
-├── styles/
-│   └── tokens.css          # HSL color tokens (light + dark mode)
-└── components/
-    ├── AppShell.jsx         # Persistent sidebar layout
-    ├── Board.jsx            # Three-column kanban grid
-    ├── Column.jsx           # Column header, card list, empty state
-    ├── PostCard.jsx         # Card with word count, timestamp, three-dot menu
-    ├── WritingView.jsx      # Full-page distraction-free editor
-    ├── AccountsPanel.jsx    # LinkedIn connect/disconnect UI
-    └── PublishModal.jsx     # Preview + confirm before publishing
 ```
 
 ---
