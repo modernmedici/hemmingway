@@ -3,7 +3,11 @@ options:
   bundleIdPrefix: com.hemingway
   deploymentTarget:
     macOS: "13.0"
-  xcodeVersion: "15"
+  xcodeVersion: "16"
+
+settings:
+  base:
+    SWIFT_VERSION: "5.9"
 
 packages:
   Yams:
@@ -34,7 +38,7 @@ targets:
       properties:
         NSMicrophoneUsageDescription: "Hemingway uses the microphone for voice dictation."
         NSSpeechRecognitionUsageDescription: "Hemingway uses on-device speech recognition to transcribe your words."
-        NSHumanReadableCopyright: "Copyright © 2025"
+        NSHumanReadableCopyright: "Copyright © 2026"
         NSPrincipalClass: NSApplication
     entitlements:
       path: Hemingway/Hemingway.entitlements
