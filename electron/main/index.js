@@ -216,7 +216,9 @@ ipcMain.handle('posts:delete', (_e, id) => {
 ipcMain.handle('transcription:start', () => {
   if (transcribeProcess) return  // already running
 
-  const scriptPath = path.join(__dirname, '../../electron/transcribe.py')
+  const scriptPath = app.isPackaged
+    ? path.join(process.resourcesPath, 'app', 'electron', 'transcribe.py')
+    : path.join(__dirname, '../../electron/transcribe.py')
   try {
     transcribeProcess = require('child_process').spawn('python3', [scriptPath])
   } catch (e) {

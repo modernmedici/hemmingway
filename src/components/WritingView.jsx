@@ -40,7 +40,7 @@ export default function WritingView({ post, defaultColumn, onSave, onCancel }) {
     onSave(title.trim(), body.trim(), defaultColumn);
   };
 
-  const { recording, lastLine, toggle } = useTranscription();
+  const { recording, lastLine, error: transcriptionError, toggle } = useTranscription();
 
   // Append each completed transcript line to body
   useEffect(() => {
@@ -98,6 +98,21 @@ export default function WritingView({ post, defaultColumn, onSave, onCancel }) {
           >
             {recording ? <MicOff size={13} /> : <Mic size={13} />}
           </button>
+          {transcriptionError && (
+            <span style={{
+              fontSize: '10px',
+              color: 'hsl(var(--destructive))',
+              fontFamily: FONTS.inter,
+              maxWidth: '120px',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
+            }}
+              title={transcriptionError}
+            >
+              Mic error
+            </span>
+          )}
           {/* Save */}
           <button
             onClick={handleSave}
