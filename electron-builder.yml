@@ -9,7 +9,7 @@ files:
   - dist/main/**
   - dist/preload/**
   - dist/renderer/**
-  - electron/transcribe.py
+  - electron/transcribe
   - node_modules/electron-store/**
   - node_modules/conf/**
   - node_modules/env-paths/**

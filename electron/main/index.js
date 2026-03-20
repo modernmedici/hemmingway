@@ -216,13 +216,11 @@ ipcMain.handle('posts:delete', (_e, id) => {
 ipcMain.handle('transcription:start', () => {
   if (transcribeProcess) return  // already running
 
-  const scriptPath = app.isPackaged
-    ? path.join(process.resourcesPath, 'app', 'electron', 'transcribe.py')
-    : path.join(__dirname, '../../electron/transcribe.py')
+  const binaryPath = app.isPackaged
+    ? path.join(process.resourcesPath, 'app', 'electron', 'transcribe')
+    : path.join(__dirname, '../../electron/transcribe')
   try {
-    // Use python3.14+ since moonshine-voice requires Python 3.10+
-    const python = require('fs').existsSync('/usr/local/bin/python3.14') ? '/usr/local/bin/python3.14' : 'python3'
-    transcribeProcess = require('child_process').spawn(python, [scriptPath])
+    transcribeProcess = require('child_process').spawn(binaryPath, [])
   } catch (e) {
     console.error('[Transcription] spawn failed:', e.message)
     if (mainWindow) mainWindow.webContents.send('transcription:error', e.message)
