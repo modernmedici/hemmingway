@@ -77,7 +77,7 @@ export default function CoachingModal({ post, onClose, onOpenEditor, onMoveToDra
   const handleMoveToDraft = () => {
     onMoveToDraft(post.id);
     onClose();
-    onOpenEditor(post);
+    onOpenEditor({ ...post, column: 'drafts' });
   };
 
   return (
@@ -109,10 +109,10 @@ export default function CoachingModal({ post, onClose, onOpenEditor, onMoveToDra
           style={{
             position: 'absolute', top: '16px', right: '16px',
             background: 'none', border: 'none', cursor: 'pointer',
-            color: 'hsl(var(--muted-foreground))', padding: '2px', lineHeight: 0,
+            color: 'hsl(var(--muted-foreground))', padding: '4px', lineHeight: 0,
           }}
         >
-          <X size={16} />
+          <X size={16} style={{ pointerEvents: 'none' }} />
         </button>
 
         {/* Eyebrow */}

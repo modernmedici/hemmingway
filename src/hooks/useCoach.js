@@ -1,4 +1,4 @@
-import { useMemo, useEffect } from 'react';
+import { useMemo, useEffect, useState, useCallback } from 'react';
 
 const MILD_DAYS = 3;
 const URGENT_DAYS = 6;
@@ -44,6 +44,10 @@ function computeTier(post) {
 const TIER_ORDER = { 'finalized-stuck': 0, urgent: 1, mild: 2 };
 
 export function useCoach(posts) {
+  // Incrementing this forces re-computation of staleCards/topNudges/getTier after snooze changes
+  const [snoozeVersion, setSnoozeVersion] = useState(0);
+  const bumpSnooze = useCallback(() => setSnoozeVersion(v => v + 1), []);
+
   // Clean up expired snoozes on mount
   useEffect(() => {
     try {
@@ -61,7 +65,7 @@ export function useCoach(posts) {
     }
   }, []);
 
-  const staleKey = posts.map(p => `${p.id}:${p.updatedAt}`).join(',');
+  const staleKey = posts.map(p => `${p.id}:${p.updatedAt}`).join(',') + ':' + snoozeVersion;
 
   const { staleCards, topNudges } = useMemo(() => {
     const cards = posts
@@ -79,8 +83,7 @@ export function useCoach(posts) {
       staleCards: cards.map(({ post }) => post),
       topNudges: cards.slice(0, 3),
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [staleKey]);
+  }, [staleKey]); // staleKey embeds snoozeVersion
 
   const getTier = (id) => {
     if (isSnoozed(id)) return null;
@@ -88,22 +91,24 @@ export function useCoach(posts) {
     return post ? computeTier(post) : null;
   };
 
-  const snooze = (id, days) => {
+  const snooze = useCallback((id, days) => {
     try {
       const expiry = new Date(Date.now() + days * 86400000).toISOString();
       localStorage.setItem(`coach_snooze_${id}`, expiry);
     } catch {
       // Storage full
     }
-  };
+    bumpSnooze();
+  }, [bumpSnooze]);
 
-  const clearSnooze = (id) => {
+  const clearSnooze = useCallback((id) => {
     try {
       localStorage.removeItem(`coach_snooze_${id}`);
     } catch {
       // ignore
     }
-  };
+    bumpSnooze();
+  }, [bumpSnooze]);
 
   return { staleCards, topNudges, getTier, snooze, clearSnooze };
 }
