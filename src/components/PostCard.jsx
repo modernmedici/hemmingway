@@ -9,13 +9,42 @@ const wordCount = (text) => {
   return trimmed ? trimmed.split(/\s+/).length : 0;
 };
 
-export default function PostCard({ post, onMove, onDelete, onEdit, onPublish, linkedin }) {
+function staleBorderStyle(tier) {
+  if (tier === 'mild') {
+    return {
+      border: '1px solid #E5C97E',
+      background: '#FFFDF4',
+    };
+  }
+  if (tier === 'urgent') {
+    return {
+      border: '1px solid #D4A853',
+      background: '#FFFDF4',
+      boxShadow: '0 0 0 3px rgba(212,168,83,0.20)',
+    };
+  }
+  if (tier === 'finalized-stuck') {
+    return {
+      border: '1px solid #D4A853',
+      background: '#FFFDF4',
+    };
+  }
+  return {};
+}
+
+function idleDays(updatedAt) {
+  return Math.floor((Date.now() - new Date(updatedAt)) / 86400000);
+}
+
+export default function PostCard({ post, onMove, onDelete, onEdit, onPublish, linkedin, stalenessTier, onCoach }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [hovered, setHovered] = useState(false);
   const totalWords = wordCount((post.title ?? '') + ' ' + (post.body ?? ''));
   const isFinalized = post.column === 'finalized';
   const isPublished = post.publishedTo?.includes('linkedin');
+  const isStale = stalenessTier != null;
+  const days = idleDays(post.updatedAt);
 
   const handleDelete = (e) => {
     e.stopPropagation();
@@ -38,6 +67,30 @@ export default function PostCard({ post, onMove, onDelete, onEdit, onPublish, li
     await onPublish(post);
   };
 
+  const handleCardClick = () => {
+    if (menuOpen) return;
+    if (isStale && onCoach) {
+      onCoach(post);
+    } else {
+      onEdit(post);
+    }
+  };
+
+  const baseStyle = {
+    border: '1px solid hsl(var(--border) / 0.5)',
+    borderRadius: 'var(--radius-md)',
+    background: 'hsl(var(--card))',
+    padding: '14px',
+    cursor: 'pointer',
+    position: 'relative',
+    transition: 'box-shadow 0.15s',
+    boxShadow: hovered && !isStale ? '0 2px 8px hsl(var(--foreground) / 0.06)' : 'none',
+  };
+
+  const cardStyle = isStale
+    ? { ...baseStyle, ...staleBorderStyle(stalenessTier) }
+    : baseStyle;
+
   return (
     <motion.div
       layout
@@ -45,20 +98,23 @@ export default function PostCard({ post, onMove, onDelete, onEdit, onPublish, li
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -8 }}
       transition={{ duration: 0.18 }}
-      onClick={() => !menuOpen && onEdit(post)}
+      onClick={handleCardClick}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => { setHovered(false); setConfirmDelete(false); }}
-      style={{
-        border: '1px solid hsl(var(--border) / 0.5)',
-        borderRadius: 'var(--radius-md)',
-        background: 'hsl(var(--card))',
-        padding: '14px',
-        cursor: 'pointer',
-        position: 'relative',
-        transition: 'box-shadow 0.15s',
-        boxShadow: hovered ? '0 2px 8px hsl(var(--foreground) / 0.06)' : 'none',
-      }}
+      style={cardStyle}
     >
+      {/* Staleness badge (urgent and finalized-stuck only) */}
+      {(stalenessTier === 'urgent' || stalenessTier === 'finalized-stuck') && (
+        <span style={{
+          position: 'absolute', top: '8px', right: '8px',
+          background: '#D4A853', color: 'white',
+          fontSize: '9px', fontFamily: FONTS.inter, fontWeight: 600,
+          padding: '2px 6px', borderRadius: '10px',
+        }}>
+          {stalenessTier === 'finalized-stuck' ? 'Ready to publish' : `${days} days idle`}
+        </span>
+      )}
+
       {/* Top row: word count badge + three-dot menu */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
         <span style={{
@@ -77,6 +133,8 @@ export default function PostCard({ post, onMove, onDelete, onEdit, onPublish, li
               background: 'none', border: 'none', cursor: 'pointer',
               color: hovered ? 'hsl(var(--muted-foreground))' : 'transparent',
               padding: '2px', lineHeight: 0, transition: 'color 0.1s',
+              // Offset left to avoid overlap with staleness badge
+              marginRight: isStale ? '60px' : '0',
             }}
           >
             <MoreHorizontal size={14} />

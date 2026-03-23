@@ -111,6 +111,75 @@ export default defineConfig(({ mode }) => {
               return;
             }
 
+            // ── Anthropic coach proxy ───────────────────────────────────
+            if (url.pathname === '/api/coach') {
+              let body;
+              try {
+                body = await new Promise((resolve, reject) => {
+                  const chunks = [];
+                  req.on('data', c => chunks.push(c));
+                  req.on('end',  () => resolve(Buffer.concat(chunks)));
+                  req.on('error', reject);
+                });
+              } catch (e) {
+                res.writeHead(400, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ error: 'bad_request' }));
+                return;
+              }
+
+              let payload;
+              try {
+                payload = JSON.parse(body.toString());
+              } catch {
+                res.writeHead(400, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ error: 'invalid_json' }));
+                return;
+              }
+
+              const { title = '', body: postBody = '(no draft yet)' } = payload;
+
+              const anthropicBody = JSON.stringify({
+                model: 'claude-opus-4-6',
+                max_tokens: 250,
+                system: [
+                  'You are a Socratic writing coach for professional LinkedIn posts.',
+                  'Ask ONE hard question that helps the writer clarify their argument.',
+                  'Be direct. Never write the post for them.',
+                  'Reply in 30 words or fewer.',
+                  'Examples of good questions:',
+                  "  'You wrote X — but what's the actual claim you're making?'",
+                  "  'Who specifically is this for, and why do they care?'",
+                  "  'What are you afraid to say that would make this post actually interesting?'",
+                ].join('\n'),
+                messages: [
+                  {
+                    role: 'user',
+                    content: `${title}\n\n${postBody}`,
+                  },
+                ],
+              });
+
+              try {
+                const apiRes = await fetch('https://api.anthropic.com/v1/messages', {
+                  method: 'POST',
+                  headers: {
+                    'x-api-key': env.ANTHROPIC_API_KEY,
+                    'anthropic-version': '2023-06-01',
+                    'content-type': 'application/json',
+                  },
+                  body: anthropicBody,
+                });
+                const text = await apiRes.text();
+                res.writeHead(apiRes.status, { 'Content-Type': 'application/json' });
+                res.end(text);
+              } catch (e) {
+                console.error('[coach proxy]', e);
+                res.writeHead(502, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ error: 'proxy_error' }));
+              }
+              return;
+            }
+
             next();
           });
         },

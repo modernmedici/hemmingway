@@ -1,7 +1,17 @@
 import { BookOpen, LayoutDashboard } from 'lucide-react';
-import { FONTS } from '../lib/constants';
+import { FONTS, COLUMN_LABELS } from '../lib/constants';
 
-export default function AppShell({ children, onNewIdea, onToggleDark, isDark, linkedinSlot }) {
+function idleDays(updatedAt) {
+  return Math.floor((Date.now() - new Date(updatedAt)) / 86400000);
+}
+
+function nudgeReason(tier, post) {
+  if (tier === 'finalized-stuck') return 'Ready to publish';
+  const days = idleDays(post.updatedAt);
+  return `${days} day${days !== 1 ? 's' : ''} idle`;
+}
+
+export default function AppShell({ children, onNewIdea, onToggleDark, isDark, linkedinSlot, coachSlot }) {
   return (
     <div style={{ display: 'flex', minHeight: '100vh', background: 'hsl(var(--background))' }}>
       {/* Sidebar */}
@@ -60,6 +70,9 @@ export default function AppShell({ children, onNewIdea, onToggleDark, isDark, li
           >
             + New Idea
           </button>
+
+          {/* Coach nudge panel */}
+          {coachSlot}
 
           {linkedinSlot && (
             <div style={{ marginTop: '24px', paddingTop: '24px', borderTop: '1px solid hsl(var(--sidebar-border))' }}>
