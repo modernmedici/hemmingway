@@ -31,30 +31,19 @@ export function useKanban() {
   }, []);
 
   const updatePost = useCallback(async (id, updates) => {
-    setPosts(prev => {
-      const next = prev.map(post =>
-        post.id === id
-          ? { ...post, ...updates, updatedAt: new Date().toISOString() }
-          : post
-      );
-      const updated = next.find(p => p.id === id);
-      if (updated) window.api.posts.save(updated);
-      return next;
-    });
-  }, []);
+    const now = new Date().toISOString();
+    const merged = { ...updates, updatedAt: now };
+    setPosts(prev => prev.map(p => p.id === id ? { ...p, ...merged } : p));
+    const current = posts.find(p => p.id === id);
+    if (current) await window.api.posts.save({ ...current, ...merged });
+  }, [posts]);
 
   const movePost = useCallback(async (id, column) => {
-    setPosts(prev => {
-      const next = prev.map(post =>
-        post.id === id
-          ? { ...post, column, updatedAt: new Date().toISOString() }
-          : post
-      );
-      const moved = next.find(p => p.id === id);
-      if (moved) window.api.posts.save(moved);
-      return next;
-    });
-  }, []);
+    const now = new Date().toISOString();
+    setPosts(prev => prev.map(p => p.id === id ? { ...p, column, updatedAt: now } : p));
+    const current = posts.find(p => p.id === id);
+    if (current) await window.api.posts.save({ ...current, column, updatedAt: now });
+  }, [posts]);
 
   const deletePost = useCallback(async (id) => {
     await window.api.posts.delete(id);
