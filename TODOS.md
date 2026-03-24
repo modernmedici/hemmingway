@@ -55,3 +55,59 @@
 **Effort:** M (human: ~1 day / CC: ~30 min, Electron branch) | **Priority:** P1
 
 **Depends on:** Web coach (this PR) ships and is used for 1 week first — validates the staleness thresholds before porting them.
+
+---
+
+## Deferred from Eng Review (2026-03-24)
+
+### [ ] Snooze UX — dropdown vs popover vs split button
+
+**What:** The current snooze UI uses a `<select>` dropdown (3 days / 7 days / 14 days) next to a "Snooze" button. Decide whether this is the right interaction pattern.
+
+**Why:** A `<select>` is functional but may feel clunky. Alternatives: a popover with day chips, or a split button (click = default 3d, arrow = options). The right choice depends on how often users interact with snooze and whether they change the duration.
+
+**Pros of `<select>`:** Already shipped, no additional UI complexity. **Pros of popover/split:** Faster interaction, more intentional UX, better mobile feel.
+
+**Cons:** Design work required; any change needs regression testing of the snooze flow.
+
+**Context:** Decision deferred until after validation gate — observe how users actually snooze before optimizing the interaction. If most snoozes use the default 3d, a split button makes the happy path one click instead of two.
+
+**Effort:** S (human: ~2h / CC: ~10 min) | **Priority:** P2
+
+**Depends on:** Validation gate results (1 week of real use).
+
+---
+
+### [ ] Merge sequence — electron-tests → main before ambient-coach
+
+**What:** `feature/electron-tests` must merge into `origin/main` first, before `feature/ambient-coach` advances toward any potential merge (if/when the coach is rebuilt natively).
+
+**Why:** The two branches have divergent architectures. Merging ambient-coach before electron-tests would create conflicts with the Electron IPC structure in main.
+
+**Pros:** Clean git history, no architectural conflicts.
+
+**Cons:** Ambient-coach cannot merge until electron-tests lands — but ambient-coach is NOT a merge candidate for main in its current form anyway (web-only).
+
+**Context:** `feature/electron-tests` is ready to merge (PR open). Merge it first. `feature/ambient-coach` stays as a parallel web branch until the validation gate is met, then the coach is rebuilt natively on the Electron architecture.
+
+**Effort:** S (human: ~30 min / CC: ~5 min) | **Priority:** P1 (do before any native port)
+
+**Depends on:** PR for feature/electron-tests must be merged first.
+
+---
+
+### [ ] Proxy integration test — verify /api/coach end-to-end
+
+**What:** Add an integration test that spins up the Vite dev server and hits `/api/coach` with a real or mocked `ANTHROPIC_API_KEY` to verify the proxy route works end-to-end.
+
+**Why:** The current unit tests pass even if the Vite proxy is misconfigured. A misconfigured proxy silently breaks the entire coach feature — the unit tests give false confidence. An integration test that actually exercises the proxy catches configuration drift (e.g., route path changes, missing env var, response shape changes).
+
+**Pros:** Catches proxy misconfiguration that unit tests miss. Gives confidence that the full stack works before testing manually.
+
+**Cons:** Requires starting the Vite dev server in tests (slower, more setup). May need a mock Anthropic server to avoid real API calls in CI.
+
+**Context:** The proxy is defined in `vite.config.js` under `server.proxy['/api/coach']`. A possible approach: use `@playwright/test` or `vitest` with a Vite preview server + `msw` to intercept the upstream Anthropic call. Alternative: shell script that runs `npm run dev` in background, curls `/api/coach`, checks response shape.
+
+**Effort:** M (human: ~1 day / CC: ~30 min) | **Priority:** P2
+
+**Depends on:** Web coach ships and is validated first.
