@@ -9,17 +9,8 @@ import AccountsPanel from './components/AccountsPanel';
 import PublishModal from './components/PublishModal';
 import CoachingModal from './components/CoachingModal';
 import { FONTS, COLUMN_LABELS } from './lib/constants';
+import { nudgeReason } from './lib/utils';
 import './index.css';
-
-function idleDays(updatedAt) {
-  return Math.floor((Date.now() - new Date(updatedAt)) / 86400000);
-}
-
-function nudgeReason(tier, post) {
-  if (tier === 'finalized-stuck') return 'Ready to publish';
-  const days = idleDays(post.updatedAt);
-  return `${days} day${days !== 1 ? 's' : ''} idle`;
-}
 
 export default function App() {
   const { posts, createPost, updatePost, movePost, deletePost } = useKanban();

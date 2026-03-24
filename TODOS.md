@@ -1,24 +1,5 @@
 # TODOS
 
-## Deferred from Ambient Coach feature (2026-03-21)
-
-### [ ] Full DOM + modal test coverage (T7–T22)
-
-**What:** Add React Testing Library tests for CoachingModal button states and PostCard visual staleness tiers.
-
-**Why:** The Vitest hook tests (T1–T6) cover core logic, but the modal interactions and card visual states (amber glow, badge text, click routing) have no automated coverage. Any future refactor of these components requires full manual visual verification.
-
-**Pros:** Refactor CoachingModal or PostCard with confidence; catch regressions automatically.
-
-**Cons:** Requires `@testing-library/react` + `vi.fn()` fetch mocking setup. Not complex, just more surface area.
-
-**Context:** Hook tests were added first (T1–T6 in `src/hooks/useCoach.test.js`). These DOM tests follow once the core logic is trusted. Tests to add cover: modal spinner/error/success states, button disabled-while-in-flight, "Turn into draft" visibility by column, snooze dropdown, and PostCard click routing for each staleness tier.
-
-**Depends on:** Vitest + useCoach hook tests (T1–T6) must be in place first.
-
-**Where to start:** `src/components/__tests__/CoachingModal.test.jsx` and `src/components/__tests__/PostCard.test.jsx`. Use `vi.stubGlobal('fetch', ...)` for API mocking.
-
----
 
 ## Deferred from CEO Review (2026-03-21)
 

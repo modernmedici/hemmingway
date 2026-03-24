@@ -156,6 +156,22 @@ describe('topNudges', () => {
   });
 });
 
+// ─── clearSnooze ─────────────────────────────────────────────────────────────
+
+describe('clearSnooze', () => {
+  it('removes the snooze key from localStorage and restores the tier', () => {
+    const post = makePost({ updatedAt: daysAgo(7) });
+    const { result } = renderHook(() => useCoach([post]));
+
+    act(() => { result.current.snooze('post-1', 3); });
+    expect(result.current.getTier('post-1')).toBeNull();
+
+    act(() => { result.current.clearSnooze('post-1'); });
+    expect(localStorage.getItem('coach_snooze_post-1')).toBeNull();
+    expect(result.current.getTier('post-1')).toBe('urgent');
+  });
+});
+
 // ─── mount cleanup ───────────────────────────────────────────────────────────
 
 describe('mount cleanup', () => {

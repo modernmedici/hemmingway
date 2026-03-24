@@ -1,13 +1,10 @@
 import { useMemo, useEffect, useState, useCallback } from 'react';
+import { idleDays } from '../lib/utils';
 
 const MILD_DAYS = 3;
 const URGENT_DAYS = 6;
 const FINALIZED_STUCK_DAYS = 3;
 const IDEAS_EMPTY_MILD_DAYS = 2;
-
-function idleDays(updatedAt) {
-  return Math.floor((Date.now() - new Date(updatedAt)) / 86400000);
-}
 
 function getSnoozedUntil(id) {
   try {

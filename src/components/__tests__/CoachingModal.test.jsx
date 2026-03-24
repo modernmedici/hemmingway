@@ -167,6 +167,51 @@ describe('CoachingModal', () => {
     expect(onClose).toHaveBeenCalled();
   });
 
+  // ─── Turn into draft ──────────────────────────────────────────────────────
+
+  it('"Turn into draft" is visible when column is ideas', async () => {
+    mockFetchSuccess();
+    render(<CoachingModal {...makeProps({ post: { ...mockPost, column: 'ideas' } })} />);
+    await waitFor(() => screen.getByText('What is the core insight you want to share?'));
+    expect(screen.getByRole('button', { name: 'Turn into draft' })).toBeInTheDocument();
+  });
+
+  it('"Turn into draft" is hidden when column is drafts', async () => {
+    mockFetchSuccess();
+    render(<CoachingModal {...makeProps({ post: { ...mockPost, column: 'drafts' } })} />);
+    await waitFor(() => screen.getByText('What is the core insight you want to share?'));
+    expect(screen.queryByRole('button', { name: 'Turn into draft' })).toBeNull();
+  });
+
+  it('"Turn into draft" calls onMoveToDraft, onClose, and onOpenEditor', async () => {
+    mockFetchSuccess();
+    const onMoveToDraft = vi.fn();
+    const onClose = vi.fn();
+    const onOpenEditor = vi.fn();
+    render(<CoachingModal {...makeProps({ onMoveToDraft, onClose, onOpenEditor, post: { ...mockPost, column: 'ideas' } })} />);
+
+    await waitFor(() => screen.getByText('What is the core insight you want to share?'));
+    fireEvent.click(screen.getByRole('button', { name: 'Turn into draft' }));
+
+    expect(onMoveToDraft).toHaveBeenCalledWith(mockPost.id);
+    expect(onClose).toHaveBeenCalled();
+    expect(onOpenEditor).toHaveBeenCalledWith(expect.objectContaining({ id: mockPost.id, column: 'drafts' }));
+  });
+
+  // ─── empty response ────────────────────────────────────────────────────────
+
+  it('shows generic error when API returns empty content', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => ({ content: [] }),
+    }));
+    render(<CoachingModal {...makeProps()} />);
+    await waitFor(() =>
+      expect(screen.getByText('Coach unavailable — try again.')).toBeInTheDocument()
+    );
+  });
+
   // ─── abort on unmount ─────────────────────────────────────────────────────
 
   it('abort on unmount: AbortSignal is aborted when component unmounts', () => {

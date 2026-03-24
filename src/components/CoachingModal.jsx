@@ -2,10 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { X, Loader2 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { FONTS, COLUMN_LABELS } from '../lib/constants';
-
-function idleDays(updatedAt) {
-  return Math.floor((Date.now() - new Date(updatedAt)) / 86400000);
-}
+import { idleDays } from '../lib/utils';
 
 async function fetchCoachQuestion(post, signal) {
   const body = post.body?.slice(0, 2000) || '(no draft yet)';

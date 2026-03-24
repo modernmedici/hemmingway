@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { FileText, MoreHorizontal, Trash2, Send } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { COLUMN_IDS, COLUMN_LABELS, FONTS, LINKEDIN } from '../lib/constants';
+import { idleDays } from '../lib/utils';
 
 const wordCount = (text) => {
   const trimmed = text?.trim();
@@ -30,10 +31,6 @@ function staleBorderStyle(tier) {
     };
   }
   return {};
-}
-
-function idleDays(updatedAt) {
-  return Math.floor((Date.now() - new Date(updatedAt)) / 86400000);
 }
 
 export default function PostCard({ post, onMove, onDelete, onEdit, onPublish, linkedin, stalenessTier, onCoach }) {

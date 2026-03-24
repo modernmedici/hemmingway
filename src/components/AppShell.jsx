@@ -1,15 +1,5 @@
 import { BookOpen, LayoutDashboard } from 'lucide-react';
-import { FONTS, COLUMN_LABELS } from '../lib/constants';
-
-function idleDays(updatedAt) {
-  return Math.floor((Date.now() - new Date(updatedAt)) / 86400000);
-}
-
-function nudgeReason(tier, post) {
-  if (tier === 'finalized-stuck') return 'Ready to publish';
-  const days = idleDays(post.updatedAt);
-  return `${days} day${days !== 1 ? 's' : ''} idle`;
-}
+import { FONTS } from '../lib/constants';
 
 export default function AppShell({ children, onNewIdea, onToggleDark, isDark, linkedinSlot, coachSlot }) {
   return (

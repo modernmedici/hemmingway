@@ -7,12 +7,20 @@ export default function WritingView({ post, defaultColumn, onSave, onCancel, lin
   const [body,   setBody]   = useState(post?.body  ?? '');
   const [column, setColumn] = useState(defaultColumn ?? 'ideas');
   const titleRef = useRef(null);
+  const textareaRef = useRef(null);
 
   // Keep latest values accessible in the keydown handler without re-registering
   const latestRef = useRef({ title, body, column, onSave, onCancel });
   latestRef.current = { title, body, column, onSave, onCancel };
 
   useEffect(() => { titleRef.current?.focus(); }, []);
+
+  useEffect(() => {
+    const el = textareaRef.current;
+    if (!el) return;
+    el.style.height = 'auto';
+    el.style.height = el.scrollHeight + 'px';
+  }, [body]);
 
   useEffect(() => {
     const handler = (e) => {
@@ -136,6 +144,7 @@ export default function WritingView({ post, defaultColumn, onSave, onCancel, lin
           }}
         />
         <textarea
+          ref={textareaRef}
           value={body}
           onChange={e => setBody(e.target.value)}
           placeholder="Start writing your thoughts..."
