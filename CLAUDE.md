@@ -11,7 +11,16 @@ npm run preview   # Preview production build
 npm run lint      # ESLint
 ```
 
-No test suite exists. `npm run build` is the primary correctness check.
+## Testing
+
+```bash
+bun run test          # Run all tests once (vitest run)
+bun run test:watch    # Watch mode
+```
+
+Test framework: Vitest + @testing-library/react + happy-dom.
+Test files live alongside source in `__tests__/` subdirectories.
+100% test coverage is the goal — tests make vibe coding safe.
 
 Node.js is managed via nvm. If `npm` is not on PATH, use:
 ```bash
@@ -50,10 +59,56 @@ App
     └── PublishModal  — confirm-before-publish overlay
 ```
 
-## Active Branch: Electron Migration
+## Branch Architecture — Three Divergent Builds
 
-`feature/electron-migration` (worktree at `.worktrees/electron-migration`) converts this app to a native macOS Electron desktop app:
-- Build tool becomes `electron-vite`; scripts change to `npm run dev` / `npm run build` / `npm run dist:mac`
-- LinkedIn OAuth moves from Vite middleware + browser fetch → Electron main process IPC (`linkedin:*` channels), token stored in `electron-store`
-- Posts move from localStorage → `.md` files in `~/Desktop/Hemingway/` (gray-matter for YAML frontmatter), read/written via `posts:*` IPC
-- `window.api.linkedin.*` and `window.api.posts.*` are the renderer-facing APIs (exposed via contextBridge in `electron/preload/index.js`)
+This repository has three active branches with **incompatible architectures**. Do not merge between them without understanding the differences.
+
+```
+origin/main (Electron IPC build)
+  ├── Runtime: electron-vite, Electron v41
+  ├── Storage: ~/Desktop/Hemingway/*.md files (gray-matter frontmatter)
+  ├── API:     window.api.posts.* / window.api.linkedin.* via contextBridge IPC
+  └── Tests:   feature/electron-tests → merges here first
+
+feature/ambient-coach (THIS BRANCH — web-only build)
+  ├── Runtime: Vite dev server only (npm run dev)
+  ├── Storage: localStorage (posts, kanban state, snooze keys)
+  ├── API:     /api/coach → Vite proxy → Anthropic API (dev-only, see below)
+  └── Status:  NOT a merge candidate for origin/main
+               Lives here until validated, then rebuilt natively
+
+feature/swift-rewrite (SwiftUI macOS build)
+  ├── Runtime: Xcode / SwiftUI
+  └── Status:  Parallel exploration, no merge path yet
+```
+
+**IMPORTANT:** `feature/ambient-coach` is web-only and permanently diverged from `origin/main` (Electron IPC). Do not attempt to merge this branch into main. The coach feature will be rebuilt natively after the validation gate is met.
+
+## Ambient Coach — Vite Proxy
+
+The Vite dev server forwards `/api/coach` POST requests to the Anthropic API:
+
+```
+Browser → POST /api/coach → Vite dev server (Node.js) → Anthropic API
+```
+
+**Key constraints:**
+- `ANTHROPIC_API_KEY` is used **server-side in Node.js context only** — never exposed to browser bundles.
+- The proxy only exists during `npm run dev`. It does NOT exist in production builds or the Electron app.
+- Coaching is intentionally dev-only for this phase. Production coaching is out of scope.
+- `VITE_ANTHROPIC_API_KEY` (with the `VITE_` prefix) is documented in `.env.example` as a **warning comment only** — this prefix would expose the key to browser bundles. Do not add it to actual code.
+
+See `.env.example` for setup instructions.
+
+## Validation Gate
+
+Before porting the ambient coach to Electron, it must pass the validation gate.
+See [VALIDATION_GATE.md](./VALIDATION_GATE.md) for criteria.
+
+## Active Branch: Electron Migration (origin/main)
+
+The main branch (`origin/main`) is the Electron desktop app:
+- Build tool: `electron-vite`; scripts: `npm run dev` / `npm run build` / `npm run dist:mac`
+- LinkedIn OAuth: Electron main process IPC (`linkedin:*` channels), token in `electron-store`
+- Posts: `.md` files in `~/Desktop/Hemingway/` (gray-matter YAML frontmatter), via `posts:*` IPC
+- Renderer API: `window.api.linkedin.*` and `window.api.posts.*` (contextBridge in `electron/preload/index.js`)
