@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Mic, MicOff } from 'lucide-react';
+import { useTranscription } from '../hooks/useTranscription';
 import { FONTS } from '../lib/constants';
 
 export default function WritingView({ post, defaultColumn, onSave, onCancel }) {
@@ -39,6 +40,21 @@ export default function WritingView({ post, defaultColumn, onSave, onCancel }) {
     onSave(title.trim(), body.trim(), defaultColumn);
   };
 
+  const { recording, lastLine, error: transcriptionError, toggle } = useTranscription();
+
+  // Append each completed transcript line to body
+  useEffect(() => {
+    if (!lastLine) return;
+    setBody(prev => prev ? prev + ' ' + lastLine : lastLine);
+  }, [lastLine]);
+
+  // Stop recording on unmount (e.g. navigating away while recording)
+  useEffect(() => {
+    return () => {
+      if (recording) window.api.transcription.stop();
+    };
+  }, [recording]);
+
   const canSave = title.trim().length > 0;
 
   return (
@@ -63,6 +79,40 @@ export default function WritingView({ post, defaultColumn, onSave, onCancel }) {
         </button>
 
         <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '10px' }}>
+          {/* Voice dictation toggle */}
+          <button
+            onClick={toggle}
+            title={recording ? 'Stop recording' : 'Start voice dictation'}
+            style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              width: '28px', height: '28px',
+              background: recording ? 'hsl(var(--destructive) / 0.12)' : 'none',
+              border: '1px solid hsl(var(--border))',
+              borderRadius: 'var(--radius-sm)',
+              cursor: 'pointer',
+              color: recording ? 'hsl(var(--destructive))' : 'hsl(var(--muted-foreground))',
+              transition: 'all 0.12s',
+            }}
+            onMouseEnter={e => { if (!recording) e.currentTarget.style.color = 'hsl(var(--foreground))'; }}
+            onMouseLeave={e => { if (!recording) e.currentTarget.style.color = 'hsl(var(--muted-foreground))'; }}
+          >
+            {recording ? <MicOff size={13} /> : <Mic size={13} />}
+          </button>
+          {transcriptionError && (
+            <span style={{
+              fontSize: '10px',
+              color: 'hsl(var(--destructive))',
+              fontFamily: FONTS.inter,
+              maxWidth: '120px',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
+            }}
+              title={transcriptionError}
+            >
+              Mic error
+            </span>
+          )}
           {/* Save */}
           <button
             onClick={handleSave}
