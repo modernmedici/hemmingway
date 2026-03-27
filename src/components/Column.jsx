@@ -2,7 +2,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { COLUMN_IDS, FONTS } from '../lib/constants';
 import PostCard from './PostCard';
 
-export default function Column({ column, posts, onMovePost, onDeletePost, onNewPost, onEditPost }) {
+export default function Column({ column, posts, onMovePost, onDeletePost, onNewPost, onEditPost, onCoachPost, getTier }) {
   return (
     <div style={{
       display: 'flex', flexDirection: 'column', minWidth: 0,
@@ -63,7 +63,8 @@ export default function Column({ column, posts, onMovePost, onDeletePost, onNewP
               onMove={onMovePost}
               onDelete={onDeletePost}
               onEdit={onEditPost}
-
+              onCoach={onCoachPost}
+              stalenessTier={getTier ? getTier(post.id) : null}
             />
           ))}
         </AnimatePresence>

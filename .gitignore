@@ -15,3 +15,4 @@ DerivedData/
 
 # OS
 .DS_Store
+.gstack/

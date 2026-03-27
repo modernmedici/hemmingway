@@ -9,7 +9,7 @@ const wordCount = (text) => {
   return trimmed ? trimmed.split(/\s+/).length : 0;
 };
 
-export default function PostCard({ post, onMove, onDelete, onEdit }) {
+export default function PostCard({ post, onMove, onDelete, onEdit, onCoach, stalenessTier }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [hovered, setHovered] = useState(false);
@@ -36,7 +36,7 @@ export default function PostCard({ post, onMove, onDelete, onEdit }) {
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -8 }}
       transition={{ duration: 0.18 }}
-      onClick={() => !menuOpen && onEdit(post)}
+      onClick={() => { if (menuOpen) return; stalenessTier && onCoach ? onCoach(post) : onEdit(post); }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => { setHovered(false); setConfirmDelete(false); }}
       style={{
@@ -52,14 +52,28 @@ export default function PostCard({ post, onMove, onDelete, onEdit }) {
     >
       {/* Top row: word count badge + three-dot menu */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-        <span style={{
-          fontSize: '10px', fontFamily: FONTS.inter, fontWeight: 500,
-          color: 'hsl(var(--muted-foreground))',
-          background: 'hsl(var(--secondary))',
-          borderRadius: '999px', padding: '1px 8px',
-        }}>
-          {totalWords} words
-        </span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <span style={{
+            fontSize: '10px', fontFamily: FONTS.inter, fontWeight: 500,
+            color: 'hsl(var(--muted-foreground))',
+            background: 'hsl(var(--secondary))',
+            borderRadius: '999px', padding: '1px 8px',
+          }}>
+            {totalWords} words
+          </span>
+          {stalenessTier && (
+            <span
+              data-staleness={stalenessTier}
+              style={{
+                width: '7px', height: '7px', borderRadius: '50%',
+                background: stalenessTier === 'urgent' || stalenessTier === 'finalized-stuck'
+                  ? 'hsl(35 90% 55%)'
+                  : 'hsl(45 90% 55%)',
+                flexShrink: 0,
+              }}
+            />
+          )}
+        </div>
 
         <div style={{ position: 'relative' }}>
           <button

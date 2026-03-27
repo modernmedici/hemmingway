@@ -1,9 +1,13 @@
 const { app, BrowserWindow, ipcMain } = require('electron')
-const path   = require('path')
-const fs     = require('fs')
-const os     = require('os')
-const matter = require('gray-matter')
+const path      = require('path')
+const fs        = require('fs')
+const fsPromises = require('fs').promises
+const os        = require('os')
+const matter    = require('gray-matter')
+const Store     = require('electron-store')
+const { askCoach } = require('./coach.js')
 
+const store = new Store()
 const POSTS_DIR = path.join(os.homedir(), 'Desktop', 'Hemingway')
 
 // Set app name early so macOS dock tooltip shows correctly
@@ -53,28 +57,53 @@ app.on('window-all-closed', () => {
 })
 
 // ── IPC: posts:list ────────────────────────────────────────────────────────────
-ipcMain.handle('posts:list', () => {
+ipcMain.handle('posts:list', async () => {
   ensurePostsDir()
-  return fs.readdirSync(POSTS_DIR)
-    .filter(f => f.endsWith('.md'))
-    .map(filename => {
-      const raw = fs.readFileSync(path.join(POSTS_DIR, filename), 'utf8')
-      const { data, content } = matter(raw)
-      return { ...data, body: content.trim() }
-    })
-    .filter(p => p.id) // skip malformed files
+  const files = await fsPromises.readdir(POSTS_DIR)
+  const mds = files.filter(f => f.endsWith('.md'))
+  const posts = await Promise.all(mds.map(async filename => {
+    const raw = await fsPromises.readFile(path.join(POSTS_DIR, filename), 'utf8')
+    const { data, content } = matter(raw)
+    return { ...data, body: content.trim() }
+  }))
+  return posts.filter(p => p.id) // skip malformed files
 })
 
 // ── IPC: posts:save ────────────────────────────────────────────────────────────
-ipcMain.handle('posts:save', (_e, post) => {
+ipcMain.handle('posts:save', async (_e, post) => {
+  if (!post?.id || typeof post.id !== 'string' || post.id.includes('/') || post.id.includes('..')) {
+    throw new Error('Invalid post id')
+  }
   ensurePostsDir()
   const { body, ...frontmatter } = post
   const fileContent = matter.stringify(body ?? '', frontmatter)
-  fs.writeFileSync(path.join(POSTS_DIR, `${post.id}.md`), fileContent, 'utf8')
+  await fsPromises.writeFile(path.join(POSTS_DIR, `${post.id}.md`), fileContent, 'utf8')
 })
 
 // ── IPC: posts:delete ──────────────────────────────────────────────────────────
-ipcMain.handle('posts:delete', (_e, id) => {
+ipcMain.handle('posts:delete', async (_e, id) => {
+  if (!id || typeof id !== 'string' || id.includes('/') || id.includes('..')) {
+    throw new Error('Invalid post id')
+  }
   const filepath = path.join(POSTS_DIR, `${id}.md`)
-  if (fs.existsSync(filepath)) fs.unlinkSync(filepath)
+  await fsPromises.unlink(filepath).catch(e => {
+    if (e.code !== 'ENOENT') throw e
+  })
+})
+
+// ── IPC: coach:ask ─────────────────────────────────────────────────────────────
+ipcMain.handle('coach:ask', async (_e, payload) => {
+  return askCoach(payload, store)
+})
+
+// ── IPC: settings:getApiKey ────────────────────────────────────────────────────
+ipcMain.handle('settings:getApiKey', () => {
+  return store.get('anthropic_api_key') ?? ''
+})
+
+// ── IPC: settings:setApiKey ────────────────────────────────────────────────────
+ipcMain.handle('settings:setApiKey', (_e, key) => {
+  if (typeof key === 'string' && key.trim()) {
+    store.set('anthropic_api_key', key.trim())
+  }
 })

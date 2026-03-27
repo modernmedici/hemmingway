@@ -6,4 +6,11 @@ contextBridge.exposeInMainWorld('api', {
     save:   (post) => ipcRenderer.invoke('posts:save', post),
     delete: (id)   => ipcRenderer.invoke('posts:delete', id),
   },
+  coach: {
+    ask: (payload) => ipcRenderer.invoke('coach:ask', payload),
+  },
+  settings: {
+    getApiKey: ()    => ipcRenderer.invoke('settings:getApiKey'),
+    setApiKey: (key) => ipcRenderer.invoke('settings:setApiKey', key),
+  },
 })

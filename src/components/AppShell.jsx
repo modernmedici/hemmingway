@@ -1,7 +1,7 @@
-import { BookOpen } from 'lucide-react';
+import { BookOpen, Settings } from 'lucide-react';
 import { FONTS } from '../lib/constants';
 
-export default function AppShell({ children, onNewIdea }) {
+export default function AppShell({ children, onNewIdea, onOpenSettings }) {
   return (
     <div style={{ display: 'flex', minHeight: '100vh', background: 'hsl(var(--background))' }}>
       {/* Sidebar */}
@@ -50,6 +50,24 @@ export default function AppShell({ children, onNewIdea }) {
             + New Idea
           </button>
         </nav>
+
+        {/* Settings */}
+        <button
+          onClick={onOpenSettings}
+          aria-label="Settings"
+          style={{
+            display: 'flex', alignItems: 'center', gap: '8px',
+            padding: '8px 10px', borderRadius: 'var(--radius-md)',
+            border: 'none', background: 'none', cursor: 'pointer',
+            fontSize: '12px', color: 'hsl(var(--muted-foreground))',
+            fontFamily: FONTS.inter, width: '100%', transition: 'background 0.12s',
+          }}
+          onMouseEnter={e => { e.currentTarget.style.background = 'hsl(var(--accent))'; }}
+          onMouseLeave={e => { e.currentTarget.style.background = 'none'; }}
+        >
+          <Settings size={14} />
+          Settings
+        </button>
 
       </aside>
 

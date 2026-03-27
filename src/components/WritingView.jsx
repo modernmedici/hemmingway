@@ -7,9 +7,19 @@ export default function WritingView({ post, defaultColumn, onSave, onCancel }) {
   const [body,   setBody]   = useState(post?.body  ?? '');
   const titleRef = useRef(null);
 
+  const originalTitle = post?.title ?? '';
+  const originalBody  = post?.body  ?? '';
+
   // Keep latest values accessible in the keydown handler without re-registering
   const latestRef = useRef({ title, body, onSave, onCancel });
   latestRef.current = { title, body, onSave, onCancel };
+
+  const handleCancel = useCallback(() => {
+    const { title, body, onCancel } = latestRef.current;
+    const dirty = title !== originalTitle || body !== originalBody;
+    if (dirty && !window.confirm('Discard unsaved changes?')) return;
+    onCancel();
+  }, [originalTitle, originalBody]);
 
   useEffect(() => { titleRef.current?.focus(); }, []);
 
@@ -24,7 +34,7 @@ export default function WritingView({ post, defaultColumn, onSave, onCancel }) {
 
   useEffect(() => {
     const handler = (e) => {
-      if (e.key === 'Escape') latestRef.current.onCancel();
+      if (e.key === 'Escape') handleCancel();
       if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
         const { title, body, onSave } = latestRef.current;
         if (title.trim()) onSave(title.trim(), body.trim(), defaultColumn);
@@ -32,7 +42,7 @@ export default function WritingView({ post, defaultColumn, onSave, onCancel }) {
     };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
-  }, []); // register once
+  }, [handleCancel]); // re-register only if handleCancel identity changes (it doesn't)
 
   const handleSave = () => {
     if (!title.trim()) return;
@@ -53,7 +63,7 @@ export default function WritingView({ post, defaultColumn, onSave, onCancel }) {
         display: 'flex', alignItems: 'center',
       }}>
         <button
-          onClick={onCancel}
+          onClick={handleCancel}
           style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'none', border: 'none', cursor: 'pointer', color: 'hsl(var(--muted-foreground))', fontSize: '12px', fontFamily: FONTS.inter, padding: 0, transition: 'color 0.12s' }}
           onMouseEnter={e => { e.currentTarget.style.color = 'hsl(var(--foreground))'; }}
           onMouseLeave={e => { e.currentTarget.style.color = 'hsl(var(--muted-foreground))'; }}
