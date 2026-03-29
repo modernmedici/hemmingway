@@ -113,6 +113,12 @@ HemingwayTests/
 | Voice dictate | Tap mic button in editor, speak, tap again to stop |
 | Move a post | Drag card to another column |
 | Delete a post | Right-click card → Delete |
+| Create a post | Click **+ New Idea** in the sidebar |
+| Edit a post | Click any card |
+| Save | Click **Save** or press `⌘↵` |
+| Cancel | Press `Esc` or click **Back to Board** |
+| Move a post | Open the three-dot menu on the card |
+| Delete a post | Three-dot menu → Delete (confirms inline) |
 
 ---
 

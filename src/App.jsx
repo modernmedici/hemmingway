@@ -1,50 +1,38 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useKanban } from './hooks/useKanban';
-import { useLinkedIn } from './hooks/useLinkedIn';
+import { useCoach } from './hooks/useCoach';
 import AppShell from './components/AppShell';
 import Board from './components/Board';
 import WritingView from './components/WritingView';
-import AccountsPanel from './components/AccountsPanel';
-import PublishModal from './components/PublishModal';
+import CoachingModal from './components/CoachingModal';
+import SettingsModal from './components/SettingsModal';
 import './index.css';
 
 export default function App() {
-  const { posts, createPost, updatePost, movePost, deletePost } = useKanban();
-  const linkedin = useLinkedIn();
+  const { posts, loading, error, createPost, updatePost, movePost, deletePost } = useKanban();
+  const { getTier, snooze } = useCoach(posts);
   const [view, setView] = useState('board');
   const [editingPost, setEditingPost] = useState(null);
   const [pendingColumn, setPendingColumn] = useState('ideas');
-  const [publishTarget, setPublishTarget] = useState(null);
-  const [isDark, setIsDark] = useState(() => {
-    return localStorage.getItem('hemingway-dark') === 'true';
-  });
-
-  // Apply dark class to document
-  useEffect(() => {
-    document.documentElement.classList.toggle('dark', isDark);
-    localStorage.setItem('hemingway-dark', isDark);
-  }, [isDark]);
-
-  // Detect LinkedIn OAuth callback
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const token = params.get('linkedin_token');
-    const error = params.get('linkedin_error');
-    if (token) linkedin.receiveToken(token);
-    if (error) console.error('[LinkedIn] OAuth error:', error);
-    if (token || error) window.history.replaceState({}, '', window.location.pathname);
-  }, []);
+  const [activeCoachPost, setActiveCoachPost] = useState(null);
+  const [showSettings, setShowSettings] = useState(false);
 
   const handleNewPost = (columnId) => {
+    setActiveCoachPost(null);
     setEditingPost(null);
     setPendingColumn(columnId);
     setView('editor');
   };
 
   const handleEditPost = (post) => {
+    setActiveCoachPost(null);
     setEditingPost(post);
     setPendingColumn(post.column);
     setView('editor');
+  };
+
+  const handleCoachPost = (post) => {
+    setActiveCoachPost(post);
   };
 
   const handleSave = (title, body, column) => {
@@ -57,16 +45,6 @@ export default function App() {
     setView('board');
   };
 
-  const handlePublishRequest = (post) => setPublishTarget(post);
-
-  const handlePublishConfirm = async () => {
-    try {
-      await linkedin.publishPost(publishTarget.title, publishTarget.body);
-      updatePost(publishTarget.id, { publishedTo: ['linkedin'] });
-      setPublishTarget(null);
-    } catch { /* error shown in modal via linkedin.publishError */ }
-  };
-
   if (view === 'editor') {
     return (
       <WritingView
@@ -74,38 +52,37 @@ export default function App() {
         defaultColumn={pendingColumn}
         onSave={handleSave}
         onCancel={() => setView('board')}
-        linkedin={linkedin}
-        onPublish={handlePublishRequest}
       />
     );
   }
 
   return (
-    <AppShell
-      onNewIdea={() => handleNewPost('ideas')}
-      onToggleDark={() => setIsDark(d => !d)}
-      isDark={isDark}
-      linkedinSlot={<AccountsPanel linkedin={linkedin} />}
-    >
+    <AppShell onNewIdea={() => handleNewPost('ideas')} onOpenSettings={() => setShowSettings(true)}>
       <main style={{ flex: 1, padding: '32px 36px', overflow: 'hidden' }}>
         <Board
           posts={posts}
+          loading={loading}
+          error={error}
           onMovePost={movePost}
           onDeletePost={deletePost}
           onNewPost={handleNewPost}
           onEditPost={handleEditPost}
-          onPublish={handlePublishRequest}
-          linkedin={linkedin}
+          onCoachPost={handleCoachPost}
+          getTier={getTier}
         />
       </main>
-      {publishTarget && (
-        <PublishModal
-          post={publishTarget}
-          onConfirm={handlePublishConfirm}
-          onCancel={() => setPublishTarget(null)}
-          publishing={linkedin.publishing}
-          error={linkedin.publishError}
+
+      {activeCoachPost && (
+        <CoachingModal
+          post={activeCoachPost}
+          onClose={() => setActiveCoachPost(null)}
+          onSnooze={snooze}
+          onMovePost={movePost}
         />
+      )}
+
+      {showSettings && (
+        <SettingsModal onClose={() => setShowSettings(false)} />
       )}
     </AppShell>
   );
