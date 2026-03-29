@@ -24,7 +24,5 @@
 	<string>Hemingway uses the microphone for voice dictation.</string>
 	<key>NSPrincipalClass</key>
 	<string>NSApplication</string>
-	<key>NSSpeechRecognitionUsageDescription</key>
-	<string>Hemingway uses on-device speech recognition to transcribe your words.</string>
 </dict>
 </plist>
