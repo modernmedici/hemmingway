@@ -15,3 +15,11 @@ DerivedData/
 
 # OS
 .DS_Store
+
+# Build artifacts
+build/
+*.dmg
+build.log
+
+# Tools
+xcodegen
