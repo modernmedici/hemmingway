@@ -52,14 +52,25 @@ struct EditorView: View {
 
                 // Mic button
                 Button { transcription.toggle() } label: {
-                    Image(systemName: transcription.isRecording ? "mic.fill" : "mic")
-                        .font(.system(size: 13))
-                        .foregroundStyle(transcription.isRecording ? .red : .secondary)
+                    if transcription.isProcessing {
+                        ProgressView()
+                            .controlSize(.small)
+                            .frame(width: 13, height: 13)
+                    } else if !transcription.isModelReady && transcription.modelProgress > 0 {
+                        ProgressView(value: transcription.modelProgress)
+                            .controlSize(.small)
+                            .frame(width: 13, height: 13)
+                    } else {
+                        Image(systemName: transcription.isRecording ? "mic.fill" : "mic")
+                            .font(.system(size: 13))
+                            .foregroundStyle(transcription.isRecording ? .red : .secondary)
+                    }
                 }
                 .buttonStyle(.bordered)
                 .controlSize(.small)
                 .tint(transcription.isRecording ? .red : nil)
-                .help(transcription.isRecording ? "Stop recording" : "Start voice dictation")
+                .disabled(transcription.isProcessing || (!transcription.isModelReady && transcription.modelProgress == 0))
+                .help(transcription.isRecording ? "Stop recording" : (transcription.isProcessing ? "Processing..." : (transcription.isModelReady ? "Start voice dictation" : "Downloading models...")))
 
                 if let err = transcription.error {
                     Text(err)
@@ -106,7 +117,7 @@ struct EditorView: View {
         }
         .onAppear {
             titleFocused = true
-            Task { await transcription.requestPermissions() }
+            Task { await transcription.prepare() }
         }
         .onDisappear { transcription.stop() }
         .onExitCommand { onCancel() }

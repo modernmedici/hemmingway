@@ -2,7 +2,7 @@ name: Hemingway
 options:
   bundleIdPrefix: com.hemingway
   deploymentTarget:
-    macOS: "13.0"
+    macOS: "14.0"
   xcodeVersion: "16"
 
 settings:
@@ -13,6 +13,12 @@ packages:
   Yams:
     url: https://github.com/jpsim/Yams
     from: "5.0.0"
+  WhisperKit:
+    url: https://github.com/argmaxinc/WhisperKit
+    from: "0.16.0"
+  LLM.swift:
+    url: https://github.com/eastriverlee/LLM.swift
+    branch: "main"
 
 targets:
   Hemingway:
@@ -24,20 +30,19 @@ targets:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.hemingway.app
         SWIFT_VERSION: "5.9"
-        MACOSX_DEPLOYMENT_TARGET: "13.0"
+        MACOSX_DEPLOYMENT_TARGET: "14.0"
         CODE_SIGN_STYLE: Automatic
         DEVELOPMENT_TEAM: ""
     dependencies:
       - package: Yams
-      - framework: Speech.framework
-        embed: false
+      - package: WhisperKit
+      - package: LLM.swift
       - framework: AVFoundation.framework
         embed: false
     info:
       path: Hemingway/Info.plist
       properties:
         NSMicrophoneUsageDescription: "Hemingway uses the microphone for voice dictation."
-        NSSpeechRecognitionUsageDescription: "Hemingway uses on-device speech recognition to transcribe your words."
         NSHumanReadableCopyright: "Copyright © 2026"
         NSPrincipalClass: NSApplication
     entitlements:
@@ -45,3 +50,11 @@ targets:
       properties:
         com.apple.security.device.microphone: true
         com.apple.security.device.audio-input: true
+        com.apple.security.network.client: true
+  HemingwayTests:
+    type: bundle.unit-test
+    platform: macOS
+    sources:
+      - HemingwayTests
+    dependencies:
+      - target: Hemingway
