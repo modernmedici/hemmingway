@@ -1,8 +1,7 @@
 import { init } from '@instantdb/react'
 import schema from '../../instant.schema'
 
-// TODO: Replace with your InstantDB app ID from https://instantdb.com/dash
-const APP_ID = 'YOUR_APP_ID_HERE'
+const APP_ID = '420abe92-3e20-4aed-852e-30b9b830b3a9'
 
 const db = init({ appId: APP_ID, schema })
 
