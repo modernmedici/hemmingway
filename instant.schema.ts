@@ -10,6 +10,12 @@ const schema = i.schema({
       updatedAt: i.date(),
     }),
   },
+  links: {
+    userPosts: {
+      forward: { on: 'posts', has: 'one', label: 'creator' },
+      reverse: { on: '$users', has: 'many', label: 'posts' },
+    },
+  },
 })
 
 export default schema
