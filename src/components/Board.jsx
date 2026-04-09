@@ -1,7 +1,7 @@
 import { COLUMNS, FONTS } from '../lib/constants';
 import Column from './Column';
 
-export default function Board({ posts, loading, error, onMovePost, onDeletePost, onNewPost, onEditPost, onCoachPost, getTier }) {
+export default function Board({ posts, loading, error, onMovePost, onDeletePost, onNewPost, onEditPost }) {
   if (loading) {
     return (
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px', height: '100%' }}>
@@ -38,8 +38,6 @@ export default function Board({ posts, loading, error, onMovePost, onDeletePost,
           onDeletePost={onDeletePost}
           onNewPost={onNewPost}
           onEditPost={onEditPost}
-          onCoachPost={onCoachPost}
-          getTier={getTier}
         />
       ))}
     </div>

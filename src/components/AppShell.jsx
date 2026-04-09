@@ -1,7 +1,8 @@
-import { BookOpen, Settings } from 'lucide-react';
-import { FONTS } from '../lib/constants';
+import { BookOpen, LogOut } from 'lucide-react'
+import { FONTS } from '../lib/constants'
+import db from '../lib/db'
 
-export default function AppShell({ children, onNewIdea, onOpenSettings }) {
+export default function AppShell({ children, onNewIdea, user }) {
   return (
     <div style={{ display: 'flex', minHeight: '100vh', background: 'hsl(var(--background))' }}>
       {/* Sidebar */}
@@ -51,10 +52,15 @@ export default function AppShell({ children, onNewIdea, onOpenSettings }) {
           </button>
         </nav>
 
-        {/* Settings */}
+        {/* User info & sign out */}
+        <div style={{ paddingLeft: '8px', marginBottom: '12px' }}>
+          <p style={{ fontSize: '11px', color: 'hsl(var(--muted-foreground))' }}>
+            {user?.email}
+          </p>
+        </div>
         <button
-          onClick={onOpenSettings}
-          aria-label="Settings"
+          onClick={() => db.auth.signOut()}
+          aria-label="Sign out"
           style={{
             display: 'flex', alignItems: 'center', gap: '8px',
             padding: '8px 10px', borderRadius: 'var(--radius-md)',
@@ -65,8 +71,8 @@ export default function AppShell({ children, onNewIdea, onOpenSettings }) {
           onMouseEnter={e => { e.currentTarget.style.background = 'hsl(var(--accent))'; }}
           onMouseLeave={e => { e.currentTarget.style.background = 'none'; }}
         >
-          <Settings size={14} />
-          Settings
+          <LogOut size={14} />
+          Sign out
         </button>
 
       </aside>
