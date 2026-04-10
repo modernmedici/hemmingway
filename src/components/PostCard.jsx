@@ -32,9 +32,14 @@ export default function PostCard({ post, onMove, onDelete, onEdit }) {
   return (
     <motion.div
       layout
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
+      variants={{
+        hidden: { opacity: 0, y: 8 },
+        visible: { opacity: 1, y: 0 },
+      }}
+      initial="hidden"
+      animate="visible"
       exit={{ opacity: 0, y: -8 }}
+      whileTap={{ scale: 0.98 }}
       transition={{ duration: 0.18 }}
       onClick={() => { if (menuOpen) return; onEdit(post); }}
       onMouseEnter={() => setHovered(true)}
@@ -74,7 +79,11 @@ export default function PostCard({ post, onMove, onDelete, onEdit }) {
           </button>
 
           {menuOpen && (
-            <div
+            <motion.div
+              initial={{ opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.15 }}
               onClick={e => e.stopPropagation()}
               style={{
                 position: 'absolute', right: 0, top: '100%', zIndex: 50,
@@ -87,7 +96,13 @@ export default function PostCard({ post, onMove, onDelete, onEdit }) {
               }}
             >
               {COLUMN_IDS.filter(c => c !== post.column).map(col => (
-                <button key={col} onClick={e => handleMove(e, col)} style={menuItemStyle}>
+                <button
+                  key={col}
+                  onClick={e => handleMove(e, col)}
+                  style={menuItemStyle}
+                  onMouseEnter={e => { e.currentTarget.style.background = 'hsl(var(--accent))'; }}
+                  onMouseLeave={e => { e.currentTarget.style.background = 'none'; }}
+                >
                   Move to {COLUMN_LABELS[col]}
                 </button>
               ))}
@@ -101,12 +116,17 @@ export default function PostCard({ post, onMove, onDelete, onEdit }) {
                   <button onClick={e => { e.stopPropagation(); setConfirmDelete(false); }} style={{ ...menuItemStyle, padding: '2px 4px' }}>No</button>
                 </div>
               ) : (
-                <button onClick={handleDelete} style={{ ...menuItemStyle, color: 'hsl(var(--destructive))' }}>
+                <button
+                  onClick={handleDelete}
+                  style={{ ...menuItemStyle, color: 'hsl(var(--destructive))' }}
+                  onMouseEnter={e => { e.currentTarget.style.background = 'hsl(var(--destructive) / 0.1)'; }}
+                  onMouseLeave={e => { e.currentTarget.style.background = 'none'; }}
+                >
                   <Trash2 size={12} style={{ marginRight: '6px' }} />
                   Delete
                 </button>
               )}
-            </div>
+            </motion.div>
           )}
         </div>
       </div>

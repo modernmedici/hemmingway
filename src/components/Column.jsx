@@ -1,4 +1,5 @@
 import { motion, AnimatePresence } from 'framer-motion';
+import { FileText } from 'lucide-react';
 import { COLUMN_IDS, FONTS } from '../lib/constants';
 import PostCard from './PostCard';
 
@@ -34,11 +35,22 @@ export default function Column({ column, posts, onMovePost, onDeletePost, onNewP
       </div>
 
       {/* Cards */}
-      <div style={{
-        flex: 1, overflowY: 'auto',
-        maxHeight: 'calc(100vh - 14rem)',
-        display: 'flex', flexDirection: 'column', gap: '8px',
-      }}>
+      <motion.div
+        initial="hidden"
+        animate="visible"
+        variants={{
+          visible: {
+            transition: {
+              staggerChildren: 0.05,
+            },
+          },
+        }}
+        style={{
+          flex: 1, overflowY: 'auto',
+          maxHeight: 'calc(100vh - 14rem)',
+          display: 'flex', flexDirection: 'column', gap: '8px',
+        }}
+      >
         <AnimatePresence>
           {posts.length === 0 && (
             <motion.div
@@ -46,14 +58,22 @@ export default function Column({ column, posts, onMovePost, onDeletePost, onNewP
               style={{
                 border: '1px dashed hsl(var(--border))',
                 borderRadius: 'var(--radius-md)',
-                padding: '24px',
+                padding: '32px 24px',
                 textAlign: 'center',
                 fontSize: '12px',
                 color: 'hsl(var(--muted-foreground))',
                 fontFamily: FONTS.inter,
               }}
             >
-              Empty
+              <div style={{ marginBottom: '8px', display: 'flex', justifyContent: 'center', opacity: 0.3 }}>
+                <FileText size={32} color="hsl(var(--muted-foreground))" />
+              </div>
+              <p style={{ marginBottom: '4px', fontWeight: 500 }}>No {column.label.toLowerCase()} yet</p>
+              <p style={{ fontSize: '11px', opacity: 0.7 }}>
+                {column.id === 'ideas' && 'Click "+ New Idea" to start writing'}
+                {column.id === 'drafts' && 'Move ideas here to develop them'}
+                {column.id === 'finalized' && 'Publish your finished work here'}
+              </p>
             </motion.div>
           )}
           {posts.map((post) => (
@@ -66,7 +86,7 @@ export default function Column({ column, posts, onMovePost, onDeletePost, onNewP
             />
           ))}
         </AnimatePresence>
-      </div>
+      </motion.div>
 
     </div>
   );

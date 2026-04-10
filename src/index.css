@@ -20,4 +20,15 @@
   to   { opacity: 1; transform: translateY(0); }
 }
 
+@keyframes fadeOut {
+  0% { opacity: 1; }
+  70% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
 .view-enter { animation: viewFadeIn 0.18s ease forwards; }

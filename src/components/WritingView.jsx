@@ -1,11 +1,28 @@
-import { useState, useRef, useEffect, useCallback } from 'react';
-import { ArrowLeft } from 'lucide-react';
+import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
+import { ArrowLeft, Check, Loader2 } from 'lucide-react';
 import { FONTS } from '../lib/constants';
 
 export default function WritingView({ post, defaultColumn, onSave, onCancel }) {
   const [title,  setTitle]  = useState(post?.title ?? '');
   const [body,   setBody]   = useState(post?.body  ?? '');
+  const [saved, setSaved] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [countChanged, setCountChanged] = useState(false);
   const titleRef = useRef(null);
+
+  const wordCount = useMemo(() => {
+    const combinedText = `${title} ${body}`.trim();
+    if (!combinedText) return 0;
+    return combinedText.split(/\s+/).length;
+  }, [title, body]);
+
+  useEffect(() => {
+    if (wordCount > 0) {
+      setCountChanged(true);
+      const timer = setTimeout(() => setCountChanged(false), 300);
+      return () => clearTimeout(timer);
+    }
+  }, [wordCount]);
 
   const originalTitle = post?.title ?? '';
   const originalBody  = post?.body  ?? '';
@@ -14,12 +31,17 @@ export default function WritingView({ post, defaultColumn, onSave, onCancel }) {
   const latestRef = useRef({ title, body, onSave, onCancel });
   latestRef.current = { title, body, onSave, onCancel };
 
-  const handleCancel = useCallback(() => {
-    const { title, body, onCancel } = latestRef.current;
+  const handleCancel = useCallback(async () => {
+    const { title, body, onCancel, onSave } = latestRef.current;
     const dirty = title !== originalTitle || body !== originalBody;
-    if (dirty && !window.confirm('Discard unsaved changes?')) return;
+
+    // Auto-save if there are changes and title is not empty
+    if (dirty && title.trim()) {
+      await onSave(title.trim(), body.trim(), defaultColumn);
+    }
+
     onCancel();
-  }, [originalTitle, originalBody]);
+  }, [originalTitle, originalBody, defaultColumn]);
 
   useEffect(() => { titleRef.current?.focus(); }, []);
 
@@ -44,12 +66,19 @@ export default function WritingView({ post, defaultColumn, onSave, onCancel }) {
     return () => window.removeEventListener('keydown', handler);
   }, [handleCancel]); // re-register only if handleCancel identity changes (it doesn't)
 
-  const handleSave = () => {
-    if (!title.trim()) return;
-    onSave(title.trim(), body.trim(), defaultColumn);
+  const handleSave = async () => {
+    if (!title.trim() || saving) return;
+    setSaving(true);
+    try {
+      await onSave(title.trim(), body.trim(), defaultColumn);
+      setSaved(true);
+      setTimeout(() => setSaved(false), 1500);
+    } finally {
+      setSaving(false);
+    }
   };
 
-  const canSave = title.trim().length > 0;
+  const canSave = title.trim().length > 0 && !saving;
 
   return (
     <div className="view-enter" style={{ minHeight: '100vh', background: 'hsl(var(--background))', display: 'flex', flexDirection: 'column', fontFamily: FONTS.inter }}>
@@ -64,15 +93,43 @@ export default function WritingView({ post, defaultColumn, onSave, onCancel }) {
       }}>
         <button
           onClick={handleCancel}
-          style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'none', border: 'none', cursor: 'pointer', color: 'hsl(var(--muted-foreground))', fontSize: '12px', fontFamily: FONTS.inter, padding: 0, transition: 'color 0.12s' }}
+          style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'none', border: 'none', cursor: 'pointer', color: 'hsl(var(--muted-foreground))', fontSize: '12px', fontFamily: FONTS.inter, padding: 0, transition: 'all 0.12s' }}
           onMouseEnter={e => { e.currentTarget.style.color = 'hsl(var(--foreground))'; }}
           onMouseLeave={e => { e.currentTarget.style.color = 'hsl(var(--muted-foreground))'; }}
+          onMouseDown={e => { e.currentTarget.style.transform = 'scale(0.95)'; }}
+          onMouseUp={e => { e.currentTarget.style.transform = 'scale(1)'; }}
         >
           <ArrowLeft size={14} />
           Back to Board
         </button>
 
         <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '10px' }}>
+          {/* Saved indicator */}
+          {saved && (
+            <span style={{
+              fontSize: '11px',
+              fontFamily: FONTS.inter,
+              color: 'hsl(var(--primary))',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px',
+              animation: 'fadeOut 1.5s ease-out forwards',
+            }}>
+              <Check size={12} />
+              Saved!
+            </span>
+          )}
+          {/* Word count */}
+          <span style={{
+            fontSize: '11px',
+            fontFamily: FONTS.inter,
+            color: countChanged ? 'hsl(var(--primary))' : 'hsl(var(--muted-foreground))',
+            fontVariantNumeric: 'tabular-nums',
+            transform: countChanged ? 'scale(1.1)' : 'scale(1)',
+            transition: 'all 0.2s ease',
+          }}>
+            {wordCount.toLocaleString()} {wordCount === 1 ? 'word' : 'words'}
+          </span>
           {/* Save */}
           <button
             onClick={handleSave}
@@ -83,10 +140,14 @@ export default function WritingView({ post, defaultColumn, onSave, onCancel }) {
               color: canSave ? 'hsl(var(--primary-foreground))' : 'hsl(var(--muted-foreground))',
               border: 'none', borderRadius: 'var(--radius-sm)',
               padding: '5px 14px', cursor: canSave ? 'pointer' : 'not-allowed',
-              transition: 'background 0.12s',
+              transition: 'all 0.12s',
+              display: 'flex', alignItems: 'center', gap: '4px',
             }}
+            onMouseDown={e => { if (canSave) e.currentTarget.style.transform = 'scale(0.95)'; }}
+            onMouseUp={e => { e.currentTarget.style.transform = 'scale(1)'; }}
           >
-            Save
+            {saving && <Loader2 size={12} style={{ animation: 'spin 1s linear infinite' }} />}
+            {saving ? 'Saving...' : 'Save'}
           </button>
         </div>
       </div>

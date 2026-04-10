@@ -23,6 +23,15 @@
   --radius-sm: 0.3rem;
   --radius-md: 0.5rem;
   --radius-lg: 0.8rem;
+
+  /* Component variables */
+  --bg: hsl(43, 27%, 98%);
+  --text: hsl(0, 0%, 18%);
+  --text-dim: hsl(0, 0%, 45%);
+  --card-bg: hsl(0, 0%, 100%);
+  --accent: hsl(200, 70%, 50%);
+  --border: hsl(40, 10%, 90%);
+  --destructive: hsl(0, 84%, 60%);
 }
 
 .dark {
@@ -46,4 +55,13 @@
   --sidebar-foreground: 40 10% 90%;
   --sidebar-accent:    240  4% 20%;
   --sidebar-border:    240  4% 20%;
+
+  /* Component variables */
+  --bg: hsl(240, 5%, 10%);
+  --text: hsl(40, 10%, 90%);
+  --text-dim: hsl(240, 5%, 60%);
+  --card-bg: hsl(240, 4%, 15%);
+  --accent: hsl(200, 70%, 50%);
+  --border: hsl(240, 4%, 25%);
+  --destructive: hsl(0, 63%, 55%);
 }
