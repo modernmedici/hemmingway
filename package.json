@@ -12,6 +12,7 @@
     "test:watch": "vitest"
   },
   "dependencies": {
+    "@instantdb/admin": "^1.0.0",
     "@instantdb/react": "^0.14.13",
     "date-fns": "^4.1.0",
     "framer-motion": "^12.36.0",
