@@ -1,54 +1,118 @@
-# Hemmingway
+# Hemingway (Swift/macOS)
 
-I wanted to stop procrastinating about my public writing so I made this tool, as a way to capture ideas, and shape them into fully fleshed thoughts.
+Native macOS writing app with on-device AI voice transcription. Kanban-style workflow: Ideas → Drafts → Published.
 
-A minimal macOS writing app. Move your ideas from spark to published post.
+> **Note:** This is the Swift rewrite. For the Electron version, see the `main` branch.
 
 ---
 
 ## Features
 
 - **Three-stage workflow** — Scratchpad → Drafts → Published
-- **Warm academic design** — Libre Baskerville + Inter, HSL color tokens
-- **Full writing view** — distraction-free editor with auto-resizing title and keyboard shortcuts
-- **Word count badge** — always visible on each card
-- **Relative timestamps** — "2 minutes ago" style on every post
-- **Three-dot card menu** — move or delete (with confirm) from any card
-- **Persistent** — posts saved as `.md` files in `~/Desktop/Hemingway/`
+- **AI voice dictation** — WhisperKit transcription + LLM text cleanup (100% on-device)
+- **Distraction-free editor** — Georgia serif font, keyboard shortcuts
+- **File-based storage** — Posts saved as markdown files in `~/Desktop/Hemingway/`
+- **Native macOS** — SwiftUI app with zero Electron overhead
 
-## Stack
+## Voice Dictation
 
-- [Electron](https://www.electronjs.org) + [electron-vite](https://electron-vite.org)
-- [React 19](https://react.dev) + [Vite 7](https://vite.dev)
-- [Tailwind CSS v4](https://tailwindcss.com) (CSS-first, no config file)
-- [framer-motion](https://www.framer.com/motion/) for card animations
-- [Lucide React](https://lucide.dev) for icons
-- [date-fns](https://date-fns.org) for relative timestamps
-- [gray-matter](https://github.com/jonschlinkert/gray-matter) for markdown frontmatter
-- [electron-store](https://github.com/sindresorhus/electron-store) for persistence
+Tap the mic button in the editor:
 
-## Getting Started
+1. **Record** — Speak your thoughts (up to 5 minutes)
+2. **Stop** — Tap mic again to finish recording
+3. **Process** — WhisperKit transcribes, LLM cleans up filler words and punctuation (~8-19s for typical 20-40s recordings)
+4. **Insert** — Cleaned text appears in your draft
+
+**First run:** Downloads ~2GB of models (WhisperKit + Qwen 2.5-2B). Cached locally for instant subsequent use.
+
+---
+
+## Requirements
+
+⚠️ **Xcode 16.0 or later is required** to build this app.
+
+- **macOS:** 14.0+ (Sonoma or later)
+- **Xcode:** 16.0+ (includes Swift 6.0 tooling)
+- **Why:** WhisperKit 0.16+ requires Swift 6.0 compiler
+- **Download:** https://developer.apple.com/download/
+
+---
+
+## Quick Start
+
+### Option 1: Download DMG (coming soon)
+
+Once built, the DMG will be available in GitHub Releases.
+
+### Option 2: Build from source
 
 ```bash
+# Clone the repo
 git clone https://github.com/modernmedici/hemmingway.git
-cd hemmingway
-git checkout feature/electron-migration
-npm install
-npm run dev
+cd hemmingway/.worktrees/swift-app
+
+# Install xcodegen
+brew install xcodegen
+
+# Build DMG
+./build-dmg.sh
 ```
 
-The app opens as a native macOS window. Posts are saved to `~/Desktop/Hemingway/` as markdown files.
+The DMG will be created at `./build/Hemingway-YYYYMMDD.dmg`.
 
-## Building
+For detailed build instructions, see **[BUILD.md](BUILD.md)**.
 
-```bash
-npm run dist:mac   # produces a .dmg in dist-electron/
+---
+
+## Tech Stack
+
+- **SwiftUI** — Native macOS UI framework
+- **WhisperKit** — On-device speech transcription (Whisper small.en, ~500MB)
+- **LLM.swift** — On-device text cleanup via Qwen 2.5-2B (~1.5GB)
+- **Yams** — YAML frontmatter parsing for markdown files
+- **AVFoundation** — Audio recording and format conversion
+
+All AI processing happens on-device. No data leaves your machine.
+
+---
+
+## Project Structure
+
 ```
+Hemingway/
+├── Models/
+│   └── Post.swift              # Post model (title, body, status, timestamps)
+├── Views/
+│   ├── BoardView.swift         # Three-column kanban board
+│   ├── ColumnView.swift        # Single column with cards
+│   ├── PostCardView.swift      # Individual post card
+│   ├── EditorView.swift        # Full-screen distraction-free editor
+│   └── ContentView.swift       # Main navigation (board vs editor)
+├── Services/
+│   ├── PostStore.swift         # CRUD + file persistence
+│   ├── PostSerializer.swift    # Markdown + YAML frontmatter
+│   ├── TranscriptionService.swift  # WhisperKit + LLM pipeline
+│   └── TextCleaner.swift       # LLM-based text cleanup (actor)
+└── HemingwayApp.swift          # App entry point
+
+HemingwayTests/
+├── TranscriptionServiceTests.swift  # 13 test cases
+└── TextCleanerTests.swift           # 5 test cases
+```
+
+---
 
 ## Usage
 
 | Action | How |
 |---|---|
+| Create a post | Click a column header "+" button |
+| Edit a post | Click any card |
+| Save | Click **Save** or press `⌘↵` |
+| Cancel | Press `Esc` or click **Back to Board** |
+| Voice dictate | Tap mic button in editor, speak, tap again to stop |
+| Move a post | Drag card to another column |
+| Delete a post | Right-click card → Delete |
 | Create a post | Click **+ New Idea** in the sidebar |
 | Edit a post | Click any card |
 | Save | Click **Save** or press `⌘↵` |
@@ -56,26 +120,70 @@ npm run dist:mac   # produces a .dmg in dist-electron/
 | Move a post | Open the three-dot menu on the card |
 | Delete a post | Three-dot menu → Delete (confirms inline) |
 
-## Project Structure
+---
+
+## Architecture
+
+**Voice Transcription Pipeline:**
 
 ```
-electron/
-├── main/index.js       # Main process: IPC handlers, file I/O, app setup
-└── preload/index.js    # contextBridge: exposes window.api to renderer
-src/
-├── hooks/
-│   └── useKanban.js    # Post CRUD, syncs to ~/Desktop/Hemingway/ via IPC
-├── styles/
-│   └── tokens.css      # HSL color tokens
-└── components/
-    ├── AppShell.jsx    # Sidebar layout
-    ├── Board.jsx       # Three-column kanban grid
-    ├── Column.jsx      # Column header + card list
-    ├── PostCard.jsx    # Card with word count, timestamp, three-dot menu
-    └── WritingView.jsx # Distraction-free editor
-build/
-└── icon.png / icon.icns  # App icon (warm dark squircle + BookOpen)
+User taps mic → AVAudioEngine records → Stop tap → Process:
+  1. WhisperKit transcribes raw audio (~500MB model)
+  2. Filter hallucinations ([BLANK_AUDIO], etc.)
+  3. LLM cleans filler words + punctuation (~1.5GB model)
+  4. Format with paragraph breaks (every 2-3 sentences)
+  5. Insert cleaned text into editor
 ```
+
+**Key Design Decisions:**
+- **Buffered recording** (not streaming) — allows LLM cleanup before insertion
+- **Task lifecycle management** — explicit `Task<Void, Never>?` property for cancellation
+- **File size validation** — prevents loading corrupt models from interrupted downloads
+- **5-minute recording limit** — prevents WhisperKit performance degradation
+- **2B LLM model** (not 0.8B) — better cleanup quality per eng review
+- **Models stay resident** — ~1.3GB RAM steady-state for fast response (~3-4s for short recordings)
+
+---
+
+## Development
+
+### Run tests
+
+```bash
+xcodegen generate
+xcodebuild test -project Hemingway.xcodeproj -scheme Hemingway -destination 'platform=macOS'
+```
+
+### Quick build for testing
+
+```bash
+xcodegen generate
+xcodebuild -project Hemingway.xcodeproj -scheme Hemingway -configuration Debug
+open ./build/Build/Products/Debug/Hemingway.app
+```
+
+---
+
+## Troubleshooting
+
+### Build fails with "swift-jinja contains incompatible tools version (6.0.0)"
+
+You're using Xcode 15.x. WhisperKit requires Xcode 16.0+.
+
+**Solution:** Download Xcode 16 from https://developer.apple.com/download/
+
+### Models fail to download
+
+Check internet connection. Models download from Hugging Face (~2GB total) on first run.
+
+If download is interrupted, delete corrupt files:
+```bash
+rm -rf ~/Library/Application\ Support/Hemingway/models/
+```
+
+Then restart the app to re-download.
+
+---
 
 ## License
 
