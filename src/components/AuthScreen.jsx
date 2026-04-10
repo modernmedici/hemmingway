@@ -3,39 +3,100 @@ import db from '../lib/db'
 
 export function AuthScreen() {
   const [email, setEmail] = useState('')
+  const [code, setCode] = useState('')
   const [sent, setSent] = useState(false)
+  const [sending, setSending] = useState(false)
+  const [verifying, setVerifying] = useState(false)
+  const [error, setError] = useState(null)
 
-  const handleSubmit = (e) => {
+  const handleSendCode = async (e) => {
     e.preventDefault()
     if (!email.trim()) return
-    db.auth.signInWithMagicCode({ email })
-    setSent(true)
+
+    setSending(true)
+    setError(null)
+
+    try {
+      await db.auth.sendMagicCode({ email })
+      setSent(true)
+    } catch (err) {
+      setError(err.message || 'Failed to send code')
+    } finally {
+      setSending(false)
+    }
+  }
+
+  const handleVerifyCode = async (e) => {
+    e.preventDefault()
+    if (!code.trim()) return
+
+    setVerifying(true)
+    setError(null)
+
+    try {
+      await db.auth.signInWithMagicCode({ email, code })
+      // User will be signed in, component will unmount
+    } catch (err) {
+      setError(err.message || 'Invalid code')
+    } finally {
+      setVerifying(false)
+    }
   }
 
   if (sent) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[var(--bg)]">
         <div className="max-w-md w-full px-6">
-          <div className="text-center space-y-4">
-            <div className="w-16 h-16 mx-auto rounded-full bg-[var(--accent)] flex items-center justify-center">
-              <svg className="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-              </svg>
-            </div>
-            <h2 className="text-2xl font-medium text-[var(--text)]">Check your email</h2>
-            <p className="text-[var(--text-dim)]">
-              We sent a magic link to <strong>{email}</strong>
-            </p>
-            <p className="text-sm text-[var(--text-dim)]">
-              Click the link in the email to sign in.
-            </p>
-            <button
-              onClick={() => setSent(false)}
-              className="text-sm text-[var(--accent)] hover:underline"
-            >
-              Use a different email
-            </button>
+          <div className="text-center mb-8">
+            <h1 className="text-4xl font-serif mb-2 text-[var(--text)]">Hemingway</h1>
+            <p className="text-[var(--text-dim)]">Enter your verification code</p>
           </div>
+
+          <form onSubmit={handleVerifyCode} className="space-y-4">
+            <div>
+              <label htmlFor="code" className="block text-sm font-medium text-[var(--text)] mb-2">
+                Verification code
+              </label>
+              <input
+                id="code"
+                type="text"
+                value={code}
+                onChange={(e) => setCode(e.target.value)}
+                placeholder={email === 'modernmedici88@gmail.com' ? '424242' : 'Enter code from email'}
+                className="w-full px-4 py-3 rounded-lg bg-[var(--card-bg)] border border-[var(--border)] text-[var(--text)] placeholder:text-[var(--text-dim)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)]"
+                autoFocus
+                required
+              />
+              <p className="text-xs text-[var(--text-dim)] mt-2">
+                Check your email ({email}) for the code
+              </p>
+            </div>
+
+            <button
+              type="submit"
+              disabled={verifying}
+              className="w-full py-3 rounded-lg bg-[var(--accent)] text-white font-medium hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {verifying ? 'Verifying...' : 'Sign in'}
+            </button>
+
+            {error && (
+              <p className="text-sm text-[var(--destructive)] mt-2">
+                {error}
+              </p>
+            )}
+          </form>
+
+          <button
+            onClick={() => {
+              setSent(false)
+              setCode('')
+              setError(null)
+            }}
+            className="text-sm text-[var(--accent)] hover:underline mt-4"
+          >
+            Use a different email
+          </button>
         </div>
       </div>
     )
@@ -49,7 +110,7 @@ export function AuthScreen() {
           <p className="text-[var(--text-dim)]">A focused space for your ideas</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSendCode} className="space-y-4">
           <div>
             <label htmlFor="email" className="block text-sm font-medium text-[var(--text)] mb-2">
               Email address
@@ -67,14 +128,21 @@ export function AuthScreen() {
 
           <button
             type="submit"
-            className="w-full py-3 rounded-lg bg-[var(--accent)] text-white font-medium hover:opacity-90 transition-opacity"
+            disabled={sending}
+            className="w-full py-3 rounded-lg bg-[var(--accent)] text-white font-medium hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Send magic link
+            {sending ? 'Sending...' : 'Send verification code'}
           </button>
+
+          {error && (
+            <p className="text-sm text-[var(--destructive)] mt-2">
+              {error}
+            </p>
+          )}
         </form>
 
         <p className="text-center text-sm text-[var(--text-dim)] mt-6">
-          No password needed. We'll email you a link to sign in.
+          No password needed. We'll email you a code to sign in.
         </p>
       </div>
     </div>

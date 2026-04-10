@@ -14,14 +14,14 @@ export function useKanban() {
     const postId = id()
     const now = new Date()
     await db.transact([
-      db.tx.posts[postId].create({
+      db.tx.posts[postId].update({
         title: title.trim(),
         body: body.trim(),
         column,
         createdAt: now,
         updatedAt: now,
       }),
-      db.tx.$users[user.id].link({ posts: postId }),
+      db.tx.posts[postId].link({ creator: user.id }),
     ])
     return { id: postId }
   }, [user])

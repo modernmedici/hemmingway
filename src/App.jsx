@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useKanban } from './hooks/useKanban'
 import db from './lib/db'
 import { AuthScreen } from './components/AuthScreen'
@@ -9,6 +9,16 @@ import './index.css'
 
 export default function App() {
   const { user, isLoading: authLoading } = db.useAuth()
+
+  // Handle magic code from URL
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    const code = params.get('code')
+    if (code && !user) {
+      // InstantDB automatically handles verification when the page loads with a code param
+      console.log('Magic code detected:', code)
+    }
+  }, [user])
   const { posts, loading, error, createPost, updatePost, movePost, deletePost } = useKanban()
   const [view, setView] = useState('board')
   const [editingPost, setEditingPost] = useState(null)
