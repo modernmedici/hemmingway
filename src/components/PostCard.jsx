@@ -9,7 +9,7 @@ const wordCount = (text) => {
   return trimmed ? trimmed.split(/\s+/).length : 0;
 };
 
-export default function PostCard({ post, onMove, onDelete, onEdit, onCoach, stalenessTier }) {
+export default function PostCard({ post, onMove, onDelete, onEdit }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [hovered, setHovered] = useState(false);
@@ -32,11 +32,16 @@ export default function PostCard({ post, onMove, onDelete, onEdit, onCoach, stal
   return (
     <motion.div
       layout
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
+      variants={{
+        hidden: { opacity: 0, y: 8 },
+        visible: { opacity: 1, y: 0 },
+      }}
+      initial="hidden"
+      animate="visible"
       exit={{ opacity: 0, y: -8 }}
+      whileTap={{ scale: 0.98 }}
       transition={{ duration: 0.18 }}
-      onClick={() => { if (menuOpen) return; stalenessTier && onCoach ? onCoach(post) : onEdit(post); }}
+      onClick={() => { if (menuOpen) return; onEdit(post); }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => { setHovered(false); setConfirmDelete(false); }}
       style={{
@@ -52,28 +57,14 @@ export default function PostCard({ post, onMove, onDelete, onEdit, onCoach, stal
     >
       {/* Top row: word count badge + three-dot menu */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-          <span style={{
-            fontSize: '10px', fontFamily: FONTS.inter, fontWeight: 500,
-            color: 'hsl(var(--muted-foreground))',
-            background: 'hsl(var(--secondary))',
-            borderRadius: '999px', padding: '1px 8px',
-          }}>
-            {totalWords} words
-          </span>
-          {stalenessTier && (
-            <span
-              data-staleness={stalenessTier}
-              style={{
-                width: '7px', height: '7px', borderRadius: '50%',
-                background: stalenessTier === 'urgent' || stalenessTier === 'finalized-stuck'
-                  ? 'hsl(35 90% 55%)'
-                  : 'hsl(45 90% 55%)',
-                flexShrink: 0,
-              }}
-            />
-          )}
-        </div>
+        <span style={{
+          fontSize: '10px', fontFamily: FONTS.inter, fontWeight: 500,
+          color: 'hsl(var(--muted-foreground))',
+          background: 'hsl(var(--secondary))',
+          borderRadius: '999px', padding: '1px 8px',
+        }}>
+          {totalWords} words
+        </span>
 
         <div style={{ position: 'relative' }}>
           <button
@@ -88,7 +79,11 @@ export default function PostCard({ post, onMove, onDelete, onEdit, onCoach, stal
           </button>
 
           {menuOpen && (
-            <div
+            <motion.div
+              initial={{ opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.15 }}
               onClick={e => e.stopPropagation()}
               style={{
                 position: 'absolute', right: 0, top: '100%', zIndex: 50,
@@ -101,7 +96,13 @@ export default function PostCard({ post, onMove, onDelete, onEdit, onCoach, stal
               }}
             >
               {COLUMN_IDS.filter(c => c !== post.column).map(col => (
-                <button key={col} onClick={e => handleMove(e, col)} style={menuItemStyle}>
+                <button
+                  key={col}
+                  onClick={e => handleMove(e, col)}
+                  style={menuItemStyle}
+                  onMouseEnter={e => { e.currentTarget.style.background = 'hsl(var(--accent))'; }}
+                  onMouseLeave={e => { e.currentTarget.style.background = 'none'; }}
+                >
                   Move to {COLUMN_LABELS[col]}
                 </button>
               ))}
@@ -115,12 +116,17 @@ export default function PostCard({ post, onMove, onDelete, onEdit, onCoach, stal
                   <button onClick={e => { e.stopPropagation(); setConfirmDelete(false); }} style={{ ...menuItemStyle, padding: '2px 4px' }}>No</button>
                 </div>
               ) : (
-                <button onClick={handleDelete} style={{ ...menuItemStyle, color: 'hsl(var(--destructive))' }}>
+                <button
+                  onClick={handleDelete}
+                  style={{ ...menuItemStyle, color: 'hsl(var(--destructive))' }}
+                  onMouseEnter={e => { e.currentTarget.style.background = 'hsl(var(--destructive) / 0.1)'; }}
+                  onMouseLeave={e => { e.currentTarget.style.background = 'none'; }}
+                >
                   <Trash2 size={12} style={{ marginRight: '6px' }} />
                   Delete
                 </button>
               )}
-            </div>
+            </motion.div>
           )}
         </div>
       </div>

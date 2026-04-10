@@ -1,49 +1,63 @@
-import { useState } from 'react';
-import { useKanban } from './hooks/useKanban';
-import { useCoach } from './hooks/useCoach';
-import AppShell from './components/AppShell';
-import Board from './components/Board';
-import WritingView from './components/WritingView';
-import CoachingModal from './components/CoachingModal';
-import SettingsModal from './components/SettingsModal';
-import './index.css';
+import { useState, useEffect } from 'react'
+import { useKanban } from './hooks/useKanban'
+import db from './lib/db'
+import { AuthScreen } from './components/AuthScreen'
+import AppShell from './components/AppShell'
+import Board from './components/Board'
+import WritingView from './components/WritingView'
+import './index.css'
 
 export default function App() {
-  const { posts, loading, error, createPost, updatePost, movePost, deletePost } = useKanban();
-  const { getTier, snooze } = useCoach(posts);
-  const [view, setView] = useState('board');
-  const [editingPost, setEditingPost] = useState(null);
-  const [pendingColumn, setPendingColumn] = useState('ideas');
-  const [activeCoachPost, setActiveCoachPost] = useState(null);
-  const [showSettings, setShowSettings] = useState(false);
+  const { user, isLoading: authLoading } = db.useAuth()
+
+  // Handle magic code from URL
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    const code = params.get('code')
+    if (code && !user) {
+      // InstantDB automatically handles verification when the page loads with a code param
+      console.log('Magic code detected:', code)
+    }
+  }, [user])
+  const { posts, loading, error, createPost, updatePost, movePost, deletePost } = useKanban()
+  const [view, setView] = useState('board')
+  const [editingPost, setEditingPost] = useState(null)
+  const [pendingColumn, setPendingColumn] = useState('ideas')
+
+  // Show auth screen if not signed in
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[var(--bg)]">
+        <div className="text-[var(--text-dim)]">Loading...</div>
+      </div>
+    )
+  }
+
+  if (!user) {
+    return <AuthScreen />
+  }
 
   const handleNewPost = (columnId) => {
-    setActiveCoachPost(null);
-    setEditingPost(null);
-    setPendingColumn(columnId);
-    setView('editor');
-  };
+    setEditingPost(null)
+    setPendingColumn(columnId)
+    setView('editor')
+  }
 
   const handleEditPost = (post) => {
-    setActiveCoachPost(null);
-    setEditingPost(post);
-    setPendingColumn(post.column);
-    setView('editor');
-  };
-
-  const handleCoachPost = (post) => {
-    setActiveCoachPost(post);
-  };
+    setEditingPost(post)
+    setPendingColumn(post.column)
+    setView('editor')
+  }
 
   const handleSave = (title, body, column) => {
     if (editingPost) {
-      updatePost(editingPost.id, { title, body });
-      if (column !== editingPost.column) movePost(editingPost.id, column);
+      updatePost(editingPost.id, { title, body })
+      if (column !== editingPost.column) movePost(editingPost.id, column)
     } else {
-      createPost(title, body, column);
+      createPost(title, body, column)
     }
-    setView('board');
-  };
+    setView('board')
+  }
 
   if (view === 'editor') {
     return (
@@ -53,11 +67,11 @@ export default function App() {
         onSave={handleSave}
         onCancel={() => setView('board')}
       />
-    );
+    )
   }
 
   return (
-    <AppShell onNewIdea={() => handleNewPost('ideas')} onOpenSettings={() => setShowSettings(true)}>
+    <AppShell onNewIdea={() => handleNewPost('ideas')} user={user}>
       <main style={{ flex: 1, padding: '32px 36px', overflow: 'hidden' }}>
         <Board
           posts={posts}
@@ -67,23 +81,8 @@ export default function App() {
           onDeletePost={deletePost}
           onNewPost={handleNewPost}
           onEditPost={handleEditPost}
-          onCoachPost={handleCoachPost}
-          getTier={getTier}
         />
       </main>
-
-      {activeCoachPost && (
-        <CoachingModal
-          post={activeCoachPost}
-          onClose={() => setActiveCoachPost(null)}
-          onSnooze={snooze}
-          onMovePost={movePost}
-        />
-      )}
-
-      {showSettings && (
-        <SettingsModal onClose={() => setShowSettings(false)} />
-      )}
     </AppShell>
-  );
+  )
 }

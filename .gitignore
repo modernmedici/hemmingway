@@ -13,6 +13,17 @@ DerivedData/
 .build/
 .swiftpm/
 
+# Node
+node_modules/
+dist/
+.env.local
+
+# Git worktrees
+.worktrees/
+
+# Context
+.context/
+
 # OS
 .DS_Store
 
