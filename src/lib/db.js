@@ -1,5 +1,5 @@
 import { init } from '@instantdb/react'
-import schema from '../../instant.schema'
+import schema from '../../instant.schema.js'
 
 const APP_ID = '420abe92-3e20-4aed-852e-30b9b830b3a9'
 
