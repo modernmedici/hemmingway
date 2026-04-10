@@ -1,15 +1,15 @@
-import { COLUMNS, FONTS } from '../lib/constants';
+import { COLUMNS } from '../lib/constants';
 import Column from './Column';
 
 export default function Board({ posts, loading, error, onMovePost, onDeletePost, onNewPost, onEditPost }) {
   if (loading) {
     return (
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px', height: '100%' }}>
+      <div className="grid grid-cols-3 gap-5 h-full">
         {COLUMNS.map(col => (
-          <div key={col.id} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            <div style={{ height: '20px', width: '80px', borderRadius: '6px', background: 'hsl(var(--muted))', marginBottom: '4px' }} />
+          <div key={col.id} className="flex flex-col gap-2">
+            <div className="h-5 w-20 rounded-md bg-muted mb-1" />
             {[1, 2, 3].map(i => (
-              <div key={i} style={{ height: '90px', borderRadius: '8px', background: 'hsl(var(--muted))', opacity: 1 - i * 0.2 }} />
+              <div key={i} className="h-[90px] rounded-lg bg-muted" style={{ opacity: 1 - i * 0.2 }} />
             ))}
           </div>
         ))}
@@ -19,8 +19,8 @@ export default function Board({ posts, loading, error, onMovePost, onDeletePost,
 
   if (error) {
     return (
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
-        <p style={{ fontSize: '13px', fontFamily: FONTS.inter, color: 'hsl(var(--destructive))' }}>
+      <div className="flex items-center justify-center h-full">
+        <p className="text-[13px] font-sans text-destructive">
           Failed to load posts: {error}
         </p>
       </div>
@@ -28,7 +28,7 @@ export default function Board({ posts, loading, error, onMovePost, onDeletePost,
   }
 
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px', height: '100%' }}>
+    <div className="grid grid-cols-3 gap-5 h-full">
       {COLUMNS.map((column) => (
         <Column
           key={column.id}

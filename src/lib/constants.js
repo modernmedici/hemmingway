@@ -1,8 +1,3 @@
-export const FONTS = {
-  inter: "'Inter', sans-serif",
-  serif: "'Libre Baskerville', Georgia, serif",
-};
-
 export const COLUMNS = [
   { id: 'ideas',     label: 'Scratchpad' },
   { id: 'drafts',    label: 'Drafts' },

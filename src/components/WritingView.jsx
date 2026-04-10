@@ -1,6 +1,5 @@
 import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { ArrowLeft, Check, Loader2, Maximize2 } from 'lucide-react';
-import { FONTS } from '../lib/constants';
 
 export default function WritingView({ post, defaultColumn, onSave, onCancel }) {
   const [title,  setTitle]  = useState(post?.title ?? '');
@@ -132,33 +131,15 @@ export default function WritingView({ post, defaultColumn, onSave, onCancel }) {
   const canSave = title.trim().length > 0 && !saving;
 
   return (
-    <div ref={containerRef} className="view-enter" style={{ minHeight: '100vh', background: 'hsl(var(--background))', display: 'flex', flexDirection: 'column', fontFamily: FONTS.inter, position: 'relative' }}>
+    <div ref={containerRef} className="view-enter min-h-screen bg-background flex flex-col font-sans relative">
       {/* Zen mode indicator */}
       {zenMode && (
-        <div style={{
-          position: 'fixed', top: '20px', right: '20px', zIndex: 20,
-          opacity: 0, transition: 'opacity 0.2s',
-        }}
-        onMouseEnter={e => { e.currentTarget.style.opacity = 1; }}
-        onMouseLeave={e => { e.currentTarget.style.opacity = 0; }}
-        className="zen-mode-indicator"
+        <div
+          className="zen-mode-indicator fixed top-5 right-5 z-20 opacity-0 transition-opacity duration-200 hover:opacity-100"
         >
           <button
             onClick={exitZenMode}
-            style={{
-              fontSize: '11px', fontFamily: FONTS.inter,
-              background: 'hsl(var(--muted))',
-              color: 'hsl(var(--muted-foreground))',
-              border: 'none', borderRadius: 'var(--radius-sm)',
-              padding: '6px 12px', cursor: 'pointer',
-              transition: 'all 0.12s',
-            }}
-            onMouseEnter={e => {
-              e.currentTarget.style.background = 'hsl(var(--secondary))';
-            }}
-            onMouseLeave={e => {
-              e.currentTarget.style.background = 'hsl(var(--muted))';
-            }}
+            className="text-[11px] font-sans bg-muted text-muted-foreground border-none rounded-sm px-3 py-1.5 cursor-pointer transition-all duration-[120ms] hover:bg-secondary"
           >
             Exit Fullscreen (Esc)
           </button>
@@ -166,74 +147,38 @@ export default function WritingView({ post, defaultColumn, onSave, onCancel }) {
       )}
 
       {/* Sticky header */}
-      {!zenMode && (<div style={{
-        position: 'sticky', top: 0, zIndex: 10,
-        background: 'hsl(var(--background) / 0.8)',
-        backdropFilter: 'blur(8px)',
-        borderBottom: '1px solid hsl(var(--border))',
-        padding: '14px 40px 14px 88px',
-        display: 'flex', alignItems: 'center',
-      }}>
+      {!zenMode && (<div className="sticky top-0 z-10 bg-background/80 backdrop-blur-sm border-b border-border py-3.5 px-10 pl-[88px] flex items-center">
         <button
           onClick={handleCancel}
-          style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'none', border: 'none', cursor: 'pointer', color: 'hsl(var(--muted-foreground))', fontSize: '12px', fontFamily: FONTS.inter, padding: 0, transition: 'all 0.12s' }}
-          onMouseEnter={e => { e.currentTarget.style.color = 'hsl(var(--foreground))'; }}
-          onMouseLeave={e => { e.currentTarget.style.color = 'hsl(var(--muted-foreground))'; }}
-          onMouseDown={e => { e.currentTarget.style.transform = 'scale(0.95)'; }}
-          onMouseUp={e => { e.currentTarget.style.transform = 'scale(1)'; }}
+          className="flex items-center gap-1.5 bg-transparent border-none cursor-pointer text-muted-foreground text-xs font-sans p-0 transition-all duration-[120ms] hover:text-foreground active:scale-95"
         >
           <ArrowLeft size={14} />
           Back to Board
         </button>
 
-        <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '10px' }}>
+        <div className="ml-auto flex items-center gap-2.5">
           {/* Saved indicator */}
           {saved && (
-            <span style={{
-              fontSize: '11px',
-              fontFamily: FONTS.inter,
-              color: 'hsl(var(--primary))',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '4px',
-              animation: 'fadeOut 1.5s ease-out forwards',
-            }}>
+            <span className="text-[11px] font-sans text-primary flex items-center gap-1 animate-[fadeOut_1.5s_ease-out_forwards]">
               <Check size={12} />
               Saved!
             </span>
           )}
           {/* Word count */}
-          <span style={{
-            fontSize: '11px',
-            fontFamily: FONTS.inter,
-            color: countChanged ? 'hsl(var(--primary))' : 'hsl(var(--muted-foreground))',
-            fontVariantNumeric: 'tabular-nums',
-            transform: countChanged ? 'scale(1.1)' : 'scale(1)',
-            transition: 'all 0.2s ease',
-          }}>
+          <span
+            className="text-[11px] font-sans tabular-nums transition-all duration-200 ease-in-out"
+            style={{
+              color: countChanged ? 'hsl(var(--primary))' : 'hsl(var(--muted-foreground))',
+              transform: countChanged ? 'scale(1.1)' : 'scale(1)',
+            }}
+          >
             {wordCount.toLocaleString()} {wordCount === 1 ? 'word' : 'words'}
           </span>
           {/* Zen Mode Toggle */}
           <button
             onClick={enterZenMode}
             title="Fullscreen (⌘⇧F)"
-            style={{
-              display: 'flex', alignItems: 'center', gap: '4px',
-              background: 'none', border: 'none', cursor: 'pointer',
-              color: 'hsl(var(--muted-foreground))',
-              fontSize: '11px', fontFamily: FONTS.inter,
-              padding: '5px 8px',
-              transition: 'all 0.12s',
-              borderRadius: 'var(--radius-sm)',
-            }}
-            onMouseEnter={e => {
-              e.currentTarget.style.color = 'hsl(var(--foreground))';
-              e.currentTarget.style.background = 'hsl(var(--secondary))';
-            }}
-            onMouseLeave={e => {
-              e.currentTarget.style.color = 'hsl(var(--muted-foreground))';
-              e.currentTarget.style.background = 'none';
-            }}
+            className="flex items-center gap-1 bg-transparent border-none cursor-pointer text-muted-foreground text-[11px] font-sans py-1.5 px-2 transition-all duration-[120ms] rounded-sm hover:text-foreground hover:bg-secondary"
           >
             <Maximize2 size={14} />
           </button>
@@ -241,61 +186,42 @@ export default function WritingView({ post, defaultColumn, onSave, onCancel }) {
           <button
             onClick={handleSave}
             disabled={!canSave}
+            className="text-[11px] font-sans font-medium border-none rounded-sm py-1.5 px-3.5 transition-all duration-[120ms] flex items-center gap-1 active:scale-95 disabled:cursor-not-allowed"
             style={{
-              fontSize: '11px', fontFamily: FONTS.inter, fontWeight: 500,
               background: canSave ? 'hsl(var(--primary))' : 'hsl(var(--muted))',
               color: canSave ? 'hsl(var(--primary-foreground))' : 'hsl(var(--muted-foreground))',
-              border: 'none', borderRadius: 'var(--radius-sm)',
-              padding: '5px 14px', cursor: canSave ? 'pointer' : 'not-allowed',
-              transition: 'all 0.12s',
-              display: 'flex', alignItems: 'center', gap: '4px',
             }}
-            onMouseDown={e => { if (canSave) e.currentTarget.style.transform = 'scale(0.95)'; }}
-            onMouseUp={e => { e.currentTarget.style.transform = 'scale(1)'; }}
           >
-            {saving && <Loader2 size={12} style={{ animation: 'spin 1s linear infinite' }} />}
+            {saving && <Loader2 size={12} className="animate-spin" />}
             {saving ? 'Saving...' : 'Save'}
           </button>
         </div>
       </div>)}
 
       {/* Editor */}
-      <div style={{ flex: 1, maxWidth: '768px', width: '100%', margin: '0 auto', padding: zenMode ? '128px 32px' : '64px 32px 48px' }}>
+      <div
+        className="flex-1 max-w-3xl w-full mx-auto px-8 pb-12"
+        style={{ paddingTop: zenMode ? '128px' : '64px' }}
+      >
         <textarea
           ref={titleRef}
           value={title}
           onChange={e => { setTitle(e.target.value); autoResizeTitle(); }}
           placeholder="Essay Title"
           rows={1}
-          style={{
-            display: 'block', width: '100%',
-            fontSize: 'clamp(28px, 4vw, 40px)',
-            fontWeight: 700, fontFamily: FONTS.serif,
-            color: 'hsl(var(--foreground))',
-            border: 'none', outline: 'none',
-            background: 'transparent',
-            marginBottom: '32px', lineHeight: '1.2',
-            resize: 'none', overflow: 'hidden',
-          }}
+          className="block w-full text-[clamp(28px,4vw,40px)] font-bold font-serif text-foreground border-none outline-none bg-transparent mb-8 leading-[1.2] resize-none overflow-hidden"
         />
         <textarea
           value={body}
           onChange={e => setBody(e.target.value)}
           placeholder="Start writing your thoughts..."
-          style={{
-            display: 'block', width: '100%',
-            minHeight: '500px', fontSize: '17px',
-            fontFamily: FONTS.serif, lineHeight: '1.9',
-            color: 'hsl(var(--foreground))',
-            border: 'none', outline: 'none',
-            background: 'transparent', resize: 'none',
-          }}
+          className="block w-full min-h-[500px] text-[17px] font-serif leading-[1.9] text-foreground border-none outline-none bg-transparent resize-none"
         />
       </div>
 
       {!zenMode && (
-        <div style={{ borderTop: '1px solid hsl(var(--border))', padding: '10px 40px', textAlign: 'center' }}>
-          <span style={{ fontSize: '10px', letterSpacing: '0.1em', color: 'hsl(var(--muted-foreground))', fontFamily: FONTS.inter }}>
+        <div className="border-t border-border py-2.5 px-10 text-center">
+          <span className="text-[10px] tracking-widest text-muted-foreground font-sans">
             ⌘↵ to save · ⌘⇧F for fullscreen · Esc to go back
           </span>
         </div>

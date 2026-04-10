@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { FileText, MoreHorizontal, Trash2 } from 'lucide-react';
-import { formatDistanceToNow } from 'date-fns';
-import { COLUMN_IDS, COLUMN_LABELS, FONTS } from '../lib/constants';
+import { formatDistanceToNow } from 'date-fns/formatDistanceToNow';
+import { COLUMN_IDS, COLUMN_LABELS } from '../lib/constants';
 
 const wordCount = (text) => {
   const trimmed = text?.trim();
@@ -14,6 +14,7 @@ export default function PostCard({ post, onMove, onDelete, onEdit }) {
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [hovered, setHovered] = useState(false);
   const totalWords = wordCount((post.title ?? '') + ' ' + (post.body ?? ''));
+
   const handleDelete = (e) => {
     e.stopPropagation();
     if (confirmDelete) {
@@ -43,36 +44,24 @@ export default function PostCard({ post, onMove, onDelete, onEdit }) {
       transition={{ duration: 0.18 }}
       onClick={() => { if (menuOpen) return; onEdit(post); }}
       onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => { setHovered(false); setConfirmDelete(false); }}
+      onMouseLeave={() => { setHovered(false); setConfirmDelete(false); setMenuOpen(false); }}
+      className="border border-border/50 rounded-md bg-card p-3.5 cursor-pointer relative transition-shadow duration-150"
       style={{
-        border: '1px solid hsl(var(--border) / 0.5)',
-        borderRadius: 'var(--radius-md)',
-        background: 'hsl(var(--card))',
-        padding: '14px',
-        cursor: 'pointer',
-        position: 'relative',
-        transition: 'box-shadow 0.15s',
         boxShadow: hovered ? '0 2px 8px hsl(var(--foreground) / 0.06)' : 'none',
       }}
     >
       {/* Top row: word count badge + three-dot menu */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-        <span style={{
-          fontSize: '10px', fontFamily: FONTS.inter, fontWeight: 500,
-          color: 'hsl(var(--muted-foreground))',
-          background: 'hsl(var(--secondary))',
-          borderRadius: '999px', padding: '1px 8px',
-        }}>
-          {totalWords} words
+      <div className="flex items-center justify-between mb-2">
+        <span className="text-[10px] font-sans font-medium text-muted-foreground bg-secondary rounded-full px-2 py-px">
+          {totalWords} {totalWords === 1 ? 'word' : 'words'}
         </span>
 
-        <div style={{ position: 'relative' }}>
+        <div className="relative">
           <button
             onClick={e => { e.stopPropagation(); setMenuOpen(m => !m); }}
+            className="bg-transparent border-none cursor-pointer p-0.5 leading-none transition-colors duration-100"
             style={{
-              background: 'none', border: 'none', cursor: 'pointer',
               color: hovered ? 'hsl(var(--muted-foreground))' : 'transparent',
-              padding: '2px', lineHeight: 0, transition: 'color 0.1s',
             }}
           >
             <MoreHorizontal size={14} />
@@ -85,44 +74,42 @@ export default function PostCard({ post, onMove, onDelete, onEdit }) {
               exit={{ opacity: 0, y: -8 }}
               transition={{ duration: 0.15 }}
               onClick={e => e.stopPropagation()}
-              style={{
-                position: 'absolute', right: 0, top: '100%', zIndex: 50,
-                background: 'hsl(var(--card))',
-                border: '1px solid hsl(var(--border))',
-                borderRadius: 'var(--radius-md)',
-                boxShadow: '0 4px 16px hsl(var(--foreground) / 0.1)',
-                padding: '4px', minWidth: '160px',
-                fontFamily: FONTS.inter, fontSize: '12px',
-              }}
+              className="absolute right-0 top-full z-50 bg-card border border-border rounded-md shadow-[0_4px_16px_hsl(var(--foreground)/0.1)] p-1 min-w-[160px] font-sans text-xs"
             >
               {COLUMN_IDS.filter(c => c !== post.column).map(col => (
                 <button
                   key={col}
                   onClick={e => handleMove(e, col)}
-                  style={menuItemStyle}
-                  onMouseEnter={e => { e.currentTarget.style.background = 'hsl(var(--accent))'; }}
-                  onMouseLeave={e => { e.currentTarget.style.background = 'none'; }}
+                  className="flex items-center w-full px-2 py-1.5 bg-transparent border-none cursor-pointer text-foreground rounded-sm text-xs font-sans text-left transition-colors duration-100 hover:bg-accent"
                 >
                   Move to {COLUMN_LABELS[col]}
                 </button>
               ))}
 
-              <div style={{ height: '1px', background: 'hsl(var(--border))', margin: '4px 0' }} />
+              <div className="h-px bg-border my-1" />
 
               {confirmDelete ? (
-                <div style={{ padding: '4px 8px', display: 'flex', gap: '8px', alignItems: 'center' }}>
-                  <span style={{ fontSize: '11px', color: 'hsl(var(--muted-foreground))' }}>Delete?</span>
-                  <button onClick={handleDelete} style={{ ...menuItemStyle, color: 'hsl(var(--destructive))', padding: '2px 4px' }}>Yes</button>
-                  <button onClick={e => { e.stopPropagation(); setConfirmDelete(false); }} style={{ ...menuItemStyle, padding: '2px 4px' }}>No</button>
+                <div className="px-2 py-1 flex gap-2 items-center">
+                  <span className="text-[11px] text-muted-foreground">Delete?</span>
+                  <button
+                    onClick={handleDelete}
+                    className="flex items-center px-1 py-0.5 bg-transparent border-none cursor-pointer text-destructive rounded-sm text-xs font-sans text-left transition-colors duration-100 hover:bg-accent"
+                  >
+                    Yes
+                  </button>
+                  <button
+                    onClick={e => { e.stopPropagation(); setConfirmDelete(false); }}
+                    className="flex items-center px-1 py-0.5 bg-transparent border-none cursor-pointer text-foreground rounded-sm text-xs font-sans text-left transition-colors duration-100 hover:bg-accent"
+                  >
+                    No
+                  </button>
                 </div>
               ) : (
                 <button
                   onClick={handleDelete}
-                  style={{ ...menuItemStyle, color: 'hsl(var(--destructive))' }}
-                  onMouseEnter={e => { e.currentTarget.style.background = 'hsl(var(--destructive) / 0.1)'; }}
-                  onMouseLeave={e => { e.currentTarget.style.background = 'none'; }}
+                  className="flex items-center w-full px-2 py-1.5 bg-transparent border-none cursor-pointer text-destructive rounded-sm text-xs font-sans text-left transition-colors duration-100 hover:bg-destructive/10"
                 >
-                  <Trash2 size={12} style={{ marginRight: '6px' }} />
+                  <Trash2 size={12} className="mr-1.5" />
                   Delete
                 </button>
               )}
@@ -132,45 +119,27 @@ export default function PostCard({ post, onMove, onDelete, onEdit }) {
       </div>
 
       {/* Title */}
-      <p style={{
-        fontSize: '14px', fontWeight: 700, fontFamily: FONTS.serif,
-        color: 'hsl(var(--foreground))', lineHeight: '1.4',
-        marginBottom: post.body ? '6px' : '10px',
-        transition: 'color 0.1s',
-      }}>
+      <p
+        className="text-sm font-bold font-serif text-foreground leading-[1.4] transition-colors duration-100"
+        style={{ marginBottom: post.body ? '6px' : '10px' }}
+      >
         {post.title}
       </p>
 
       {/* Body preview */}
       {post.body && (
-        <p style={{
-          fontSize: '12px', fontFamily: FONTS.inter,
-          color: 'hsl(var(--muted-foreground))', lineHeight: '1.6',
-          overflow: 'hidden', display: '-webkit-box',
-          WebkitLineClamp: 3, WebkitBoxOrient: 'vertical',
-          marginBottom: '10px',
-        }}>
+        <p className="text-xs font-sans text-muted-foreground leading-relaxed overflow-hidden mb-2.5 line-clamp-3">
           {post.body}
         </p>
       )}
 
-      {/* Bottom row: timestamp + icon + published badge */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <span style={{ fontSize: '10px', color: 'hsl(var(--muted-foreground))', fontFamily: FONTS.inter }}>
+      {/* Bottom row: timestamp + icon */}
+      <div className="flex items-center justify-between">
+        <span className="text-[10px] text-muted-foreground font-sans">
           {formatDistanceToNow(new Date(post.updatedAt), { addSuffix: true })}
         </span>
-        <FileText size={13} color="hsl(var(--muted-foreground))" />
+        <FileText size={13} className="text-muted-foreground" />
       </div>
     </motion.div>
   );
 }
-
-const menuItemStyle = {
-  display: 'flex', alignItems: 'center',
-  width: '100%', padding: '6px 8px',
-  background: 'none', border: 'none', cursor: 'pointer',
-  color: 'hsl(var(--foreground))',
-  borderRadius: 'var(--radius-sm)',
-  fontSize: '12px', fontFamily: "'Inter', sans-serif",
-  textAlign: 'left', transition: 'background 0.1s',
-};

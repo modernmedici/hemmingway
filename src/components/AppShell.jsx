@@ -1,49 +1,32 @@
 import { useState } from 'react'
 import { BookOpen, LogOut } from 'lucide-react'
-import { FONTS } from '../lib/constants'
 import db from '../lib/db'
 
 export default function AppShell({ children, onNewIdea, user }) {
   const [isHovering, setIsHovering] = useState(false)
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', background: 'hsl(var(--background))' }}>
+    <div className="flex min-h-screen bg-background">
       {/* Sidebar */}
-      <aside style={{
-        width: '256px',
-        flexShrink: 0,
-        background: 'hsl(var(--sidebar))',
-        borderRight: '1px solid hsl(var(--sidebar-border))',
-        display: 'flex',
-        flexDirection: 'column',
-        padding: '52px 16px 24px',
-        fontFamily: FONTS.inter,
-      }}>
+      <aside className="w-64 flex-shrink-0 bg-sidebar border-r border-sidebar-border flex flex-col pt-[52px] px-4 pb-6 font-sans">
         {/* Logo */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '32px', paddingLeft: '8px' }}>
+        <div className="flex items-center gap-2.5 mb-8 pl-2">
           <div
-            style={{
-              width: '32px', height: '32px',
-              background: 'hsl(var(--primary))',
-              borderRadius: 'var(--radius-md)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              cursor: 'pointer',
-              transition: 'transform 0.3s ease',
-            }}
+            className="w-8 h-8 bg-primary rounded-md flex items-center justify-center cursor-pointer transition-transform duration-300"
             onMouseEnter={() => setIsHovering(true)}
             onMouseLeave={() => setIsHovering(false)}
           >
             <BookOpen
               size={16}
-              color="hsl(var(--primary-foreground))"
+              className="text-primary-foreground"
               style={{
                 animation: isHovering ? 'flutter 0.6s ease-in-out infinite' : 'none',
               }}
             />
           </div>
           <div>
-            <p style={{ fontSize: '14px', fontWeight: 600, color: 'hsl(var(--foreground))', lineHeight: 1 }}>Hemingway</p>
-            <p style={{ fontSize: '10px', color: 'hsl(var(--muted-foreground))', marginTop: '2px' }}>Write with Purpose</p>
+            <p className="text-sm font-semibold text-foreground leading-none">Hemingway</p>
+            <p className="text-[10px] text-muted-foreground mt-0.5">Write with Purpose</p>
           </div>
         </div>
         <style>{`
@@ -55,47 +38,25 @@ export default function AppShell({ children, onNewIdea, user }) {
         `}</style>
 
         {/* Nav */}
-        <nav style={{ flex: 1 }}>
+        <nav className="flex-1">
           <button
             onClick={onNewIdea}
-            style={{
-              width: '100%',
-              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
-              padding: '8px 10px', borderRadius: 'var(--radius-md)',
-              border: '1px solid hsl(var(--border))',
-              background: 'none', cursor: 'pointer',
-              fontSize: '12px', fontWeight: 500, color: 'hsl(var(--foreground))',
-              fontFamily: FONTS.inter, transition: 'all 0.12s',
-            }}
-            onMouseEnter={e => { e.currentTarget.style.background = 'hsl(var(--accent))'; }}
-            onMouseLeave={e => { e.currentTarget.style.background = 'none'; }}
-            onMouseDown={e => { e.currentTarget.style.transform = 'scale(0.95)'; }}
-            onMouseUp={e => { e.currentTarget.style.transform = 'scale(1)'; }}
+            className="w-full flex items-center justify-center gap-1.5 px-2.5 py-2 rounded-md border border-border bg-transparent cursor-pointer text-xs font-medium text-foreground font-sans transition-all duration-[120ms] hover:bg-accent active:scale-95"
           >
             + New Idea
           </button>
         </nav>
 
         {/* User info & sign out */}
-        <div style={{ paddingLeft: '8px', marginBottom: '12px' }}>
-          <p style={{ fontSize: '11px', color: 'hsl(var(--muted-foreground))' }}>
+        <div className="pl-2 mb-3">
+          <p className="text-[11px] text-muted-foreground">
             {user?.email}
           </p>
         </div>
         <button
           onClick={() => db.auth.signOut()}
           aria-label="Sign out"
-          style={{
-            display: 'flex', alignItems: 'center', gap: '8px',
-            padding: '8px 10px', borderRadius: 'var(--radius-md)',
-            border: 'none', background: 'none', cursor: 'pointer',
-            fontSize: '12px', color: 'hsl(var(--muted-foreground))',
-            fontFamily: FONTS.inter, width: '100%', transition: 'all 0.12s',
-          }}
-          onMouseEnter={e => { e.currentTarget.style.background = 'hsl(var(--accent))'; }}
-          onMouseLeave={e => { e.currentTarget.style.background = 'none'; }}
-          onMouseDown={e => { e.currentTarget.style.transform = 'scale(0.95)'; }}
-          onMouseUp={e => { e.currentTarget.style.transform = 'scale(1)'; }}
+          className="flex items-center gap-2 px-2.5 py-2 rounded-md border-none bg-transparent cursor-pointer text-xs text-muted-foreground font-sans w-full transition-all duration-[120ms] hover:bg-accent active:scale-95"
         >
           <LogOut size={14} />
           Sign out
@@ -104,7 +65,7 @@ export default function AppShell({ children, onNewIdea, user }) {
       </aside>
 
       {/* Main */}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+      <div className="flex-1 flex flex-col overflow-hidden">
         {children}
       </div>
     </div>

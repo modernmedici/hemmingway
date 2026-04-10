@@ -1,34 +1,17 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { FileText } from 'lucide-react';
-import { COLUMN_IDS, FONTS } from '../lib/constants';
 import PostCard from './PostCard';
 
 export default function Column({ column, posts, onMovePost, onDeletePost, onNewPost, onEditPost }) {
   return (
-    <div style={{
-      display: 'flex', flexDirection: 'column', minWidth: 0,
-      background: 'hsl(var(--card))',
-      border: '1px solid hsl(var(--border) / 0.5)',
-      borderRadius: 'var(--radius-lg)',
-      padding: '20px',
-    }}>
+    <div className="flex flex-col min-w-0 bg-card border border-border/50 rounded-lg p-5">
       {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
-        <h2 style={{
-          fontSize: '11px', fontWeight: 500, letterSpacing: '0.1em',
-          textTransform: 'uppercase', color: 'hsl(var(--muted-foreground))',
-          fontFamily: FONTS.inter,
-        }}>
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-[11px] font-medium tracking-widest uppercase text-muted-foreground font-sans">
           {column.label}
         </h2>
         {posts.length > 0 && (
-          <span style={{
-            fontSize: '11px', fontWeight: 500,
-            background: 'hsl(var(--secondary))',
-            color: 'hsl(var(--muted-foreground))',
-            borderRadius: '999px', padding: '1px 8px',
-            fontFamily: FONTS.inter,
-          }}>
+          <span className="text-[11px] font-medium bg-secondary text-muted-foreground rounded-full px-2 py-px font-sans">
             {posts.length}
           </span>
         )}
@@ -45,31 +28,21 @@ export default function Column({ column, posts, onMovePost, onDeletePost, onNewP
             },
           },
         }}
-        style={{
-          flex: 1, overflowY: 'auto',
-          maxHeight: 'calc(100vh - 14rem)',
-          display: 'flex', flexDirection: 'column', gap: '8px',
-        }}
+        className="flex-1 overflow-y-auto max-h-[calc(100vh-14rem)] flex flex-col gap-2"
       >
         <AnimatePresence>
           {posts.length === 0 && (
             <motion.div
-              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-              style={{
-                border: '1px dashed hsl(var(--border))',
-                borderRadius: 'var(--radius-md)',
-                padding: '32px 24px',
-                textAlign: 'center',
-                fontSize: '12px',
-                color: 'hsl(var(--muted-foreground))',
-                fontFamily: FONTS.inter,
-              }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="border border-dashed border-border rounded-md p-8 text-center text-xs text-muted-foreground font-sans"
             >
-              <div style={{ marginBottom: '8px', display: 'flex', justifyContent: 'center', opacity: 0.3 }}>
-                <FileText size={32} color="hsl(var(--muted-foreground))" />
+              <div className="mb-2 flex justify-center opacity-30">
+                <FileText size={32} className="text-muted-foreground" />
               </div>
-              <p style={{ marginBottom: '4px', fontWeight: 500 }}>No {column.label.toLowerCase()} yet</p>
-              <p style={{ fontSize: '11px', opacity: 0.7 }}>
+              <p className="mb-1 font-medium">No {column.label.toLowerCase()} yet</p>
+              <p className="text-[11px] opacity-70">
                 {column.id === 'ideas' && 'Click "+ New Idea" to start writing'}
                 {column.id === 'drafts' && 'Move ideas here to develop them'}
                 {column.id === 'finalized' && 'Publish your finished work here'}
