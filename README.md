@@ -1,103 +1,85 @@
-# Hemingway (Swift/macOS)
+# Hemingway
 
-Native macOS writing app with on-device AI voice transcription. Kanban-style workflow: Ideas → Drafts → Published.
-
-> **Note:** This is the Swift rewrite. For the Electron version, see the `main` branch.
+Modern web-based writing app with cloud sync. Kanban-style workflow: Ideas → Drafts → Finalized.
 
 ---
 
 ## Features
 
-- **Three-stage workflow** — Scratchpad → Drafts → Published
-- **AI voice dictation** — WhisperKit transcription + LLM text cleanup (100% on-device)
-- **Distraction-free editor** — Georgia serif font, keyboard shortcuts
-- **File-based storage** — Posts saved as markdown files in `~/Desktop/Hemingway/`
-- **Native macOS** — SwiftUI app with zero Electron overhead
-
-## Voice Dictation
-
-Tap the mic button in the editor:
-
-1. **Record** — Speak your thoughts (up to 5 minutes)
-2. **Stop** — Tap mic again to finish recording
-3. **Process** — WhisperKit transcribes, LLM cleans up filler words and punctuation (~8-19s for typical 20-40s recordings)
-4. **Insert** — Cleaned text appears in your draft
-
-**First run:** Downloads ~2GB of models (WhisperKit + Qwen 2.5-2B). Cached locally for instant subsequent use.
-
----
-
-## Requirements
-
-⚠️ **Xcode 16.0 or later is required** to build this app.
-
-- **macOS:** 14.0+ (Sonoma or later)
-- **Xcode:** 16.0+ (includes Swift 6.0 tooling)
-- **Why:** WhisperKit 0.16+ requires Swift 6.0 compiler
-- **Download:** https://developer.apple.com/download/
+- **Three-stage workflow** — Ideas → Drafts → Finalized
+- **Cloud sync** — Real-time sync across devices via InstantDB
+- **Magic code auth** — Passwordless email authentication
+- **Distraction-free editor** — Clean interface with native fullscreen mode
+- **Auto-save** — Changes saved automatically on navigation
+- **Real-time word count** — Live tracking with animated feedback
+- **Polished interactions** — Smooth animations and hover states
 
 ---
 
 ## Quick Start
 
-### Option 1: Download DMG (coming soon)
+### Prerequisites
 
-Once built, the DMG will be available in GitHub Releases.
+- Node.js 18+ or Bun
+- InstantDB account (free at [instantdb.com](https://instantdb.com))
 
-### Option 2: Build from source
+### Installation
 
 ```bash
 # Clone the repo
 git clone https://github.com/modernmedici/hemmingway.git
-cd hemmingway/.worktrees/swift-app
+cd hemmingway
 
-# Install xcodegen
-brew install xcodegen
+# Install dependencies
+bun install
+# or: npm install
 
-# Build DMG
-./build-dmg.sh
+# Set up environment variables
+cp .env.example .env
+# Add your InstantDB app ID and admin token to .env
+
+# Push schema to InstantDB
+bun x instant-cli push schema
+bun x instant-cli push perms
+
+# Start dev server
+bun run dev
+# or: npm run dev
 ```
 
-The DMG will be created at `./build/Hemingway-YYYYMMDD.dmg`.
-
-For detailed build instructions, see **[BUILD.md](BUILD.md)**.
+Open http://localhost:5173 and sign in with magic code authentication.
 
 ---
 
 ## Tech Stack
 
-- **SwiftUI** — Native macOS UI framework
-- **WhisperKit** — On-device speech transcription (Whisper small.en, ~500MB)
-- **LLM.swift** — On-device text cleanup via Qwen 2.5-2B (~1.5GB)
-- **Yams** — YAML frontmatter parsing for markdown files
-- **AVFoundation** — Audio recording and format conversion
-
-All AI processing happens on-device. No data leaves your machine.
+- **Frontend:** React 18 + Vite
+- **Database:** InstantDB (real-time sync)
+- **Authentication:** Magic code (passwordless email)
+- **Animations:** Framer Motion
+- **Styling:** CSS custom properties + Tailwind v4
+- **Typography:** EB Garamond (serif) + Inter (sans-serif)
 
 ---
 
 ## Project Structure
 
 ```
-Hemingway/
-├── Models/
-│   └── Post.swift              # Post model (title, body, status, timestamps)
-├── Views/
-│   ├── BoardView.swift         # Three-column kanban board
-│   ├── ColumnView.swift        # Single column with cards
-│   ├── PostCardView.swift      # Individual post card
-│   ├── EditorView.swift        # Full-screen distraction-free editor
-│   └── ContentView.swift       # Main navigation (board vs editor)
-├── Services/
-│   ├── PostStore.swift         # CRUD + file persistence
-│   ├── PostSerializer.swift    # Markdown + YAML frontmatter
-│   ├── TranscriptionService.swift  # WhisperKit + LLM pipeline
-│   └── TextCleaner.swift       # LLM-based text cleanup (actor)
-└── HemingwayApp.swift          # App entry point
-
-HemingwayTests/
-├── TranscriptionServiceTests.swift  # 13 test cases
-└── TextCleanerTests.swift           # 5 test cases
+src/
+├── instant.schema.ts      # InstantDB schema definition
+├── instant.perms.ts       # User-scoped permissions
+├── lib/
+│   ├── db.js              # InstantDB client initialization
+│   └── constants.js       # Fonts and column definitions
+├── components/
+│   ├── AuthScreen.jsx     # Two-step magic code auth
+│   ├── Board.jsx          # Three-column Kanban layout
+│   ├── Column.jsx         # Individual column with animations
+│   ├── PostCard.jsx       # Card with move/delete actions
+│   ├── WritingView.jsx    # Distraction-free editor + fullscreen
+│   └── AppShell.jsx       # Main app container
+└── hooks/
+    └── useKanban.js       # All CRUD operations via InstantDB
 ```
 
 ---
@@ -105,86 +87,214 @@ HemingwayTests/
 ## Usage
 
 | Action | How |
-|---|---|
-| Create a post | Click a column header "+" button |
-| Edit a post | Click any card |
-| Save | Click **Save** or press `⌘↵` |
-| Cancel | Press `Esc` or click **Back to Board** |
-| Voice dictate | Tap mic button in editor, speak, tap again to stop |
-| Move a post | Drag card to another column |
-| Delete a post | Right-click card → Delete |
-| Create a post | Click **+ New Idea** in the sidebar |
-| Edit a post | Click any card |
-| Save | Click **Save** or press `⌘↵` |
-| Cancel | Press `Esc` or click **Back to Board** |
-| Move a post | Open the three-dot menu on the card |
-| Delete a post | Three-dot menu → Delete (confirms inline) |
+|--------|-----|
+| **Sign in** | Enter email → receive code → enter code |
+| **Create post** | Click **+ New Idea** button |
+| **Edit post** | Click any card |
+| **Save** | Click **Save** or press `⌘↵` |
+| **Fullscreen** | Click maximize icon or press `⌘⇧F` |
+| **Exit fullscreen** | Press `Esc` or hover top-right corner |
+| **Move post** | Three-dot menu → Move to [column] |
+| **Delete post** | Three-dot menu → Delete |
+| **Navigate back** | Press `Esc` or click **Back to Board** |
 
 ---
 
-## Architecture
+## Authentication
 
-**Voice Transcription Pipeline:**
+Uses InstantDB's magic code authentication:
 
-```
-User taps mic → AVAudioEngine records → Stop tap → Process:
-  1. WhisperKit transcribes raw audio (~500MB model)
-  2. Filter hallucinations ([BLANK_AUDIO], etc.)
-  3. LLM cleans filler words + punctuation (~1.5GB model)
-  4. Format with paragraph breaks (every 2-3 sentences)
-  5. Insert cleaned text into editor
-```
+1. User enters email
+2. InstantDB sends 6-digit code
+3. User enters code to sign in
+4. Session persists across devices
 
-**Key Design Decisions:**
-- **Buffered recording** (not streaming) — allows LLM cleanup before insertion
-- **Task lifecycle management** — explicit `Task<Void, Never>?` property for cancellation
-- **File size validation** — prevents loading corrupt models from interrupted downloads
-- **5-minute recording limit** — prevents WhisperKit performance degradation
-- **2B LLM model** (not 0.8B) — better cleanup quality per eng review
-- **Models stay resident** — ~1.3GB RAM steady-state for fast response (~3-4s for short recordings)
+**Test user** (development):
+- Email: `modernmedici88@gmail.com`
+- Code: `424242`
+
+---
+
+## Database Schema
+
+### Posts
+- `title` (string) — Post title
+- `body` (string, optional) — Post content
+- `column` (string) — "ideas" | "drafts" | "finalized"
+- `createdAt` (date) — Creation timestamp
+- `updatedAt` (date) — Last modified timestamp
+
+### Relationships
+- `creator` (user → post) — Post owner
+
+### Permissions
+- Users can only view/edit their own posts
+- Posts are scoped by `creator.id`
 
 ---
 
 ## Development
 
-### Run tests
+### Commands
 
 ```bash
-xcodegen generate
-xcodebuild test -project Hemingway.xcodeproj -scheme Hemingway -destination 'platform=macOS'
+# Start dev server
+bun run dev
+
+# Build for production
+bun run build
+
+# Preview production build
+bun run preview
+
+# Run linter
+bun run lint
+
+# Run tests
+bun run test
+
+# Run tests in watch mode
+bun run test:watch
 ```
 
-### Quick build for testing
+### InstantDB CLI
 
 ```bash
-xcodegen generate
-xcodebuild -project Hemingway.xcodeproj -scheme Hemingway -configuration Debug
-open ./build/Build/Products/Debug/Hemingway.app
+# Pull schema from production
+bun x instant-cli pull schema
+
+# Push local schema to production
+bun x instant-cli push schema
+
+# Query database
+bun x instant-cli query '{ posts: {} }'
+
+# Open InstantDB Explorer
+bun x instant-cli explorer
 ```
+
+---
+
+## Deployment
+
+### Vercel
+
+```bash
+# Install Vercel CLI
+npm i -g vercel
+
+# Deploy
+vercel
+```
+
+### Netlify
+
+```bash
+# Install Netlify CLI
+npm i -g netlify-cli
+
+# Deploy
+netlify deploy --prod
+```
+
+### Environment Variables
+
+Required for production:
+
+```bash
+VITE_INSTANT_APP_ID=your-app-id-here
+```
+
+⚠️ Never commit `.env` or expose your admin token in client-side code.
+
+---
+
+## Architecture
+
+### Data Flow
+
+```
+User action → useKanban hook → InstantDB transact → Real-time sync → UI update
+```
+
+### Key Design Decisions
+
+- **InstantDB transactions** — Atomic operations with `.transact()`
+- **Optimistic UI** — InstantDB handles optimistic updates automatically
+- **User-scoped data** — Posts linked to creator via `creator` relationship
+- **Auto-save** — Changes saved on navigation, not explicit save button spam
+- **Fullscreen API** — Native browser fullscreen (like YouTube)
+- **Framer Motion** — Staggered animations for column cards
+- **CSS custom properties** — Design tokens for consistent theming
+
+---
+
+## Keyboard Shortcuts
+
+| Shortcut | Action |
+|----------|--------|
+| `⌘↵` | Save post |
+| `⌘⇧F` | Toggle fullscreen mode |
+| `Esc` | Exit editor / fullscreen / cancel |
 
 ---
 
 ## Troubleshooting
 
-### Build fails with "swift-jinja contains incompatible tools version (6.0.0)"
+### Posts not syncing
 
-You're using Xcode 15.x. WhisperKit requires Xcode 16.0+.
+1. Check browser console for errors
+2. Verify InstantDB app ID in `.env`
+3. Check network tab for API failures
+4. Ensure user is authenticated
 
-**Solution:** Download Xcode 16 from https://developer.apple.com/download/
+### Schema changes not applying
 
-### Models fail to download
-
-Check internet connection. Models download from Hugging Face (~2GB total) on first run.
-
-If download is interrupted, delete corrupt files:
 ```bash
-rm -rf ~/Library/Application\ Support/Hemingway/models/
+# Pull latest schema
+bun x instant-cli pull schema
+
+# Or push local schema
+bun x instant-cli push schema
 ```
 
-Then restart the app to re-download.
+### Permission errors
+
+Check `instant.perms.ts` and ensure:
+- `isOwner` rule references `creator.id`
+- Posts are linked with `{ creator: user.id }`
+
+---
+
+## Migration from Native App
+
+The previous Swift/Electron version used local file storage. To migrate:
+
+1. Export markdown files from `~/Desktop/Hemingway/`
+2. Run migration script (see `docs/` for details)
+3. Posts preserve original timestamps and columns
+
+---
+
+## Contributing
+
+1. Fork the repo
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit changes (`git commit -m 'Add amazing feature'`)
+4. Push to branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
 ---
 
 ## License
 
 MIT
+
+---
+
+## Acknowledgments
+
+- [InstantDB](https://instantdb.com) — Real-time database
+- [Framer Motion](https://framer.com/motion) — Animation library
+- [Lucide Icons](https://lucide.dev) — Icon set
+- [EB Garamond](https://fonts.google.com/specimen/EB+Garamond) — Serif typography
