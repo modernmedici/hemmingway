@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
-import { ArrowLeft, Check, Loader2 } from 'lucide-react';
+import { ArrowLeft, Check, Loader2, Maximize2 } from 'lucide-react';
 import { FONTS } from '../lib/constants';
 
 export default function WritingView({ post, defaultColumn, onSave, onCancel }) {
@@ -8,7 +8,9 @@ export default function WritingView({ post, defaultColumn, onSave, onCancel }) {
   const [saved, setSaved] = useState(false);
   const [saving, setSaving] = useState(false);
   const [countChanged, setCountChanged] = useState(false);
+  const [zenMode, setZenMode] = useState(false);
   const titleRef = useRef(null);
+  const containerRef = useRef(null);
 
   const wordCount = useMemo(() => {
     const combinedText = `${title} ${body}`.trim();
@@ -30,6 +32,41 @@ export default function WritingView({ post, defaultColumn, onSave, onCancel }) {
   // Keep latest values accessible in the keydown handler without re-registering
   const latestRef = useRef({ title, body, onSave, onCancel });
   latestRef.current = { title, body, onSave, onCancel };
+
+  const enterZenMode = useCallback(async () => {
+    try {
+      await document.documentElement.requestFullscreen();
+      setZenMode(true);
+    } catch (err) {
+      console.error('Failed to enter fullscreen:', err);
+      // Fallback to just hiding UI
+      setZenMode(true);
+    }
+  }, []);
+
+  const exitZenMode = useCallback(async () => {
+    try {
+      if (document.fullscreenElement) {
+        await document.exitFullscreen();
+      }
+      setZenMode(false);
+    } catch (err) {
+      console.error('Failed to exit fullscreen:', err);
+      setZenMode(false);
+    }
+  }, []);
+
+  // Listen for fullscreen changes (user can exit with ESC or F11)
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      if (!document.fullscreenElement && zenMode) {
+        setZenMode(false);
+      }
+    };
+
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
+  }, [zenMode]);
 
   const handleCancel = useCallback(async () => {
     const { title, body, onCancel, onSave } = latestRef.current;
@@ -56,15 +93,29 @@ export default function WritingView({ post, defaultColumn, onSave, onCancel }) {
 
   useEffect(() => {
     const handler = (e) => {
-      if (e.key === 'Escape') handleCancel();
+      if (e.key === 'Escape') {
+        if (zenMode) {
+          exitZenMode();
+        } else {
+          handleCancel();
+        }
+      }
       if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
         const { title, body, onSave } = latestRef.current;
         if (title.trim()) onSave(title.trim(), body.trim(), defaultColumn);
       }
+      if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key === 'F') {
+        e.preventDefault();
+        if (zenMode) {
+          exitZenMode();
+        } else {
+          enterZenMode();
+        }
+      }
     };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
-  }, [handleCancel]); // re-register only if handleCancel identity changes (it doesn't)
+  }, [handleCancel, zenMode, defaultColumn, enterZenMode, exitZenMode]);
 
   const handleSave = async () => {
     if (!title.trim() || saving) return;
@@ -81,9 +132,41 @@ export default function WritingView({ post, defaultColumn, onSave, onCancel }) {
   const canSave = title.trim().length > 0 && !saving;
 
   return (
-    <div className="view-enter" style={{ minHeight: '100vh', background: 'hsl(var(--background))', display: 'flex', flexDirection: 'column', fontFamily: FONTS.inter }}>
+    <div ref={containerRef} className="view-enter" style={{ minHeight: '100vh', background: 'hsl(var(--background))', display: 'flex', flexDirection: 'column', fontFamily: FONTS.inter, position: 'relative' }}>
+      {/* Zen mode indicator */}
+      {zenMode && (
+        <div style={{
+          position: 'fixed', top: '20px', right: '20px', zIndex: 20,
+          opacity: 0, transition: 'opacity 0.2s',
+        }}
+        onMouseEnter={e => { e.currentTarget.style.opacity = 1; }}
+        onMouseLeave={e => { e.currentTarget.style.opacity = 0; }}
+        className="zen-mode-indicator"
+        >
+          <button
+            onClick={exitZenMode}
+            style={{
+              fontSize: '11px', fontFamily: FONTS.inter,
+              background: 'hsl(var(--muted))',
+              color: 'hsl(var(--muted-foreground))',
+              border: 'none', borderRadius: 'var(--radius-sm)',
+              padding: '6px 12px', cursor: 'pointer',
+              transition: 'all 0.12s',
+            }}
+            onMouseEnter={e => {
+              e.currentTarget.style.background = 'hsl(var(--secondary))';
+            }}
+            onMouseLeave={e => {
+              e.currentTarget.style.background = 'hsl(var(--muted))';
+            }}
+          >
+            Exit Fullscreen (Esc)
+          </button>
+        </div>
+      )}
+
       {/* Sticky header */}
-      <div style={{
+      {!zenMode && (<div style={{
         position: 'sticky', top: 0, zIndex: 10,
         background: 'hsl(var(--background) / 0.8)',
         backdropFilter: 'blur(8px)',
@@ -130,6 +213,30 @@ export default function WritingView({ post, defaultColumn, onSave, onCancel }) {
           }}>
             {wordCount.toLocaleString()} {wordCount === 1 ? 'word' : 'words'}
           </span>
+          {/* Zen Mode Toggle */}
+          <button
+            onClick={enterZenMode}
+            title="Fullscreen (⌘⇧F)"
+            style={{
+              display: 'flex', alignItems: 'center', gap: '4px',
+              background: 'none', border: 'none', cursor: 'pointer',
+              color: 'hsl(var(--muted-foreground))',
+              fontSize: '11px', fontFamily: FONTS.inter,
+              padding: '5px 8px',
+              transition: 'all 0.12s',
+              borderRadius: 'var(--radius-sm)',
+            }}
+            onMouseEnter={e => {
+              e.currentTarget.style.color = 'hsl(var(--foreground))';
+              e.currentTarget.style.background = 'hsl(var(--secondary))';
+            }}
+            onMouseLeave={e => {
+              e.currentTarget.style.color = 'hsl(var(--muted-foreground))';
+              e.currentTarget.style.background = 'none';
+            }}
+          >
+            <Maximize2 size={14} />
+          </button>
           {/* Save */}
           <button
             onClick={handleSave}
@@ -150,10 +257,10 @@ export default function WritingView({ post, defaultColumn, onSave, onCancel }) {
             {saving ? 'Saving...' : 'Save'}
           </button>
         </div>
-      </div>
+      </div>)}
 
       {/* Editor */}
-      <div style={{ flex: 1, maxWidth: '768px', width: '100%', margin: '0 auto', padding: '64px 32px 48px' }}>
+      <div style={{ flex: 1, maxWidth: '768px', width: '100%', margin: '0 auto', padding: zenMode ? '128px 32px' : '64px 32px 48px' }}>
         <textarea
           ref={titleRef}
           value={title}
@@ -186,11 +293,13 @@ export default function WritingView({ post, defaultColumn, onSave, onCancel }) {
         />
       </div>
 
-      <div style={{ borderTop: '1px solid hsl(var(--border))', padding: '10px 40px', textAlign: 'center' }}>
-        <span style={{ fontSize: '10px', letterSpacing: '0.1em', color: 'hsl(var(--muted-foreground))', fontFamily: FONTS.inter }}>
-          ⌘↵ to save · Esc to go back
-        </span>
-      </div>
+      {!zenMode && (
+        <div style={{ borderTop: '1px solid hsl(var(--border))', padding: '10px 40px', textAlign: 'center' }}>
+          <span style={{ fontSize: '10px', letterSpacing: '0.1em', color: 'hsl(var(--muted-foreground))', fontFamily: FONTS.inter }}>
+            ⌘↵ to save · ⌘⇧F for fullscreen · Esc to go back
+          </span>
+        </div>
+      )}
     </div>
   );
 }
