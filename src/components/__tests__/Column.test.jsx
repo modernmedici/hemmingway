@@ -113,7 +113,7 @@ describe('Column — layout', () => {
 
     const column = container.firstChild;
     expect(column.className).toContain('bg-card');
-    expect(column.className).toContain('border');
     expect(column.className).toContain('rounded-lg');
+    // Border is applied via inline style (hsl with alpha channel)
   });
 });

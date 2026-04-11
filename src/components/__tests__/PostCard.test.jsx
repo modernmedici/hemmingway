@@ -251,24 +251,27 @@ describe('PostCard — delete confirmation', () => {
 });
 
 describe('PostCard — hover states', () => {
-  it('adds shadow on hover', async () => {
+  it('increases shadow on hover', async () => {
     const { container } = render(<PostCard post={mockPost} {...mockHandlers} />);
 
     const card = container.firstChild;
 
-    // Initially no shadow
-    expect(card.style.boxShadow).toBe('none');
+    // Initially has subtle base shadow
+    const baseShadow = card.style.boxShadow;
+    expect(baseShadow).toContain('0 1px 3px');
 
     // Hover
     fireEvent.mouseEnter(card);
 
     // Wait for React to process the state update
     await waitFor(() => {
-      expect(card.style.boxShadow).not.toBe('none');
+      const hoverShadow = card.style.boxShadow;
+      expect(hoverShadow).toContain('0 2px 8px');
+      expect(hoverShadow).not.toBe(baseShadow);
     });
   });
 
-  it('removes shadow on mouse leave', async () => {
+  it('reduces shadow on mouse leave', async () => {
     const { container } = render(<PostCard post={mockPost} {...mockHandlers} />);
 
     const card = container.firstChild;
@@ -278,14 +281,14 @@ describe('PostCard — hover states', () => {
 
     // Wait for hover state to apply
     await waitFor(() => {
-      expect(card.style.boxShadow).not.toBe('none');
+      expect(card.style.boxShadow).toContain('0 2px 8px');
     });
 
     fireEvent.mouseLeave(card);
 
-    // Wait for shadow to be removed
+    // Wait for shadow to return to base
     await waitFor(() => {
-      expect(card.style.boxShadow).toBe('none');
+      expect(card.style.boxShadow).toContain('0 1px 3px');
     });
   });
 });

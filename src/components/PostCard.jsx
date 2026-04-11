@@ -45,9 +45,10 @@ export default function PostCard({ post, onMove, onDelete, onEdit }) {
       onClick={() => { if (menuOpen) return; onEdit(post); }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => { setHovered(false); setConfirmDelete(false); setMenuOpen(false); }}
-      className="border border-border/50 rounded-md bg-card p-3.5 cursor-pointer relative transition-shadow duration-150"
+      className="rounded-md bg-card p-3.5 cursor-pointer relative transition-shadow duration-150"
       style={{
-        boxShadow: hovered ? '0 2px 8px hsl(var(--foreground) / 0.06)' : 'none',
+        border: '1px solid hsl(var(--border) / 0.5)',
+        boxShadow: hovered ? '0 2px 8px hsl(var(--foreground) / 0.06)' : '0 1px 3px hsl(var(--foreground) / 0.04)',
       }}
     >
       {/* Top row: word count badge + three-dot menu */}

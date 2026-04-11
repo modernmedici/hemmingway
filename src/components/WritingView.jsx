@@ -147,7 +147,7 @@ export default function WritingView({ post, defaultColumn, onSave, onCancel }) {
       )}
 
       {/* Sticky header */}
-      {!zenMode && (<div className="sticky top-0 z-10 bg-background/80 backdrop-blur-sm border-b border-border py-3.5 px-10 pl-[88px] flex items-center">
+      {!zenMode && (<div className="sticky top-0 z-10 bg-background/80 backdrop-blur-sm py-3.5 px-10 pl-[88px] flex items-center">
         <button
           onClick={handleCancel}
           className="flex items-center gap-1.5 bg-transparent border-none cursor-pointer text-muted-foreground text-xs font-sans p-0 transition-all duration-[120ms] hover:text-foreground active:scale-95"
@@ -209,7 +209,8 @@ export default function WritingView({ post, defaultColumn, onSave, onCancel }) {
           onChange={e => { setTitle(e.target.value); autoResizeTitle(); }}
           placeholder="Essay Title"
           rows={1}
-          className="block w-full text-[clamp(28px,4vw,40px)] font-bold font-serif text-foreground border-none outline-none bg-transparent mb-8 leading-[1.2] resize-none overflow-hidden"
+          className="block w-full font-bold font-serif text-foreground border-none outline-none bg-transparent mb-8 resize-none overflow-hidden"
+          style={{ fontSize: 'clamp(28px, 4vw, 40px)', lineHeight: '1.2' }}
         />
         <textarea
           value={body}
@@ -220,7 +221,7 @@ export default function WritingView({ post, defaultColumn, onSave, onCancel }) {
       </div>
 
       {!zenMode && (
-        <div className="border-t border-border py-2.5 px-10 text-center">
+        <div className="py-2.5 px-10 text-center">
           <span className="text-[10px] tracking-widest text-muted-foreground font-sans">
             ⌘↵ to save · ⌘⇧F for fullscreen · Esc to go back
           </span>

@@ -4,7 +4,13 @@ import PostCard from './PostCard';
 
 export default function Column({ column, posts, onMovePost, onDeletePost, onNewPost, onEditPost }) {
   return (
-    <div className="flex flex-col min-w-0 bg-card border border-border/50 rounded-lg p-5">
+    <div
+      className="flex flex-col min-w-0 bg-card rounded-lg p-5"
+      style={{
+        border: '1px solid hsl(var(--border) / 0.5)',
+        boxShadow: '0 1px 2px hsl(var(--foreground) / 0.03)',
+      }}
+    >
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-[11px] font-medium tracking-widest uppercase text-muted-foreground font-sans">
