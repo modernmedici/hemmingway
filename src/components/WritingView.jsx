@@ -200,8 +200,13 @@ export default function WritingView({ post, defaultColumn, onSave, onCancel }) {
 
       {/* Editor */}
       <div
-        className="flex-1 max-w-3xl w-full mx-auto px-8 pb-12"
-        style={{ paddingTop: zenMode ? '128px' : '64px' }}
+        className="flex-1 w-full mx-auto pb-12"
+        style={{
+          maxWidth: '768px',
+          paddingLeft: '32px',
+          paddingRight: '32px',
+          paddingTop: zenMode ? '128px' : '64px',
+        }}
       >
         <textarea
           ref={titleRef}
@@ -209,14 +214,25 @@ export default function WritingView({ post, defaultColumn, onSave, onCancel }) {
           onChange={e => { setTitle(e.target.value); autoResizeTitle(); }}
           placeholder="Essay Title"
           rows={1}
-          className="block w-full font-bold font-serif text-foreground border-none outline-none bg-transparent mb-8 resize-none overflow-hidden"
-          style={{ fontSize: 'clamp(28px, 4vw, 40px)', lineHeight: '1.2' }}
+          className="block w-full text-foreground border-none outline-none bg-transparent resize-none overflow-hidden"
+          style={{
+            fontSize: 'clamp(28px, 4vw, 40px)',
+            fontWeight: 700,
+            fontFamily: "'Libre Baskerville', Georgia, serif",
+            lineHeight: '1.2',
+            marginBottom: '32px',
+          }}
         />
         <textarea
           value={body}
           onChange={e => setBody(e.target.value)}
           placeholder="Start writing your thoughts..."
-          className="block w-full min-h-[500px] text-[17px] font-serif leading-[1.9] text-foreground border-none outline-none bg-transparent resize-none"
+          className="block w-full min-h-[500px] text-foreground border-none outline-none bg-transparent resize-none"
+          style={{
+            fontSize: '17px',
+            fontFamily: "'Libre Baskerville', Georgia, serif",
+            lineHeight: '1.9',
+          }}
         />
       </div>
 
