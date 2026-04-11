@@ -75,7 +75,8 @@ export function AuthScreen() {
             <button
               type="submit"
               disabled={verifying}
-              className="w-full py-3 rounded-lg bg-accent text-white font-medium hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full py-3 rounded-lg text-white font-medium hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+              style={{ background: 'hsl(200, 70%, 50%)' }}
             >
               {verifying ? 'Verifying...' : 'Sign in'}
             </button>
@@ -93,7 +94,8 @@ export function AuthScreen() {
               setCode('')
               setError(null)
             }}
-            className="text-sm text-accent hover:underline mt-4"
+            className="text-sm hover:underline mt-4"
+            style={{ color: 'hsl(200, 70%, 50%)' }}
           >
             Use a different email
           </button>
@@ -129,7 +131,8 @@ export function AuthScreen() {
           <button
             type="submit"
             disabled={sending}
-            className="w-full py-3 rounded-lg bg-accent text-white font-medium hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full py-3 rounded-lg text-white font-medium hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+            style={{ background: 'hsl(200, 70%, 50%)' }}
           >
             {sending ? 'Sending...' : 'Send verification code'}
           </button>
