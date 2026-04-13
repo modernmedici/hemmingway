@@ -253,13 +253,59 @@ initial={{ opacity: 0, y: -8 }}
 
 ## Responsive Behavior
 
-**Current state:** App is desktop-first (1024px+). Mobile/tablet not yet specified.
+### Breakpoints
 
-**Sidebar:** Auto-hides to 64px, expands to 256px on hover.
+- **Desktop:** 1024px+ (default, 3-column layout)
+- **Tablet:** 768px-1023px (2-column or tabs)
+- **Mobile:** 375px-767px (single column or swipeable)
 
-**Board columns:** Grid 3 columns on desktop. Mobile behavior: TBD.
+### Desktop (1024px+)
 
-**Modals:** Max-width 28rem (448px), responsive padding.
+**Layout:**
+- Sidebar: 64px collapsed, 256px expanded on hover
+- Board: 3-column grid (Ideas | Drafts | Published)
+- PostCard: Full metadata visible
+
+### Tablet (768px-1023px)
+
+**Layout:**
+- Sidebar: Always collapsed (64px), no hover expansion (tap to open as overlay)
+- Board: 2-column grid (Ideas+Drafts on left, Published on right) OR horizontal tabs
+- PostCard: Same as desktop
+
+**Alternative:** Tabs above board area with swiping between columns.
+
+### Mobile (375px-767px)
+
+**Layout:**
+- Sidebar: Hidden. Hamburger menu in top-left reveals as full-screen overlay.
+- Board: Single column at a time, horizontal tabs for switching (Ideas | Drafts | Published)
+- PostCard: Touch targets increase to 48px minimum (py-3 instead of py-2)
+- Three-dot menu becomes larger (20px icon instead of 14px)
+- Board header: Board name + Share button stack vertically
+
+**Navigation:**
+- Swipe left/right to switch between columns
+- Tap column tab to jump directly
+
+**Writing View:**
+- Full-screen by default (no sidebar visible)
+- Save button becomes floating FAB (bottom-right)
+- Back button in top-left
+
+**Modals:**
+- Full-screen on mobile (not centered dialog)
+- Slide up from bottom
+
+### Implementation Status
+
+- ✅ Sidebar auto-hide works on all viewports
+- ✅ Modals are responsive (max-width + padding)
+- ❌ Board columns don't adapt (overflow below 1024px)
+- ❌ No mobile navigation implemented
+- ❌ Touch targets not increased for mobile
+
+**Next steps:** Add Tailwind responsive classes (`md:grid-cols-2 lg:grid-cols-3`) to Board.jsx and AppShell.jsx.
 
 ---
 
