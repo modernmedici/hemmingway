@@ -26,6 +26,17 @@ const _schema = i.schema({
       title: i.string(),
       updatedAt: i.date(),
     }),
+    boards: i.entity({
+      name: i.string(),
+      createdAt: i.date(),
+      updatedAt: i.date(),
+    }),
+    invitations: i.entity({
+      email: i.string().indexed(),
+      role: i.string(),
+      status: i.string(),
+      createdAt: i.date(),
+    }),
   },
   links: {
     $streams$files: {
@@ -66,8 +77,85 @@ const _schema = i.schema({
         label: "posts",
       },
     },
+    boardsOwner: {
+      forward: {
+        on: "boards",
+        has: "one",
+        label: "owner",
+      },
+      reverse: {
+        on: "$users",
+        has: "many",
+        label: "ownedBoards",
+      },
+    },
+    boardsMembers: {
+      forward: {
+        on: "boards",
+        has: "many",
+        label: "members",
+      },
+      reverse: {
+        on: "$users",
+        has: "many",
+        label: "memberBoards",
+      },
+    },
+    postBoard: {
+      forward: {
+        on: "posts",
+        has: "one",
+        label: "board",
+      },
+      reverse: {
+        on: "boards",
+        has: "many",
+        label: "posts",
+      },
+    },
+    invitationBoard: {
+      forward: {
+        on: "invitations",
+        has: "one",
+        label: "board",
+      },
+      reverse: {
+        on: "boards",
+        has: "many",
+        label: "invitations",
+      },
+    },
+    invitationInviter: {
+      forward: {
+        on: "invitations",
+        has: "one",
+        label: "inviter",
+      },
+      reverse: {
+        on: "$users",
+        has: "many",
+        label: "sentInvitations",
+      },
+    },
   },
-  rooms: {},
+  rooms: {
+    board: {
+      presence: i.entity({
+        name: i.string().optional(),
+        email: i.string().optional(),
+        color: i.string().optional(),
+      }),
+    },
+    postEditor: {
+      presence: i.entity({
+        name: i.string().optional(),
+        email: i.string().optional(),
+        color: i.string().optional(),
+        cursorPosition: i.number().optional(),
+        field: i.string().optional(),
+      }),
+    },
+  },
 });
 
 // This helps TypeScript display nicer intellisense

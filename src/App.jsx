@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useKanban } from './hooks/useKanban'
+import { useBoards } from './hooks/useBoards'
 import db from './lib/db'
 import { AuthScreen } from './components/AuthScreen'
 import AppShell from './components/AppShell'
@@ -19,13 +20,21 @@ export default function App() {
       console.log('Magic code detected:', code)
     }
   }, [user])
-  const { posts, loading, error, createPost, updatePost, movePost, deletePost } = useKanban()
+  // Get user's boards
+  const { boards, loading: boardsLoading } = useBoards()
+
+  // Select active board (default to first board for now)
+  const activeBoardId = boards[0]?.id
+
+  // Get posts for the active board
+  const { posts, loading, error, createPost, updatePost, movePost, deletePost } = useKanban(activeBoardId)
+
   const [view, setView] = useState('board')
   const [editingPost, setEditingPost] = useState(null)
   const [pendingColumn, setPendingColumn] = useState('ideas')
 
-  // Show auth screen if not signed in
-  if (authLoading) {
+  // Show loading screen while auth or boards are loading
+  if (authLoading || boardsLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[var(--bg)]">
         <div className="text-[var(--text-dim)]">Loading...</div>

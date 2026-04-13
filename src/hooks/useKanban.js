@@ -2,15 +2,21 @@ import { useCallback } from 'react'
 import db from '../lib/db'
 import { id } from '@instantdb/react'
 
-export function useKanban() {
+export function useKanban(boardId) {
   const { user } = db.useAuth()
+
+  // Query the specific board with its posts
   const { isLoading, error, data } = db.useQuery(
-    user ? { $users: { $: { where: { id: user.id } }, posts: {} } } : null
+    user && boardId
+      ? { boards: { $: { where: { id: boardId } }, posts: { creator: {} } } }
+      : null
   )
-  const posts = data?.$users?.[0]?.posts ?? []
+
+  const posts = data?.boards?.[0]?.posts ?? []
+  const board = data?.boards?.[0]
 
   const createPost = useCallback(async (title, body, column = 'ideas') => {
-    if (!user) return
+    if (!user || !boardId) return
     const postId = id()
     const now = new Date()
     await db.transact([
@@ -21,10 +27,10 @@ export function useKanban() {
         createdAt: now,
         updatedAt: now,
       }),
-      db.tx.posts[postId].link({ creator: user.id }),
+      db.tx.posts[postId].link({ creator: user.id, board: boardId }),
     ])
     return { id: postId }
-  }, [user])
+  }, [user, boardId])
 
   const updatePost = useCallback(async (postId, updates) => {
     const now = new Date()
@@ -51,6 +57,7 @@ export function useKanban() {
   }, [])
 
   return {
+    board,
     posts,
     loading: isLoading,
     error: error?.message ?? null,
