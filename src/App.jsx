@@ -87,8 +87,8 @@ export default function App() {
     await declineInvitation(invitationId)
   }
 
-  // Show loading screen while auth or boards are loading
-  if (authLoading || boardsLoading) {
+  // Show loading screen while auth is loading
+  if (authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[var(--bg)]">
         <div className="text-[var(--text-dim)]">Loading...</div>
@@ -96,8 +96,18 @@ export default function App() {
     )
   }
 
+  // Show auth screen if no user (don't wait for boards when logged out)
   if (!user) {
     return <AuthScreen />
+  }
+
+  // Show loading screen while boards are loading (only when user exists)
+  if (boardsLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[var(--bg)]">
+        <div className="text-[var(--text-dim)]">Loading...</div>
+      </div>
+    )
   }
 
   const handleNewPost = (columnId) => {
