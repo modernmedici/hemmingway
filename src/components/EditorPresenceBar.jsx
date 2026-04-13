@@ -11,8 +11,25 @@ function getInitials(email) {
 }
 
 export default function EditorPresenceBar({ peers, currentUserId, editorPeer }) {
+  // Handle null/undefined peers
+  if (!peers) {
+    console.log('EditorPresenceBar: No peers data')
+    return (
+      <div className="sticky top-0 z-20 bg-background/95 backdrop-blur-sm border-b border-border py-2 px-6">
+        <div className="max-w-3xl mx-auto flex items-center justify-between">
+          <div className="flex items-center gap-1.5">
+            <Users size={12} className="text-muted-foreground" />
+            <span className="text-xs font-sans text-muted-foreground">
+              Collaborative mode ready
+            </span>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   // Filter out current user
-  const otherPeers = Object.entries(peers || {})
+  const otherPeers = Object.entries(peers)
     .filter(([peerId]) => peerId !== currentUserId)
     .map(([peerId, peerData]) => ({
       id: peerId,

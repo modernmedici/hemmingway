@@ -42,6 +42,17 @@ export default function WritingView({ post, defaultColumn, onSave, onCancel, cur
   const room = db.room('postEditor', postId);
   const presence = room.usePresence();
 
+  // Debug logging
+  useEffect(() => {
+    console.log('WritingView render:', {
+      postId,
+      isCollaborative,
+      hasPresence: !!presence,
+      peers: presence?.peers,
+      userId: presence?.user?.id
+    });
+  }, [postId, isCollaborative, presence]);
+
   // Check if someone else has the edit lock
   const editorPeer = useMemo(() => {
     if (!presence?.peers || !currentUser) return null;
@@ -50,7 +61,7 @@ export default function WritingView({ post, defaultColumn, onSave, onCancel, cur
     const editorEntry = Object.entries(presence.peers).find(
       ([peerId, peerData]) =>
         peerId !== presence.user?.id &&
-        (peerData.field === 'body' || peerData.field === 'title')
+        (peerData?.field === 'body' || peerData?.field === 'title')
     );
 
     return editorEntry ? { id: editorEntry[0], ...editorEntry[1] } : null;
@@ -267,10 +278,10 @@ export default function WritingView({ post, defaultColumn, onSave, onCancel, cur
   return (
     <div ref={containerRef} className="view-enter min-h-screen bg-background flex flex-col font-sans relative">
       {/* Editor presence bar (collaborative mode only) */}
-      {!zenMode && isCollaborative && presence?.peers && (
+      {!zenMode && isCollaborative && (
         <EditorPresenceBar
-          peers={presence.peers}
-          currentUserId={presence.user?.id}
+          peers={presence?.peers}
+          currentUserId={presence?.user?.id}
           editorPeer={editorPeer}
         />
       )}
