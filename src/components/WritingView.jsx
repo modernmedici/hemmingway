@@ -279,7 +279,7 @@ export default function WritingView({ post, defaultColumn, onSave, onCancel }) {
           paddingLeft: '32px',
           paddingRight: '32px',
           paddingTop: zenMode ? '128px' : '64px',
-          paddingBottom: zenMode ? '256px' : '48px',
+          paddingBottom: '256px',
         }}
       >
         <textarea
