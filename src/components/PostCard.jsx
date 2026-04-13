@@ -61,97 +61,96 @@ export default function PostCard({ post, onMove, onDelete, onEdit, showAttributi
         boxShadow: hovered ? '0 2px 8px hsl(var(--foreground) / 0.06)' : '0 1px 3px hsl(var(--foreground) / 0.04)',
       }}
     >
-      {/* Top row: word count badge + creator + three-dot menu */}
-      <div className="flex items-center justify-between mb-2">
-        <div className="flex items-center gap-2">
-          <span className="text-[10px] font-sans font-medium text-muted-foreground bg-secondary rounded-full px-2 py-px">
-            {totalWords} {totalWords === 1 ? 'word' : 'words'}
-          </span>
+      {/* Three-dot menu (top-right, absolute) */}
+      <div className="absolute top-3 right-3">
+        <button
+          onClick={e => { e.stopPropagation(); setMenuOpen(m => !m); }}
+          className="bg-transparent border-none cursor-pointer p-0.5 leading-none transition-colors duration-100"
+          style={{
+            color: hovered ? 'hsl(var(--muted-foreground))' : 'transparent',
+          }}
+        >
+          <MoreHorizontal size={14} />
+        </button>
 
-          {/* Show creator on shared boards */}
-          {showAttribution && post.creator && post.creator[0] && (
+        {menuOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.15 }}
+            onClick={e => e.stopPropagation()}
+            className="absolute right-0 top-full z-50 bg-card border border-border rounded-md shadow-[0_4px_16px_hsl(var(--foreground)/0.1)] p-1 min-w-[160px] font-sans text-xs mt-1"
+          >
+            {COLUMN_IDS.filter(c => c !== post.column).map(col => (
+              <button
+                key={col}
+                onClick={e => handleMove(e, col)}
+                className="flex items-center w-full px-2 py-1.5 bg-transparent border-none cursor-pointer text-foreground rounded-sm text-xs font-sans text-left transition-colors duration-100 hover:bg-accent"
+              >
+                Move to {COLUMN_LABELS[col]}
+              </button>
+            ))}
+
+            <div className="h-px bg-border my-1" />
+
+            {confirmDelete ? (
+              <div className="px-2 py-1 flex gap-2 items-center">
+                <span className="text-[11px] text-muted-foreground">Delete?</span>
+                <button
+                  onClick={handleDelete}
+                  className="flex items-center px-1 py-0.5 bg-transparent border-none cursor-pointer text-destructive rounded-sm text-xs font-sans text-left transition-colors duration-100 hover:bg-accent"
+                >
+                  Yes
+                </button>
+                <button
+                  onClick={e => { e.stopPropagation(); setConfirmDelete(false); }}
+                  className="flex items-center px-1 py-0.5 bg-transparent border-none cursor-pointer text-foreground rounded-sm text-xs font-sans text-left transition-colors duration-100 hover:bg-accent"
+                >
+                  No
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={handleDelete}
+                className="flex items-center w-full px-2 py-1.5 bg-transparent border-none cursor-pointer text-destructive rounded-sm text-xs font-sans text-left transition-colors duration-100 hover:bg-destructive/10"
+              >
+                <Trash2 size={12} className="mr-1.5" />
+                Delete
+              </button>
+            )}
+          </motion.div>
+        )}
+      </div>
+
+      {/* Title (hero element) */}
+      <p className="text-sm font-bold font-serif text-foreground leading-[1.4] mb-1.5 pr-6">
+        {post.title}
+      </p>
+
+      {/* Metadata row: word count + author (supporting info) */}
+      <div className="flex items-center gap-2 mb-2">
+        <span className="text-[10px] font-sans text-muted-foreground/70">
+          {totalWords} {totalWords === 1 ? 'word' : 'words'}
+        </span>
+
+        {/* Show creator on shared boards */}
+        {showAttribution && post.creator && post.creator[0] && (
+          <>
+            <span className="text-[10px] text-muted-foreground/40">•</span>
             <div className="flex items-center gap-1">
-              <div className="w-4 h-4 rounded-full bg-primary/20 flex items-center justify-center">
-                <span className="text-[8px] font-sans font-bold text-primary">
+              <div className="w-3.5 h-3.5 rounded-full bg-primary/15 flex items-center justify-center">
+                <span className="text-[7px] font-sans font-bold text-primary/80">
                   {getInitials(post.creator[0].email)}
                 </span>
               </div>
-              <span className="text-[9px] font-sans text-muted-foreground">
+              <span className="text-[10px] font-sans text-muted-foreground/70">
                 {post.creator[0].email?.split('@')[0] || 'Unknown'}
               </span>
             </div>
-          )}
-        </div>
-
-        <div className="relative">
-          <button
-            onClick={e => { e.stopPropagation(); setMenuOpen(m => !m); }}
-            className="bg-transparent border-none cursor-pointer p-0.5 leading-none transition-colors duration-100"
-            style={{
-              color: hovered ? 'hsl(var(--muted-foreground))' : 'transparent',
-            }}
-          >
-            <MoreHorizontal size={14} />
-          </button>
-
-          {menuOpen && (
-            <motion.div
-              initial={{ opacity: 0, y: -8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
-              transition={{ duration: 0.15 }}
-              onClick={e => e.stopPropagation()}
-              className="absolute right-0 top-full z-50 bg-card border border-border rounded-md shadow-[0_4px_16px_hsl(var(--foreground)/0.1)] p-1 min-w-[160px] font-sans text-xs"
-            >
-              {COLUMN_IDS.filter(c => c !== post.column).map(col => (
-                <button
-                  key={col}
-                  onClick={e => handleMove(e, col)}
-                  className="flex items-center w-full px-2 py-1.5 bg-transparent border-none cursor-pointer text-foreground rounded-sm text-xs font-sans text-left transition-colors duration-100 hover:bg-accent"
-                >
-                  Move to {COLUMN_LABELS[col]}
-                </button>
-              ))}
-
-              <div className="h-px bg-border my-1" />
-
-              {confirmDelete ? (
-                <div className="px-2 py-1 flex gap-2 items-center">
-                  <span className="text-[11px] text-muted-foreground">Delete?</span>
-                  <button
-                    onClick={handleDelete}
-                    className="flex items-center px-1 py-0.5 bg-transparent border-none cursor-pointer text-destructive rounded-sm text-xs font-sans text-left transition-colors duration-100 hover:bg-accent"
-                  >
-                    Yes
-                  </button>
-                  <button
-                    onClick={e => { e.stopPropagation(); setConfirmDelete(false); }}
-                    className="flex items-center px-1 py-0.5 bg-transparent border-none cursor-pointer text-foreground rounded-sm text-xs font-sans text-left transition-colors duration-100 hover:bg-accent"
-                  >
-                    No
-                  </button>
-                </div>
-              ) : (
-                <button
-                  onClick={handleDelete}
-                  className="flex items-center w-full px-2 py-1.5 bg-transparent border-none cursor-pointer text-destructive rounded-sm text-xs font-sans text-left transition-colors duration-100 hover:bg-destructive/10"
-                >
-                  <Trash2 size={12} className="mr-1.5" />
-                  Delete
-                </button>
-              )}
-            </motion.div>
-          )}
-        </div>
+          </>
+        )}
       </div>
-
-      {/* Title */}
-      <p
-        className="text-sm font-bold font-serif text-foreground leading-[1.4] transition-colors duration-100"
-        style={{ marginBottom: post.body ? '6px' : '10px' }}
-      >
-        {post.title}
-      </p>
 
       {/* Body preview */}
       {post.body && (
