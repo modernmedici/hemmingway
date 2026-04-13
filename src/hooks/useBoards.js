@@ -28,6 +28,16 @@ export function useBoards() {
   const memberBoards = userData?.memberBoards ?? []
   const sentInvitations = userData?.sentInvitations ?? []
 
+  // Debug logging
+  console.log('useBoards:', {
+    userId: user?.id,
+    userEmail: user?.email,
+    userData,
+    ownedCount: ownedBoards.length,
+    memberCount: memberBoards.length,
+    error: error?.message,
+  })
+
   // Combine owned and member boards
   const allBoards = [...ownedBoards, ...memberBoards]
 
