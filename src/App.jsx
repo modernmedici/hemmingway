@@ -6,6 +6,8 @@ import { AuthScreen } from './components/AuthScreen'
 import AppShell from './components/AppShell'
 import Board from './components/Board'
 import WritingView from './components/WritingView'
+import ShareBoardModal from './components/ShareBoardModal'
+import InvitationBanner from './components/InvitationBanner'
 import './index.css'
 
 export default function App() {
@@ -20,8 +22,17 @@ export default function App() {
       console.log('Magic code detected:', code)
     }
   }, [user])
-  // Get user's boards
-  const { boards, loading: boardsLoading, createBoard, isOwner } = useBoards()
+  // Get user's boards and invitations
+  const {
+    boards,
+    loading: boardsLoading,
+    createBoard,
+    isOwner,
+    pendingInvitations,
+    inviteToBoard,
+    acceptInvitation,
+    declineInvitation,
+  } = useBoards()
 
   // Track active board (default to first board)
   const [activeBoardId, setActiveBoardId] = useState(null)
@@ -39,6 +50,7 @@ export default function App() {
   const [view, setView] = useState('board')
   const [editingPost, setEditingPost] = useState(null)
   const [pendingColumn, setPendingColumn] = useState('ideas')
+  const [shareModalBoard, setShareModalBoard] = useState(null)
 
   // Handle board selection
   const handleSelectBoard = (boardId) => {
@@ -51,6 +63,28 @@ export default function App() {
     if (result?.id) {
       setActiveBoardId(result.id)
     }
+  }
+
+  // Handle opening share modal
+  const handleShareBoard = (board) => {
+    setShareModalBoard(board)
+  }
+
+  // Handle sending invitation
+  const handleInvite = async (boardId, email, role) => {
+    await inviteToBoard(boardId, email, role)
+  }
+
+  // Handle accepting invitation
+  const handleAcceptInvitation = async (invitationId, boardId) => {
+    await acceptInvitation(invitationId, boardId)
+    // Switch to the newly joined board
+    setActiveBoardId(boardId)
+  }
+
+  // Handle declining invitation
+  const handleDeclineInvitation = async (invitationId) => {
+    await declineInvitation(invitationId)
   }
 
   // Show loading screen while auth or boards are loading
@@ -99,27 +133,52 @@ export default function App() {
     )
   }
 
+  const activeBoard = boards.find(b => b.id === activeBoardId)
+
   return (
-    <AppShell
-      onNewIdea={() => handleNewPost('ideas')}
-      user={user}
-      boards={boards}
-      activeBoardId={activeBoardId}
-      onSelectBoard={handleSelectBoard}
-      onCreateBoard={handleCreateBoard}
-      isOwner={isOwner}
-    >
-      <main style={{ flex: 1, padding: '32px 36px', overflow: 'hidden' }}>
-        <Board
-          posts={posts}
-          loading={loading}
-          error={error}
-          onMovePost={movePost}
-          onDeletePost={deletePost}
-          onNewPost={handleNewPost}
-          onEditPost={handleEditPost}
+    <>
+      <AppShell
+        onNewIdea={() => handleNewPost('ideas')}
+        user={user}
+        boards={boards}
+        activeBoardId={activeBoardId}
+        onSelectBoard={handleSelectBoard}
+        onCreateBoard={handleCreateBoard}
+        isOwner={isOwner}
+      >
+        {/* Invitation banner */}
+        {pendingInvitations && pendingInvitations.length > 0 && (
+          <InvitationBanner
+            invitations={pendingInvitations}
+            onAccept={handleAcceptInvitation}
+            onDecline={handleDeclineInvitation}
+          />
+        )}
+
+        <main style={{ flex: 1, padding: '32px 36px', overflow: 'hidden' }}>
+          <Board
+            board={activeBoard}
+            posts={posts}
+            loading={loading}
+            error={error}
+            onMovePost={movePost}
+            onDeletePost={deletePost}
+            onNewPost={handleNewPost}
+            onEditPost={handleEditPost}
+            onShareBoard={handleShareBoard}
+            isOwner={isOwner}
+          />
+        </main>
+      </AppShell>
+
+      {/* Share board modal */}
+      {shareModalBoard && (
+        <ShareBoardModal
+          board={shareModalBoard}
+          onClose={() => setShareModalBoard(null)}
+          onInvite={handleInvite}
         />
-      </main>
-    </AppShell>
+      )}
+    </>
   )
 }

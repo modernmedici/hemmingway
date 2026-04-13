@@ -15,8 +15,8 @@ export function useBoards() {
       ? {
           $users: {
             $: { where: { id: user.id } },
-            ownedBoards: {},
-            memberBoards: {},
+            ownedBoards: { members: {} },
+            memberBoards: { members: {}, owner: {} },
             sentInvitations: { board: {} },
           },
         }

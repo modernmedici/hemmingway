@@ -5,10 +5,10 @@ import { id } from '@instantdb/react'
 export function useKanban(boardId) {
   const { user } = db.useAuth()
 
-  // Query the specific board with its posts
+  // Query the specific board with its posts and members
   const { isLoading, error, data } = db.useQuery(
     user && boardId
-      ? { boards: { $: { where: { id: boardId } }, posts: { creator: {} } } }
+      ? { boards: { $: { where: { id: boardId } }, posts: { creator: {} }, members: {}, owner: {} } }
       : null
   )
 
