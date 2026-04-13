@@ -10,6 +10,14 @@ export default function InvitationBanner({ invitations, onAccept, onDecline }) {
   const handleAccept = async (invitation) => {
     setProcessingId(invitation.id)
     setError(null)
+
+    // Validate invitation has required data
+    if (!invitation.boardId) {
+      setError('This invitation is invalid (missing board ID). Please ask the sender to resend it.')
+      setProcessingId(null)
+      return
+    }
+
     try {
       await onAccept(invitation.id, invitation.boardId)
       // Success - banner will disappear as invitation updates to 'accepted'

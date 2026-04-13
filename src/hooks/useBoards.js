@@ -32,6 +32,9 @@ export function useBoards() {
   const allBoards = [...ownedBoards, ...memberBoards]
 
   // Query pending invitations for this user
+  // Note: We don't fetch board/inviter relationships here because invitees
+  // aren't board members yet, so permissions would block those queries.
+  // Instead, we use the direct boardId/boardName/inviterName fields.
   const { data: invitationData } = db.useQuery(
     user
       ? {
@@ -42,8 +45,6 @@ export function useBoards() {
                 status: 'pending',
               },
             },
-            board: { owner: {} },
-            inviter: {},
           },
         }
       : null
