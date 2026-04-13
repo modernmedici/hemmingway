@@ -31,16 +31,17 @@ function getInitials(email) {
 }
 
 export default function CollaboratorAvatars({ boardId, currentUser }) {
-  const room = boardId ? db.room('board', boardId) : null
-  const presence = room?.usePresence()
+  // Room must be created unconditionally for React hooks
+  const room = db.room('board', boardId || 'no-board')
+  const presence = room.usePresence()
 
   useEffect(() => {
-    if (!room || !currentUser) return
+    if (!presence || !currentUser || !boardId) return
 
     const color = getUserColor(currentUser.id)
 
     // Publish presence when component mounts
-    room.publishPresence({
+    presence.publishPresence({
       name: currentUser.email?.split('@')[0] || 'Anonymous',
       email: currentUser.email,
       color,
@@ -48,7 +49,7 @@ export default function CollaboratorAvatars({ boardId, currentUser }) {
 
     // Update presence every 30 seconds to keep connection alive
     const interval = setInterval(() => {
-      room.publishPresence({
+      presence.publishPresence({
         name: currentUser.email?.split('@')[0] || 'Anonymous',
         email: currentUser.email,
         color,
@@ -56,7 +57,7 @@ export default function CollaboratorAvatars({ boardId, currentUser }) {
     }, 30000)
 
     return () => clearInterval(interval)
-  }, [room, currentUser])
+  }, [presence, currentUser, boardId])
 
   if (!presence || !presence.peers) return null
 

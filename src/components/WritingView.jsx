@@ -185,12 +185,12 @@ export default function WritingView({ post, defaultColumn, onSave, onCancel, cur
 
   // Publish presence when entering the editor
   useEffect(() => {
-    if (!room || !currentUser || !hasEditLock) return;
+    if (!presence || !currentUser || !hasEditLock) return;
 
     const color = getUserColor(currentUser.id);
 
     // Publish presence to claim the edit lock
-    room.publishPresence({
+    presence.publishPresence({
       name: currentUser.email?.split('@')[0] || 'Anonymous',
       email: currentUser.email,
       color,
@@ -199,7 +199,7 @@ export default function WritingView({ post, defaultColumn, onSave, onCancel, cur
 
     // Update presence every 10 seconds to maintain lock
     const interval = setInterval(() => {
-      room.publishPresence({
+      presence.publishPresence({
         name: currentUser.email?.split('@')[0] || 'Anonymous',
         email: currentUser.email,
         color,
@@ -208,7 +208,7 @@ export default function WritingView({ post, defaultColumn, onSave, onCancel, cur
     }, 10000);
 
     return () => clearInterval(interval);
-  }, [room, currentUser, hasEditLock]);
+  }, [presence, currentUser, hasEditLock]);
 
   // Auto-save for collaborative editing
   useEffect(() => {
