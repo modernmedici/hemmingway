@@ -77,10 +77,10 @@ Colors are defined as HSL values in `src/styles/tokens.css`. Use CSS variable na
 **Scale:**
 - `text-4xl` (36px) - App logo, auth headlines
 - `text-2xl` (24px) - Board name
-- `text-sm` (14px) - Post title
+- `text-base` (16px) - Post title
+- `text-sm` (14px) - Post body preview
 - `text-xs` (12px) - UI labels, buttons
-- `text-[11px]` - Column headers (uppercase), timestamps
-- `text-[10px]` - Metadata (word count, attribution)
+- `text-[11px]` - Column headers (uppercase), timestamps, metadata (word count, attribution)
 
 **Font weight:**
 - `font-bold` - Post titles, board names
@@ -227,6 +227,40 @@ initial={{ opacity: 0, y: -8 }}
 4. Supporting text (muted-foreground/60)
 
 **Example:** See `Column.jsx` empty state messages.
+
+### Destructive Action Confirmation
+
+**When to use:** Board deletion, account deletion, any action that destroys user data.
+
+**Modal structure:**
+1. Danger headline: "Delete '[Board Name]'?"
+2. Impact statement: "This will permanently delete [N] posts. This cannot be undone."
+3. Confirmation input: "Type the board name to confirm:" (text input, must match exactly)
+4. Two buttons:
+   - Cancel (secondary, left) - ESC key
+   - Delete [N] posts (destructive bg, right) - disabled until input matches
+
+**Example:**
+```jsx
+<Modal>
+  <h2 className="text-lg font-semibold text-foreground">Delete "My Writing"?</h2>
+  <p className="text-sm text-muted-foreground mt-2">
+    This will permanently delete 47 posts. This cannot be undone.
+  </p>
+  <div className="mt-4">
+    <label className="text-sm font-medium">Type the board name to confirm:</label>
+    <input type="text" placeholder="My Writing" />
+  </div>
+  <div className="flex gap-2 mt-6">
+    <button>Cancel</button>
+    <button className="bg-destructive" disabled={!confirmed}>
+      Delete 47 posts
+    </button>
+  </div>
+</Modal>
+```
+
+**Why type-to-confirm:** Prevents accidental deletion from double-click or misclick. Forces user to read the board name and post count.
 
 ---
 

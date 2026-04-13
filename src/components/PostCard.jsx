@@ -124,27 +124,27 @@ export default function PostCard({ post, onMove, onDelete, onEdit, showAttributi
       </div>
 
       {/* Title (hero element) */}
-      <p className="text-sm font-bold font-serif text-foreground leading-[1.4] mb-1.5 pr-6">
+      <p className="text-base font-bold font-serif text-foreground leading-[1.4] mb-1.5 pr-6">
         {post.title}
       </p>
 
       {/* Metadata row: word count + author (supporting info) */}
       <div className="flex items-center gap-2 mb-2">
-        <span className="text-[10px] font-sans text-muted-foreground/70">
+        <span className="text-[11px] font-sans text-muted-foreground/70">
           {totalWords} {totalWords === 1 ? 'word' : 'words'}
         </span>
 
         {/* Show creator on shared boards */}
         {showAttribution && post.creator && post.creator[0] && (
           <>
-            <span className="text-[10px] text-muted-foreground/40">•</span>
+            <span className="text-[11px] text-muted-foreground/40">•</span>
             <div className="flex items-center gap-1">
               <div className="w-3.5 h-3.5 rounded-full bg-primary/15 flex items-center justify-center">
                 <span className="text-[7px] font-sans font-bold text-primary/80">
                   {getInitials(post.creator[0].email)}
                 </span>
               </div>
-              <span className="text-[10px] font-sans text-muted-foreground/70">
+              <span className="text-[11px] font-sans text-muted-foreground/70">
                 {post.creator[0].email?.split('@')[0] || 'Unknown'}
               </span>
             </div>
@@ -154,14 +154,14 @@ export default function PostCard({ post, onMove, onDelete, onEdit, showAttributi
 
       {/* Body preview */}
       {post.body && (
-        <p className="text-xs font-sans text-muted-foreground leading-relaxed overflow-hidden mb-2.5 line-clamp-3">
+        <p className="text-sm font-sans text-muted-foreground leading-relaxed overflow-hidden mb-2.5 line-clamp-3">
           {post.body}
         </p>
       )}
 
       {/* Bottom row: timestamp */}
       <div className="flex items-center">
-        <span className="text-[10px] text-muted-foreground font-sans">
+        <span className="text-[11px] text-muted-foreground font-sans">
           {formatDistanceToNow(new Date(post.updatedAt), { addSuffix: true })}
         </span>
       </div>
