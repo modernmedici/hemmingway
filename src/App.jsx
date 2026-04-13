@@ -167,6 +167,7 @@ export default function App() {
             onEditPost={handleEditPost}
             onShareBoard={handleShareBoard}
             isOwner={isOwner}
+            currentUser={user}
           />
         </main>
       </AppShell>

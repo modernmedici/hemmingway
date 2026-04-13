@@ -1,6 +1,7 @@
 import { Users } from 'lucide-react';
 import { COLUMNS } from '../lib/constants';
 import Column from './Column';
+import CollaboratorAvatars from './CollaboratorAvatars';
 
 export default function Board({
   board,
@@ -12,7 +13,8 @@ export default function Board({
   onNewPost,
   onEditPost,
   onShareBoard,
-  isOwner
+  isOwner,
+  currentUser
 }) {
   if (loading) {
     return (
@@ -60,15 +62,23 @@ export default function Board({
             )}
           </div>
 
-          {isOwner && isOwner(board.id) && onShareBoard && (
-            <button
-              onClick={() => onShareBoard(board)}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-sans font-medium rounded-md border border-border bg-transparent text-foreground transition-all duration-100 hover:bg-secondary active:scale-95"
-            >
-              <Users size={14} />
-              Share Board
-            </button>
-          )}
+          <div className="flex items-center gap-3">
+            {/* Show collaborators if board is shared */}
+            {isShared && (
+              <CollaboratorAvatars boardId={board.id} currentUser={currentUser} />
+            )}
+
+            {/* Share button (owner only) */}
+            {isOwner && isOwner(board.id) && onShareBoard && (
+              <button
+                onClick={() => onShareBoard(board)}
+                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-sans font-medium rounded-md border border-border bg-transparent text-foreground transition-all duration-100 hover:bg-secondary active:scale-95"
+              >
+                <Users size={14} />
+                Share Board
+              </button>
+            )}
+          </div>
         </div>
       )}
 
@@ -83,6 +93,7 @@ export default function Board({
             onDeletePost={onDeletePost}
             onNewPost={onNewPost}
             onEditPost={onEditPost}
+            showAttribution={isShared}
           />
         ))}
       </div>

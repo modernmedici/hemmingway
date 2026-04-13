@@ -9,7 +9,17 @@ const wordCount = (text) => {
   return trimmed ? trimmed.split(/\s+/).length : 0;
 };
 
-export default function PostCard({ post, onMove, onDelete, onEdit }) {
+// Get initials from email
+function getInitials(email) {
+  if (!email) return '?'
+  const parts = email.split('@')[0].split('.')
+  if (parts.length >= 2) {
+    return (parts[0][0] + parts[1][0]).toUpperCase()
+  }
+  return email.substring(0, 2).toUpperCase()
+}
+
+export default function PostCard({ post, onMove, onDelete, onEdit, showAttribution }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [hovered, setHovered] = useState(false);
@@ -51,11 +61,27 @@ export default function PostCard({ post, onMove, onDelete, onEdit }) {
         boxShadow: hovered ? '0 2px 8px hsl(var(--foreground) / 0.06)' : '0 1px 3px hsl(var(--foreground) / 0.04)',
       }}
     >
-      {/* Top row: word count badge + three-dot menu */}
+      {/* Top row: word count badge + creator + three-dot menu */}
       <div className="flex items-center justify-between mb-2">
-        <span className="text-[10px] font-sans font-medium text-muted-foreground bg-secondary rounded-full px-2 py-px">
-          {totalWords} {totalWords === 1 ? 'word' : 'words'}
-        </span>
+        <div className="flex items-center gap-2">
+          <span className="text-[10px] font-sans font-medium text-muted-foreground bg-secondary rounded-full px-2 py-px">
+            {totalWords} {totalWords === 1 ? 'word' : 'words'}
+          </span>
+
+          {/* Show creator on shared boards */}
+          {showAttribution && post.creator && (
+            <div className="flex items-center gap-1">
+              <div className="w-4 h-4 rounded-full bg-primary/20 flex items-center justify-center">
+                <span className="text-[8px] font-sans font-bold text-primary">
+                  {getInitials(post.creator.email)}
+                </span>
+              </div>
+              <span className="text-[9px] font-sans text-muted-foreground">
+                {post.creator.email?.split('@')[0] || 'Unknown'}
+              </span>
+            </div>
+          )}
+        </div>
 
         <div className="relative">
           <button
