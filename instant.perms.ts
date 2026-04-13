@@ -11,17 +11,22 @@ const rules = {
     },
   },
 
-  // Boards: owner creates/deletes, members can view, anyone can bind themselves
+  // Boards: TEMPORARILY PERMISSIVE for invitation acceptance
+  // TODO: Restrict to only allow .link() for members, not attribute updates
   boards: {
     allow: {
       view: "auth.id == data.ref('owner.id') || auth.id in data.ref('members.id')",
-      create: 'true', // Any signed-in user can create boards
-      update: 'true', // Allow binding members (gated by invitation flow in app logic)
+      create: 'true',
+      update: 'true', // Wide open to allow .link({ members: userId })
       delete: "auth.id == data.ref('owner.id')",
     },
   },
 
-  // Posts: temporarily wide open for debugging
+  // Posts: TEMPORARILY WIDE OPEN - multi-hop refs don't work in InstantDB
+  // TODO: Fix before production by either:
+  //   1. Denormalizing: store boardOwnerId/boardMemberIds on posts directly
+  //   2. Server-side: use InstantDB backend rules or custom auth
+  //   3. Simpler model: single-hop checks only (auth.id == creator.id)
   posts: {
     allow: {
       view: 'true',

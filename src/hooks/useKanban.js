@@ -15,9 +15,6 @@ export function useKanban(boardId) {
   const posts = data?.boards?.[0]?.posts ?? []
   const board = data?.boards?.[0]
 
-  // Debug logging
-  console.log('useKanban:', { boardId, userId: user?.id, board, postCount: posts.length })
-
   const createPost = useCallback(async (title, body, column = 'ideas') => {
     if (!user || !boardId) return
     const postId = id()
