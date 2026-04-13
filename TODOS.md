@@ -1,5 +1,15 @@
 # TODOS
 
+## ~~P0 — Security: Permission Denormalization~~ ✓ OBSOLETE
+
+**Status:** Not needed. Multi-hop refs work with correct syntax (|| instead of arrays).
+
+**What happened:** Eng review recommended denormalizing permissions (storing `boardOwnerId`, `boardMemberIds[]` on posts) because multi-hop refs "don't work in InstantDB." Root cause was syntax error - used arrays with `in` operator instead of `||` for OR logic. Fixed in commit a00ecae.
+
+**Verified:** Test plan confirms permission isolation works correctly. Users can only access boards they own or are members of.
+
+---
+
 ## P2 — Collaboration: Invitation Duplicate Detection
 
 **What:** Prevent sending duplicate invitations to the same email for the same board. Query existing invitations before creating, show "Already invited" error if pending/accepted invitation exists.
