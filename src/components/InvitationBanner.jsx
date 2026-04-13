@@ -11,7 +11,7 @@ export default function InvitationBanner({ invitations, onAccept, onDecline }) {
     setProcessingId(invitation.id)
     setError(null)
     try {
-      await onAccept(invitation.id, invitation.board.id)
+      await onAccept(invitation.id, invitation.boardId)
       // Success - banner will disappear as invitation updates to 'accepted'
     } catch (err) {
       console.error('Failed to accept invitation:', err)
@@ -45,9 +45,8 @@ export default function InvitationBanner({ invitations, onAccept, onDecline }) {
             <div className="space-y-2">
               {invitations.map((invitation) => {
                 const isProcessing = processingId === invitation.id
-                const inviterName =
-                  invitation.inviter?.email?.split('@')[0] || 'Someone'
-                const boardName = invitation.board?.name || 'a board'
+                const inviterName = invitation.inviterName || 'Someone'
+                const boardName = invitation.boardName || 'a board'
 
                 return (
                   <div

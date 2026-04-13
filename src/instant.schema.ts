@@ -36,6 +36,9 @@ const _schema = i.schema({
       role: i.string(),
       status: i.string(),
       createdAt: i.date(),
+      boardId: i.string().optional(),
+      boardName: i.string().optional(),
+      inviterName: i.string().optional(),
     }),
   },
   links: {

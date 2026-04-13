@@ -111,6 +111,13 @@ export function useBoards() {
     async (boardId, email, role = 'editor') => {
       if (!user) return
 
+      // Find the board to get its name
+      const board = allBoards.find(b => b.id === boardId)
+      if (!board) {
+        console.error('inviteToBoard: Board not found', boardId)
+        return
+      }
+
       const invitationId = id()
       const now = new Date()
 
@@ -120,6 +127,9 @@ export function useBoards() {
           role,
           status: 'pending',
           createdAt: now,
+          boardId: boardId,
+          boardName: board.name,
+          inviterName: user.email?.split('@')[0] || 'Someone',
         }),
         db.tx.invitations[invitationId].link({
           board: boardId,
@@ -129,7 +139,7 @@ export function useBoards() {
 
       return { id: invitationId }
     },
-    [user]
+    [user, allBoards]
   )
 
   /**
