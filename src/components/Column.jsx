@@ -42,17 +42,35 @@ export default function Column({ column, posts, onMovePost, onDeletePost, onNewP
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="border border-dashed border-border rounded-md p-8 text-center text-xs text-muted-foreground font-sans"
+              className="border border-dashed border-border rounded-md p-8 text-center font-sans"
             >
-              <div className="mb-2 flex justify-center opacity-30">
-                <FileText size={32} className="text-muted-foreground" />
+              <div className="mb-3 flex justify-center opacity-20">
+                <FileText size={28} className="text-muted-foreground" />
               </div>
-              <p className="mb-1 font-medium">No {column.label.toLowerCase()} yet</p>
-              <p className="text-[11px] opacity-70">
-                {column.id === 'ideas' && 'Click "+ New Idea" to start writing'}
-                {column.id === 'drafts' && 'Move ideas here to develop them'}
-                {column.id === 'finalized' && 'Publish your finished work here'}
-              </p>
+              {column.id === 'ideas' && (
+                <>
+                  <p className="text-xs font-medium text-foreground/70 mb-1">Start with a rough idea</p>
+                  <p className="text-[11px] text-muted-foreground/60 leading-relaxed">
+                    Just a title is enough. Don't overthink it.
+                  </p>
+                </>
+              )}
+              {column.id === 'drafts' && (
+                <>
+                  <p className="text-xs font-medium text-foreground/70 mb-1">Flesh out your thoughts</p>
+                  <p className="text-[11px] text-muted-foreground/60 leading-relaxed">
+                    Move ideas here when you're ready to develop them.
+                  </p>
+                </>
+              )}
+              {column.id === 'finalized' && (
+                <>
+                  <p className="text-xs font-medium text-foreground/70 mb-1">Your finished work lives here</p>
+                  <p className="text-[11px] text-muted-foreground/60 leading-relaxed">
+                    Posts you're proud to share.
+                  </p>
+                </>
+              )}
             </motion.div>
           )}
           {posts.map((post) => (
