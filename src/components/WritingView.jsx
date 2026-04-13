@@ -273,12 +273,13 @@ export default function WritingView({ post, defaultColumn, onSave, onCancel }) {
 
       {/* Editor */}
       <div
-        className="flex-1 w-full mx-auto pb-12"
+        className="flex-1 w-full mx-auto"
         style={{
           maxWidth: '768px',
           paddingLeft: '32px',
           paddingRight: '32px',
           paddingTop: zenMode ? '128px' : '64px',
+          paddingBottom: zenMode ? '256px' : '48px',
         }}
       >
         <textarea
