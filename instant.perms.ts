@@ -21,13 +21,13 @@ const rules = {
     },
   },
 
-  // Posts: creator or board members can view/edit
+  // Posts: temporarily wide open for debugging
   posts: {
     allow: {
-      view: "auth.id in [data.ref('creator.id'), data.ref('board.owner.id'), data.ref('board.members.id')]",
-      create: "auth.id in [data.ref('board.owner.id'), data.ref('board.members.id')]",
-      update: "auth.id in [data.ref('creator.id'), data.ref('board.owner.id'), data.ref('board.members.id')]",
-      delete: "auth.id in [data.ref('creator.id'), data.ref('board.owner.id'), data.ref('board.members.id')]",
+      view: 'true',
+      create: 'true',
+      update: 'true',
+      delete: 'true',
     },
   },
 
