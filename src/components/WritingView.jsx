@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
-import { ArrowLeft, Check, Loader2, Maximize2 } from 'lucide-react';
+import { ArrowLeft, Check, Loader2, Maximize2, Play, Pause, RotateCcw } from 'lucide-react';
 
 export default function WritingView({ post, defaultColumn, onSave, onCancel }) {
   const [title,  setTitle]  = useState(post?.title ?? '');
@@ -8,6 +8,8 @@ export default function WritingView({ post, defaultColumn, onSave, onCancel }) {
   const [saving, setSaving] = useState(false);
   const [countChanged, setCountChanged] = useState(false);
   const [zenMode, setZenMode] = useState(false);
+  const [timeLeft, setTimeLeft] = useState(25 * 60); // 25 minutes in seconds
+  const [timerRunning, setTimerRunning] = useState(false);
   const titleRef = useRef(null);
   const containerRef = useRef(null);
 
@@ -90,6 +92,35 @@ export default function WritingView({ post, defaultColumn, onSave, onCancel }) {
 
   useEffect(() => { autoResizeTitle(); }, [title, autoResizeTitle]);
 
+  // Timer countdown effect
+  useEffect(() => {
+    if (!timerRunning || timeLeft <= 0) return;
+
+    const interval = setInterval(() => {
+      setTimeLeft(prev => {
+        if (prev <= 1) {
+          setTimerRunning(false);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [timerRunning, timeLeft]);
+
+  const formatTime = (seconds) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  const toggleTimer = () => setTimerRunning(!timerRunning);
+  const resetTimer = () => {
+    setTimeLeft(25 * 60);
+    setTimerRunning(false);
+  };
+
   useEffect(() => {
     const handler = (e) => {
       if (e.key === 'Escape') {
@@ -164,6 +195,31 @@ export default function WritingView({ post, defaultColumn, onSave, onCancel }) {
               Saved!
             </span>
           )}
+          {/* Timer */}
+          <div className="flex items-center gap-1.5 border-l border-border pl-2.5">
+            <span
+              className="text-[11px] font-sans tabular-nums"
+              style={{
+                color: timeLeft === 0 ? 'hsl(var(--destructive))' : timerRunning ? 'hsl(var(--primary))' : 'hsl(var(--muted-foreground))',
+              }}
+            >
+              {formatTime(timeLeft)}
+            </span>
+            <button
+              onClick={toggleTimer}
+              title={timerRunning ? "Pause timer" : "Start timer"}
+              className="bg-transparent border-none cursor-pointer text-muted-foreground p-0.5 transition-all duration-[120ms] hover:text-foreground"
+            >
+              {timerRunning ? <Pause size={12} /> : <Play size={12} />}
+            </button>
+            <button
+              onClick={resetTimer}
+              title="Reset timer"
+              className="bg-transparent border-none cursor-pointer text-muted-foreground p-0.5 transition-all duration-[120ms] hover:text-foreground"
+            >
+              <RotateCcw size={12} />
+            </button>
+          </div>
           {/* Word count */}
           <span
             className="text-[11px] font-sans tabular-nums transition-all duration-200 ease-in-out"
