@@ -30,17 +30,13 @@ async function migrateBoards() {
   console.log("Starting board migration...\n");
 
   // Query all users and their posts
-  const { data, error } = await db.query({
+  const data = await db.query({
     $users: {
       posts: {},
     },
   });
 
-  if (error) {
-    console.error("Error querying users:", error);
-    process.exit(1);
-  }
-
+  // Admin SDK returns data directly (no wrapper)
   const users = data.$users || [];
   console.log(`Found ${users.length} users\n`);
 
