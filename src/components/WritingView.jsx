@@ -193,7 +193,6 @@ export default function WritingView({ post, defaultColumn, onSave, onCancel }) {
               className="text-[11px] font-sans tabular-nums cursor-pointer transition-all duration-200"
               style={{
                 color: timeLeft === 0 ? 'hsl(var(--destructive))' : timerRunning ? 'hsl(var(--primary))' : 'hsl(var(--muted-foreground))',
-                animation: timerRunning ? 'pulse 2s ease-in-out infinite' : 'none',
               }}
             >
               {formatTime(timeLeft)}
@@ -234,7 +233,6 @@ export default function WritingView({ post, defaultColumn, onSave, onCancel }) {
             className="text-[11px] font-sans tabular-nums cursor-pointer transition-all duration-200"
             style={{
               color: timeLeft === 0 ? 'hsl(var(--destructive))' : timerRunning ? 'hsl(var(--primary))' : 'hsl(var(--muted-foreground))',
-              animation: timerRunning ? 'pulse 2s ease-in-out infinite' : 'none',
             }}
           >
             {formatTime(timeLeft)}
