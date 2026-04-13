@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
-import { ArrowLeft, Check, Loader2, Maximize2, Play, Pause, RotateCcw } from 'lucide-react';
+import { ArrowLeft, Check, Loader2, Maximize2 } from 'lucide-react';
 
 export default function WritingView({ post, defaultColumn, onSave, onCancel }) {
   const [title,  setTitle]  = useState(post?.title ?? '');
@@ -78,6 +78,11 @@ export default function WritingView({ post, defaultColumn, onSave, onCancel }) {
       await onSave(title.trim(), body.trim(), defaultColumn);
     }
 
+    // Reset timer when leaving
+    setTimeLeft(25 * 60);
+    setTimerRunning(false);
+    setHasStartedTyping(false);
+
     onCancel();
   }, [originalTitle, originalBody, defaultColumn]);
 
@@ -120,6 +125,17 @@ export default function WritingView({ post, defaultColumn, onSave, onCancel }) {
     setTimeLeft(25 * 60);
     setTimerRunning(false);
   };
+
+  // Auto-start timer on first keystroke
+  const [hasStartedTyping, setHasStartedTyping] = useState(false);
+  useEffect(() => {
+    if (!hasStartedTyping && (title.length > 0 || body.length > 0)) {
+      setHasStartedTyping(true);
+      if (timeLeft === 25 * 60 && !timerRunning) {
+        setTimerRunning(true);
+      }
+    }
+  }, [title, body, hasStartedTyping, timeLeft, timerRunning]);
 
   useEffect(() => {
     const handler = (e) => {
@@ -170,30 +186,18 @@ export default function WritingView({ post, defaultColumn, onSave, onCancel }) {
         >
           <div className="flex items-center gap-3">
             {/* Timer in zen mode */}
-            <div className="flex items-center gap-1.5 bg-muted rounded-sm px-3 py-1.5">
-              <span
-                className="text-[11px] font-sans tabular-nums"
-                style={{
-                  color: timeLeft === 0 ? 'hsl(var(--destructive))' : timerRunning ? 'hsl(var(--primary))' : 'hsl(var(--muted-foreground))',
-                }}
-              >
-                {formatTime(timeLeft)}
-              </span>
-              <button
-                onClick={toggleTimer}
-                title={timerRunning ? "Pause timer" : "Start timer"}
-                className="bg-transparent border-none cursor-pointer text-muted-foreground p-0.5 transition-all duration-[120ms] hover:text-foreground"
-              >
-                {timerRunning ? <Pause size={12} /> : <Play size={12} />}
-              </button>
-              <button
-                onClick={resetTimer}
-                title="Reset timer"
-                className="bg-transparent border-none cursor-pointer text-muted-foreground p-0.5 transition-all duration-[120ms] hover:text-foreground"
-              >
-                <RotateCcw size={12} />
-              </button>
-            </div>
+            <span
+              onClick={toggleTimer}
+              onDoubleClick={resetTimer}
+              title="Click to start/pause · Double-click to reset"
+              className="text-[11px] font-sans tabular-nums cursor-pointer transition-all duration-200"
+              style={{
+                color: timeLeft === 0 ? 'hsl(var(--destructive))' : timerRunning ? 'hsl(var(--primary))' : 'hsl(var(--muted-foreground))',
+                animation: timerRunning ? 'pulse 2s ease-in-out infinite' : 'none',
+              }}
+            >
+              {formatTime(timeLeft)}
+            </span>
             <button
               onClick={exitZenMode}
               className="text-[11px] font-sans bg-muted text-muted-foreground border-none rounded-sm px-3 py-1.5 cursor-pointer transition-all duration-[120ms] hover:bg-secondary"
@@ -223,30 +227,18 @@ export default function WritingView({ post, defaultColumn, onSave, onCancel }) {
             </span>
           )}
           {/* Timer */}
-          <div className="flex items-center gap-1.5 border-l border-border pl-2.5">
-            <span
-              className="text-[11px] font-sans tabular-nums"
-              style={{
-                color: timeLeft === 0 ? 'hsl(var(--destructive))' : timerRunning ? 'hsl(var(--primary))' : 'hsl(var(--muted-foreground))',
-              }}
-            >
-              {formatTime(timeLeft)}
-            </span>
-            <button
-              onClick={toggleTimer}
-              title={timerRunning ? "Pause timer" : "Start timer"}
-              className="bg-transparent border-none cursor-pointer text-muted-foreground p-0.5 transition-all duration-[120ms] hover:text-foreground"
-            >
-              {timerRunning ? <Pause size={12} /> : <Play size={12} />}
-            </button>
-            <button
-              onClick={resetTimer}
-              title="Reset timer"
-              className="bg-transparent border-none cursor-pointer text-muted-foreground p-0.5 transition-all duration-[120ms] hover:text-foreground"
-            >
-              <RotateCcw size={12} />
-            </button>
-          </div>
+          <span
+            onClick={toggleTimer}
+            onDoubleClick={resetTimer}
+            title="Click to start/pause · Double-click to reset"
+            className="text-[11px] font-sans tabular-nums cursor-pointer transition-all duration-200"
+            style={{
+              color: timeLeft === 0 ? 'hsl(var(--destructive))' : timerRunning ? 'hsl(var(--primary))' : 'hsl(var(--muted-foreground))',
+              animation: timerRunning ? 'pulse 2s ease-in-out infinite' : 'none',
+            }}
+          >
+            {formatTime(timeLeft)}
+          </span>
           {/* Word count */}
           <span
             className="text-[11px] font-sans tabular-nums transition-all duration-200 ease-in-out"
