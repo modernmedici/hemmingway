@@ -1,8 +1,18 @@
 import { useState } from 'react'
 import { BookOpen, LogOut } from 'lucide-react'
 import db from '../lib/db'
+import BoardSwitcher from './BoardSwitcher'
 
-export default function AppShell({ children, onNewIdea, user }) {
+export default function AppShell({
+  children,
+  onNewIdea,
+  user,
+  boards,
+  activeBoardId,
+  onSelectBoard,
+  onCreateBoard,
+  isOwner
+}) {
   const [isHovering, setIsHovering] = useState(false)
 
   return (
@@ -36,6 +46,19 @@ export default function AppShell({ children, onNewIdea, user }) {
             75% { transform: rotateY(15deg) scale(1.05); }
           }
         `}</style>
+
+        {/* Board Switcher */}
+        {boards && boards.length > 0 && (
+          <div className="mb-4">
+            <BoardSwitcher
+              boards={boards}
+              activeBoardId={activeBoardId}
+              onSelectBoard={onSelectBoard}
+              onCreateBoard={onCreateBoard}
+              isOwner={isOwner}
+            />
+          </div>
+        )}
 
         {/* Nav */}
         <nav className="flex-1">

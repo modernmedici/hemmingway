@@ -21,10 +21,17 @@ export default function App() {
     }
   }, [user])
   // Get user's boards
-  const { boards, loading: boardsLoading } = useBoards()
+  const { boards, loading: boardsLoading, createBoard, isOwner } = useBoards()
 
-  // Select active board (default to first board for now)
-  const activeBoardId = boards[0]?.id
+  // Track active board (default to first board)
+  const [activeBoardId, setActiveBoardId] = useState(null)
+
+  // Set default active board when boards load
+  useEffect(() => {
+    if (!activeBoardId && boards.length > 0) {
+      setActiveBoardId(boards[0].id)
+    }
+  }, [boards, activeBoardId])
 
   // Get posts for the active board
   const { posts, loading, error, createPost, updatePost, movePost, deletePost } = useKanban(activeBoardId)
@@ -32,6 +39,19 @@ export default function App() {
   const [view, setView] = useState('board')
   const [editingPost, setEditingPost] = useState(null)
   const [pendingColumn, setPendingColumn] = useState('ideas')
+
+  // Handle board selection
+  const handleSelectBoard = (boardId) => {
+    setActiveBoardId(boardId)
+  }
+
+  // Handle board creation
+  const handleCreateBoard = async (name) => {
+    const result = await createBoard(name)
+    if (result?.id) {
+      setActiveBoardId(result.id)
+    }
+  }
 
   // Show loading screen while auth or boards are loading
   if (authLoading || boardsLoading) {
@@ -80,7 +100,15 @@ export default function App() {
   }
 
   return (
-    <AppShell onNewIdea={() => handleNewPost('ideas')} user={user}>
+    <AppShell
+      onNewIdea={() => handleNewPost('ideas')}
+      user={user}
+      boards={boards}
+      activeBoardId={activeBoardId}
+      onSelectBoard={handleSelectBoard}
+      onCreateBoard={handleCreateBoard}
+      isOwner={isOwner}
+    >
       <main style={{ flex: 1, padding: '32px 36px', overflow: 'hidden' }}>
         <Board
           posts={posts}
