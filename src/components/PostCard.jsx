@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { FileText, MoreHorizontal, Trash2 } from 'lucide-react';
+import { MoreHorizontal, Trash2 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns/formatDistanceToNow';
 import { COLUMN_IDS, COLUMN_LABELS } from '../lib/constants';
 
@@ -160,12 +160,11 @@ export default function PostCard({ post, onMove, onDelete, onEdit, showAttributi
         </p>
       )}
 
-      {/* Bottom row: timestamp + icon */}
-      <div className="flex items-center justify-between">
+      {/* Bottom row: timestamp */}
+      <div className="flex items-center">
         <span className="text-[10px] text-muted-foreground font-sans">
           {formatDistanceToNow(new Date(post.updatedAt), { addSuffix: true })}
         </span>
-        <FileText size={13} className="text-muted-foreground" />
       </div>
     </motion.div>
   );
