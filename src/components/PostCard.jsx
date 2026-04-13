@@ -69,15 +69,15 @@ export default function PostCard({ post, onMove, onDelete, onEdit, showAttributi
           </span>
 
           {/* Show creator on shared boards */}
-          {showAttribution && post.creator && (
+          {showAttribution && post.creator && post.creator[0] && (
             <div className="flex items-center gap-1">
               <div className="w-4 h-4 rounded-full bg-primary/20 flex items-center justify-center">
                 <span className="text-[8px] font-sans font-bold text-primary">
-                  {getInitials(post.creator.email)}
+                  {getInitials(post.creator[0].email)}
                 </span>
               </div>
               <span className="text-[9px] font-sans text-muted-foreground">
-                {post.creator.email?.split('@')[0] || 'Unknown'}
+                {post.creator[0].email?.split('@')[0] || 'Unknown'}
               </span>
             </div>
           )}
