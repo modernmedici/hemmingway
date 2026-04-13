@@ -11,13 +11,13 @@ const rules = {
     },
   },
 
-  // Boards: owner creates/deletes, members can view
+  // Boards: owner creates/deletes, members can view, anyone can bind themselves
   boards: {
     allow: {
-      view: "auth.id in [data.ref('owner.id'), data.ref('members.id')]",
+      view: "auth.id == data.ref('owner.id') || auth.id in data.ref('members.id')",
       create: 'true', // Any signed-in user can create boards
-      update: "auth.id in data.ref('owner.id')",
-      delete: "auth.id in data.ref('owner.id')",
+      update: 'true', // Allow binding members (gated by invitation flow in app logic)
+      delete: "auth.id == data.ref('owner.id')",
     },
   },
 
