@@ -168,12 +168,39 @@ export default function WritingView({ post, defaultColumn, onSave, onCancel }) {
         <div
           className="zen-mode-indicator fixed top-5 right-5 z-20 opacity-0 transition-opacity duration-200 hover:opacity-100"
         >
-          <button
-            onClick={exitZenMode}
-            className="text-[11px] font-sans bg-muted text-muted-foreground border-none rounded-sm px-3 py-1.5 cursor-pointer transition-all duration-[120ms] hover:bg-secondary"
-          >
-            Exit Fullscreen (Esc)
-          </button>
+          <div className="flex items-center gap-3">
+            {/* Timer in zen mode */}
+            <div className="flex items-center gap-1.5 bg-muted rounded-sm px-3 py-1.5">
+              <span
+                className="text-[11px] font-sans tabular-nums"
+                style={{
+                  color: timeLeft === 0 ? 'hsl(var(--destructive))' : timerRunning ? 'hsl(var(--primary))' : 'hsl(var(--muted-foreground))',
+                }}
+              >
+                {formatTime(timeLeft)}
+              </span>
+              <button
+                onClick={toggleTimer}
+                title={timerRunning ? "Pause timer" : "Start timer"}
+                className="bg-transparent border-none cursor-pointer text-muted-foreground p-0.5 transition-all duration-[120ms] hover:text-foreground"
+              >
+                {timerRunning ? <Pause size={12} /> : <Play size={12} />}
+              </button>
+              <button
+                onClick={resetTimer}
+                title="Reset timer"
+                className="bg-transparent border-none cursor-pointer text-muted-foreground p-0.5 transition-all duration-[120ms] hover:text-foreground"
+              >
+                <RotateCcw size={12} />
+              </button>
+            </div>
+            <button
+              onClick={exitZenMode}
+              className="text-[11px] font-sans bg-muted text-muted-foreground border-none rounded-sm px-3 py-1.5 cursor-pointer transition-all duration-[120ms] hover:bg-secondary"
+            >
+              Exit Fullscreen (Esc)
+            </button>
+          </div>
         </div>
       )}
 
