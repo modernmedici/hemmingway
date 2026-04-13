@@ -29,12 +29,12 @@ export default function InvitationBanner({ invitations, onAccept, onDecline }) {
   }
 
   return (
-    <div className="bg-primary/10 border-b border-primary/20">
+    <div className="bg-accent/30 border-b border-border/10">
       <div className="max-w-5xl mx-auto px-6 py-3">
         <div className="flex items-start gap-3">
-          <Mail size={18} className="text-primary mt-0.5 flex-shrink-0" />
+          <Mail size={18} className="text-foreground/40 mt-0.5 flex-shrink-0" />
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium font-sans text-foreground mb-2">
+            <p className="text-sm font-medium font-sans text-foreground/80 mb-2">
               You have {invitations.length} pending{' '}
               {invitations.length === 1 ? 'invitation' : 'invitations'}
             </p>
@@ -48,15 +48,15 @@ export default function InvitationBanner({ invitations, onAccept, onDecline }) {
                 return (
                   <div
                     key={invitation.id}
-                    className="flex items-center justify-between gap-4 bg-card/50 rounded-md px-3 py-2 border border-border/50"
+                    className="flex items-center justify-between gap-4 bg-card/60 rounded-md px-3 py-2 border border-border/20"
                   >
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-sans text-foreground">
+                      <p className="text-sm font-sans text-foreground/80">
                         <span className="font-medium">{inviterName}</span> invited
                         you to collaborate on{' '}
                         <span className="font-medium">"{boardName}"</span>
                       </p>
-                      <p className="text-xs text-muted-foreground font-sans mt-0.5">
+                      <p className="text-xs text-muted-foreground/70 font-sans mt-0.5">
                         Role: {invitation.role === 'editor' ? 'Editor' : 'Viewer'}
                       </p>
                     </div>
@@ -81,7 +81,7 @@ export default function InvitationBanner({ invitations, onAccept, onDecline }) {
                       <button
                         onClick={() => handleDecline(invitation)}
                         disabled={isProcessing}
-                        className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-sans font-medium rounded-md bg-transparent border border-border text-muted-foreground transition-colors duration-100 hover:bg-secondary hover:text-foreground disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-sans font-medium rounded-md bg-transparent border border-border/30 text-muted-foreground/70 transition-colors duration-100 hover:bg-secondary hover:text-foreground disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         <X size={12} />
                         Decline

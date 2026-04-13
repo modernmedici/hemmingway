@@ -4,16 +4,16 @@ import db from '../lib/db';
 import EditorPresenceBar from './EditorPresenceBar';
 import EditLockBanner from './EditLockBanner';
 
-// Color palette for user avatars
+// Color palette for user avatars - Warm Academic Earth Tones
 const COLORS = [
-  'hsl(210, 100%, 56%)', // Blue
-  'hsl(340, 82%, 52%)',  // Pink
-  'hsl(291, 64%, 42%)',  // Purple
-  'hsl(171, 100%, 41%)', // Teal
-  'hsl(48, 100%, 67%)',  // Yellow
-  'hsl(25, 95%, 53%)',   // Orange
-  'hsl(141, 71%, 48%)',  // Green
-  'hsl(0, 84%, 60%)',    // Red
+  'hsl(15, 40%, 55%)',  // Terracotta
+  'hsl(110, 25%, 50%)', // Sage
+  'hsl(35, 35%, 50%)',  // Clay
+  'hsl(210, 15%, 45%)', // Slate
+  'hsl(40, 40%, 55%)',  // Ochre
+  'hsl(85, 30%, 45%)',  // Moss
+  'hsl(45, 35%, 60%)',  // Sand
+  'hsl(200, 12%, 50%)', // Stone
 ];
 
 function getUserColor(userId) {

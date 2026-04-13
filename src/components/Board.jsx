@@ -53,9 +53,9 @@ export default function Board({
               {board.name}
             </h1>
             {isShared && (
-              <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-secondary">
-                <Users size={12} className="text-muted-foreground" />
-                <span className="text-[10px] font-sans font-medium text-muted-foreground">
+              <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-secondary/60">
+                <Users size={12} className="text-muted-foreground/50" />
+                <span className="text-[10px] font-sans font-medium text-muted-foreground/60">
                   Shared
                 </span>
               </div>
@@ -72,7 +72,7 @@ export default function Board({
             {isOwner && isOwner(board.id) && onShareBoard && (
               <button
                 onClick={() => onShareBoard(board)}
-                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-sans font-medium rounded-md border border-border bg-transparent text-foreground transition-all duration-100 hover:bg-secondary active:scale-95"
+                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-sans font-medium rounded-md border border-border/30 bg-transparent text-foreground/70 transition-all duration-100 hover:bg-secondary hover:text-foreground active:scale-95"
               >
                 <Users size={14} />
                 Share Board

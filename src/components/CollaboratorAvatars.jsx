@@ -1,16 +1,17 @@
 import { useEffect } from 'react'
 import db from '../lib/db'
 
-// Color palette for user avatars
+// Color palette for user avatars - Warm Academic Earth Tones
+// Matches the app's warm, muted aesthetic
 const COLORS = [
-  'hsl(210, 100%, 56%)', // Blue
-  'hsl(340, 82%, 52%)',  // Pink
-  'hsl(291, 64%, 42%)',  // Purple
-  'hsl(171, 100%, 41%)', // Teal
-  'hsl(48, 100%, 67%)',  // Yellow
-  'hsl(25, 95%, 53%)',   // Orange
-  'hsl(141, 71%, 48%)',  // Green
-  'hsl(0, 84%, 60%)',    // Red
+  'hsl(15, 40%, 55%)',  // Terracotta
+  'hsl(110, 25%, 50%)', // Sage
+  'hsl(35, 35%, 50%)',  // Clay
+  'hsl(210, 15%, 45%)', // Slate
+  'hsl(40, 40%, 55%)',  // Ochre
+  'hsl(85, 30%, 45%)',  // Moss
+  'hsl(45, 35%, 60%)',  // Sand
+  'hsl(200, 12%, 50%)', // Stone
 ]
 
 // Deterministic color from user ID
@@ -81,7 +82,7 @@ export default function CollaboratorAvatars({ boardId, currentUser }) {
           return (
             <div
               key={peer.id}
-              className="w-7 h-7 rounded-full border-2 border-background flex items-center justify-center text-[10px] font-sans font-bold text-white shadow-sm"
+              className="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-sans font-bold text-white shadow-sm"
               style={{ backgroundColor: color }}
               title={peer.name || peer.email}
             >
@@ -92,7 +93,7 @@ export default function CollaboratorAvatars({ boardId, currentUser }) {
       </div>
 
       {otherPeers.length > 0 && (
-        <span className="text-xs font-sans text-muted-foreground">
+        <span className="text-xs font-sans text-muted-foreground/60">
           {otherPeers.length === 1
             ? `${otherPeers[0].name || otherPeers[0].email} is here`
             : `${otherPeers.length} people here`}

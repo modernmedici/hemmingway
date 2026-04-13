@@ -38,12 +38,12 @@ export default function BoardSwitcher({
         <div className="flex items-center gap-2 min-w-0">
           <span className="truncate">{activeBoard?.name || 'Loading...'}</span>
           {activeBoard?.members && activeBoard.members.length > 0 && (
-            <Users size={12} className="text-muted-foreground flex-shrink-0" />
+            <Users size={12} className="text-muted-foreground/50 flex-shrink-0" />
           )}
         </div>
         <ChevronDown
           size={14}
-          className="text-muted-foreground flex-shrink-0 transition-transform duration-200"
+          className="text-muted-foreground/50 flex-shrink-0 transition-transform duration-200"
           style={{ transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)' }}
         />
       </button>
@@ -58,7 +58,7 @@ export default function BoardSwitcher({
           />
 
           {/* Dropdown content */}
-          <div className="absolute top-full left-0 right-0 mt-1 z-20 bg-card border border-border rounded-md shadow-lg overflow-hidden">
+          <div className="absolute top-full left-0 right-0 mt-1 z-20 bg-card border border-border/20 rounded-md shadow-lg overflow-hidden">
             {/* Board list */}
             <div className="max-h-64 overflow-y-auto">
               {boards.map(board => {
@@ -77,7 +77,7 @@ export default function BoardSwitcher({
                   >
                     <span className="truncate">{board.name}</span>
                     {isShared && (
-                      <Users size={12} className="text-muted-foreground flex-shrink-0 ml-2" />
+                      <Users size={12} className="text-muted-foreground/50 flex-shrink-0 ml-2" />
                     )}
                   </button>
                 )
@@ -85,7 +85,7 @@ export default function BoardSwitcher({
             </div>
 
             {/* Divider */}
-            <div className="h-px bg-border" />
+            <div className="h-px bg-border/20" />
 
             {/* Create new board section */}
             {isCreating ? (
@@ -96,7 +96,7 @@ export default function BoardSwitcher({
                   onChange={(e) => setNewBoardName(e.target.value)}
                   placeholder="Board name"
                   autoFocus
-                  className="w-full px-2 py-1.5 text-sm font-sans bg-background border border-border rounded text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+                  className="w-full px-2 py-1.5 text-sm font-sans bg-background border border-border/30 rounded text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-1 focus:ring-primary/50"
                   onBlur={(e) => {
                     // Don't close if clicking the create button
                     if (!e.relatedTarget?.dataset?.createButton) {
@@ -128,7 +128,7 @@ export default function BoardSwitcher({
             ) : (
               <button
                 onClick={() => setIsCreating(true)}
-                className="w-full px-3 py-2 flex items-center gap-2 text-left text-sm font-sans text-muted-foreground transition-colors duration-100 hover:bg-accent hover:text-foreground"
+                className="w-full px-3 py-2 flex items-center gap-2 text-left text-sm font-sans text-muted-foreground/60 transition-colors duration-100 hover:bg-accent hover:text-foreground"
               >
                 <Plus size={14} />
                 New Board
