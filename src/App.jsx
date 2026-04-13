@@ -156,15 +156,10 @@ export default function App() {
         onSelectBoard={handleSelectBoard}
         onCreateBoard={handleCreateBoard}
         isOwner={isOwner}
+        pendingInvitations={pendingInvitations}
+        onAcceptInvitation={handleAcceptInvitation}
+        onDeclineInvitation={handleDeclineInvitation}
       >
-        {/* Invitation banner */}
-        {pendingInvitations && pendingInvitations.length > 0 && (
-          <InvitationBanner
-            invitations={pendingInvitations}
-            onAccept={handleAcceptInvitation}
-            onDecline={handleDeclineInvitation}
-          />
-        )}
 
         <main style={{ flex: 1, padding: '32px 36px', overflow: 'hidden' }}>
           <Board
