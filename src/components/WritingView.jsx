@@ -166,7 +166,7 @@ export default function WritingView({ post, defaultColumn, onSave, onCancel }) {
       {/* Zen mode indicator */}
       {zenMode && (
         <div
-          className="zen-mode-indicator fixed top-5 right-5 z-20 opacity-0 transition-opacity duration-200 hover:opacity-100"
+          className="zen-mode-indicator fixed top-5 right-5 z-20 opacity-30 transition-opacity duration-200 hover:opacity-100"
         >
           <div className="flex items-center gap-3">
             {/* Timer in zen mode */}
