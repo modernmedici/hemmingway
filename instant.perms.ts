@@ -11,28 +11,32 @@ const rules = {
     },
   },
 
-  // Boards: TEMPORARILY WIDE OPEN - permission refs failing
-  // TODO: Fix permission model before production
+  // Boards: owner and members can view/update, only owner can delete
   boards: {
     allow: {
-      view: 'true',
-      create: 'true',
-      update: 'true',
-      delete: 'true',
+      view: 'isBoardOwner || isBoardMember',
+      create: 'true', // Any signed-in user can create boards
+      update: 'isBoardOwner || isBoardMember',
+      delete: 'isBoardOwner',
+    },
+    bind: {
+      isBoardOwner: "auth.id in data.ref('owner.id')",
+      isBoardMember: "auth.id in data.ref('members.id')",
     },
   },
 
-  // Posts: TEMPORARILY WIDE OPEN - multi-hop refs don't work in InstantDB
-  // TODO: Fix before production by either:
-  //   1. Denormalizing: store boardOwnerId/boardMemberIds on posts directly
-  //   2. Server-side: use InstantDB backend rules or custom auth
-  //   3. Simpler model: single-hop checks only (auth.id == creator.id)
+  // Posts: creator, board owner, or board members can access
   posts: {
     allow: {
-      view: 'true',
-      create: 'true',
-      update: 'true',
-      delete: 'true',
+      view: 'isCreator || isBoardOwner || isBoardMember',
+      create: 'isBoardOwner || isBoardMember',
+      update: 'isCreator || isBoardOwner || isBoardMember',
+      delete: 'isCreator || isBoardOwner || isBoardMember',
+    },
+    bind: {
+      isCreator: "auth.id in data.ref('creator.id')",
+      isBoardOwner: "auth.id in data.ref('board.owner.id')",
+      isBoardMember: "auth.id in data.ref('board.members.id')",
     },
   },
 
