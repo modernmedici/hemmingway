@@ -1,7 +1,28 @@
 import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { ArrowLeft, Check, Loader2, Maximize2 } from 'lucide-react';
+import db from '../lib/db';
+import EditorPresenceBar from './EditorPresenceBar';
+import EditLockBanner from './EditLockBanner';
 
-export default function WritingView({ post, defaultColumn, onSave, onCancel }) {
+// Color palette for user avatars
+const COLORS = [
+  'hsl(210, 100%, 56%)', // Blue
+  'hsl(340, 82%, 52%)',  // Pink
+  'hsl(291, 64%, 42%)',  // Purple
+  'hsl(171, 100%, 41%)', // Teal
+  'hsl(48, 100%, 67%)',  // Yellow
+  'hsl(25, 95%, 53%)',   // Orange
+  'hsl(141, 71%, 48%)',  // Green
+  'hsl(0, 84%, 60%)',    // Red
+];
+
+function getUserColor(userId) {
+  if (!userId) return COLORS[0];
+  const hash = userId.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+  return COLORS[hash % COLORS.length];
+}
+
+export default function WritingView({ post, defaultColumn, onSave, onCancel, currentUser }) {
   const [title,  setTitle]  = useState(post?.title ?? '');
   const [body,   setBody]   = useState(post?.body  ?? '');
   const [saved, setSaved] = useState(false);
@@ -12,6 +33,28 @@ export default function WritingView({ post, defaultColumn, onSave, onCancel }) {
   const [timerRunning, setTimerRunning] = useState(false);
   const titleRef = useRef(null);
   const containerRef = useRef(null);
+
+  // Collaborative editing state
+  const isCollaborative = !!post?.id; // Only enable for existing posts
+  const room = isCollaborative && post?.id ? db.room('postEditor', post.id) : null;
+  const presence = room?.usePresence();
+
+  // Check if someone else has the edit lock
+  const editorPeer = useMemo(() => {
+    if (!presence?.peers || !currentUser) return null;
+
+    // Find the peer who has the edit lock (field === 'body' or 'title')
+    const editorEntry = Object.entries(presence.peers).find(
+      ([peerId, peerData]) =>
+        peerId !== presence.user?.id &&
+        (peerData.field === 'body' || peerData.field === 'title')
+    );
+
+    return editorEntry ? { id: editorEntry[0], ...editorEntry[1] } : null;
+  }, [presence, currentUser]);
+
+  const hasEditLock = !editorPeer;
+  const isReadOnly = isCollaborative && !hasEditLock;
 
   const wordCount = useMemo(() => {
     const combinedText = `${title} ${body}`.trim();
@@ -126,6 +169,47 @@ export default function WritingView({ post, defaultColumn, onSave, onCancel }) {
     setTimerRunning(false);
   };
 
+  // Publish presence when entering the editor
+  useEffect(() => {
+    if (!room || !currentUser || !hasEditLock) return;
+
+    const color = getUserColor(currentUser.id);
+
+    // Publish presence to claim the edit lock
+    room.publishPresence({
+      name: currentUser.email?.split('@')[0] || 'Anonymous',
+      email: currentUser.email,
+      color,
+      field: 'body', // Claim the edit lock
+    });
+
+    // Update presence every 10 seconds to maintain lock
+    const interval = setInterval(() => {
+      room.publishPresence({
+        name: currentUser.email?.split('@')[0] || 'Anonymous',
+        email: currentUser.email,
+        color,
+        field: 'body',
+      });
+    }, 10000);
+
+    return () => clearInterval(interval);
+  }, [room, currentUser, hasEditLock]);
+
+  // Auto-save for collaborative editing
+  useEffect(() => {
+    if (!isCollaborative || !hasEditLock || !post?.id) return;
+
+    const isDirty = title !== originalTitle || body !== originalBody;
+    if (!isDirty || !title.trim()) return;
+
+    const timer = setTimeout(() => {
+      onSave(title.trim(), body.trim(), defaultColumn);
+    }, 3000); // 3-second debounce
+
+    return () => clearTimeout(timer);
+  }, [title, body, isCollaborative, hasEditLock, post?.id, originalTitle, originalBody, onSave, defaultColumn]);
+
   // Auto-start timer on first keystroke
   const [hasStartedTyping, setHasStartedTyping] = useState(false);
   useEffect(() => {
@@ -179,6 +263,15 @@ export default function WritingView({ post, defaultColumn, onSave, onCancel }) {
 
   return (
     <div ref={containerRef} className="view-enter min-h-screen bg-background flex flex-col font-sans relative">
+      {/* Editor presence bar (collaborative mode only) */}
+      {!zenMode && isCollaborative && presence?.peers && (
+        <EditorPresenceBar
+          peers={presence.peers}
+          currentUserId={presence.user?.id}
+          editorPeer={editorPeer}
+        />
+      )}
+
       {/* Zen mode indicator */}
       {zenMode && (
         <div
@@ -282,12 +375,18 @@ export default function WritingView({ post, defaultColumn, onSave, onCancel }) {
           paddingBottom: '256px',
         }}
       >
+        {/* Edit lock banner */}
+        {!zenMode && isReadOnly && editorPeer && (
+          <EditLockBanner editorName={editorPeer.name || editorPeer.email} />
+        )}
+
         <textarea
           ref={titleRef}
           value={title}
           onChange={e => { setTitle(e.target.value); autoResizeTitle(); }}
-          placeholder="Essay Title"
+          placeholder={isReadOnly ? "Read only - someone else is editing" : "Essay Title"}
           rows={1}
+          readOnly={isReadOnly}
           className="block w-full text-foreground border-none outline-none bg-transparent resize-none overflow-hidden"
           style={{
             fontSize: 'clamp(28px, 4vw, 40px)',
@@ -295,17 +394,22 @@ export default function WritingView({ post, defaultColumn, onSave, onCancel }) {
             fontFamily: "'Libre Baskerville', Georgia, serif",
             lineHeight: '1.2',
             marginBottom: '32px',
+            opacity: isReadOnly ? 0.7 : 1,
+            cursor: isReadOnly ? 'default' : 'text',
           }}
         />
         <textarea
           value={body}
           onChange={e => setBody(e.target.value)}
-          placeholder="Start writing your thoughts..."
+          placeholder={isReadOnly ? "Read only - you'll see changes in real time" : "Start writing your thoughts..."}
+          readOnly={isReadOnly}
           className="block w-full min-h-[500px] text-foreground border-none outline-none bg-transparent resize-none"
           style={{
             fontSize: '17px',
             fontFamily: "'Libre Baskerville', Georgia, serif",
             lineHeight: '1.9',
+            opacity: isReadOnly ? 0.7 : 1,
+            cursor: isReadOnly ? 'default' : 'text',
           }}
         />
       </div>

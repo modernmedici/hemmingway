@@ -129,6 +129,7 @@ export default function App() {
         defaultColumn={pendingColumn}
         onSave={handleSave}
         onCancel={() => setView('board')}
+        currentUser={user}
       />
     )
   }
