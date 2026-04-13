@@ -36,8 +36,11 @@ export default function WritingView({ post, defaultColumn, onSave, onCancel, cur
 
   // Collaborative editing state
   const isCollaborative = !!post?.id; // Only enable for existing posts
-  const room = isCollaborative && post?.id ? db.room('postEditor', post.id) : null;
-  const presence = room?.usePresence();
+  const postId = post?.id || 'new-post';
+
+  // Create room unconditionally (required for React hooks)
+  const room = db.room('postEditor', postId);
+  const presence = room.usePresence();
 
   // Check if someone else has the edit lock
   const editorPeer = useMemo(() => {

@@ -21,13 +21,14 @@ export default function EditorPresenceBar({ peers, currentUserId, editorPeer }) 
 
   const viewers = otherPeers.filter(p => p.id !== editorPeer?.id)
 
-  if (otherPeers.length === 0) return null
+  // Show even when alone to indicate collaborative mode is active
+  const hasOthers = otherPeers.length > 0
 
   return (
     <div className="sticky top-0 z-20 bg-background/95 backdrop-blur-sm border-b border-border py-2 px-6">
       <div className="max-w-3xl mx-auto flex items-center justify-between">
-        {/* Editor info */}
-        {editorPeer && (
+        {/* Editor info or solo indicator */}
+        {editorPeer ? (
           <div className="flex items-center gap-2">
             <div
               className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-sans font-bold text-white"
@@ -42,10 +43,17 @@ export default function EditorPresenceBar({ peers, currentUserId, editorPeer }) 
               </span>
             </div>
           </div>
-        )}
+        ) : !hasOthers ? (
+          <div className="flex items-center gap-1.5">
+            <Users size={12} className="text-muted-foreground" />
+            <span className="text-xs font-sans text-muted-foreground">
+              Collaborative mode ready
+            </span>
+          </div>
+        ) : null}
 
         {/* Viewers */}
-        {viewers.length > 0 && (
+        {hasOthers && viewers.length > 0 && (
           <div className="flex items-center gap-2">
             <Eye size={12} className="text-muted-foreground" />
             <span className="text-xs font-sans text-muted-foreground">
