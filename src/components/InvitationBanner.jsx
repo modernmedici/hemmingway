@@ -3,15 +3,19 @@ import { Mail, Check, X, Loader2 } from 'lucide-react'
 
 export default function InvitationBanner({ invitations, onAccept, onDecline }) {
   const [processingId, setProcessingId] = useState(null)
+  const [error, setError] = useState(null)
 
   if (!invitations || invitations.length === 0) return null
 
   const handleAccept = async (invitation) => {
     setProcessingId(invitation.id)
+    setError(null)
     try {
       await onAccept(invitation.id, invitation.board.id)
+      // Success - banner will disappear as invitation updates to 'accepted'
     } catch (err) {
       console.error('Failed to accept invitation:', err)
+      setError(err.message || 'Failed to accept invitation. Check console for details.')
     } finally {
       setProcessingId(null)
     }
@@ -91,6 +95,12 @@ export default function InvitationBanner({ invitations, onAccept, onDecline }) {
                 )
               })}
             </div>
+
+            {error && (
+              <div className="mt-3 px-3 py-2 rounded-md bg-destructive/10 border border-destructive/20">
+                <p className="text-sm text-destructive font-sans">{error}</p>
+              </div>
+            )}
           </div>
         </div>
       </div>

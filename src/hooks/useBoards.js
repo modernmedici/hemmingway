@@ -139,14 +139,25 @@ export function useBoards() {
    */
   const acceptInvitation = useCallback(
     async (invitationId, boardId) => {
-      if (!user) return
+      if (!user) {
+        console.error('acceptInvitation: No user logged in')
+        return
+      }
 
-      await db.transact([
-        // Update invitation status
-        db.tx.invitations[invitationId].update({ status: 'accepted' }),
-        // Add user as board member
-        db.tx.boards[boardId].link({ members: user.id }),
-      ])
+      console.log('acceptInvitation:', { invitationId, boardId, userId: user.id, userEmail: user.email })
+
+      try {
+        const result = await db.transact([
+          // Update invitation status
+          db.tx.invitations[invitationId].update({ status: 'accepted' }),
+          // Add user as board member
+          db.tx.boards[boardId].link({ members: user.id }),
+        ])
+        console.log('acceptInvitation: Success', result)
+      } catch (err) {
+        console.error('acceptInvitation: Failed', err)
+        throw err
+      }
     },
     [user]
   )
