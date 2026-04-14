@@ -42,7 +42,7 @@ export default function Column({ column, posts, onMovePost, onDeletePost, onNewP
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="border border-dashed border-border rounded-md p-8 text-center font-sans"
+              className="rounded-md p-8 text-center font-sans"
             >
               <div className="mb-3 flex justify-center opacity-20">
                 <FileText size={28} className="text-muted-foreground" />
