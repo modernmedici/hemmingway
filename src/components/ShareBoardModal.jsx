@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { X, Loader2 } from 'lucide-react'
+import { X, Loader2, Check } from 'lucide-react'
+import { motion } from 'framer-motion'
 
 export default function ShareBoardModal({ board, onClose, onInvite }) {
   const [email, setEmail] = useState('')
@@ -54,10 +55,10 @@ export default function ShareBoardModal({ board, onClose, onInvite }) {
         >
           {/* Header */}
           <div className="flex items-center justify-between px-6 py-4">
-            <h2 className="text-base font-sans text-foreground">
-              <span className="font-medium">Share</span>{' '}
-              <span className="font-serif font-bold">"{board.name}"</span>
-            </h2>
+            <div>
+              <p className="text-sm font-sans text-foreground/70 mb-0.5">Share</p>
+              <h2 className="text-xl font-serif font-bold text-foreground">"{board.name}"</h2>
+            </div>
             <button
               onClick={onClose}
               className="p-1 rounded bg-transparent border-none cursor-pointer text-muted-foreground/60 transition-colors duration-100 hover:text-foreground hover:bg-secondary"
@@ -72,7 +73,7 @@ export default function ShareBoardModal({ board, onClose, onInvite }) {
             <div className="mb-4">
               <label
                 htmlFor="invite-email"
-                className="block text-sm font-medium font-sans text-foreground mb-2"
+                className="block text-sm font-sans text-foreground/80 mb-2"
               >
                 Email address
               </label>
@@ -93,7 +94,7 @@ export default function ShareBoardModal({ board, onClose, onInvite }) {
 
             {/* Role selector */}
             <div className="mb-5">
-              <label className="block text-sm font-medium font-sans text-foreground mb-3">
+              <label className="block text-sm font-sans text-foreground/80 mb-3">
                 Role
               </label>
               <div className="flex flex-col gap-2">
@@ -101,41 +102,36 @@ export default function ShareBoardModal({ board, onClose, onInvite }) {
                   type="button"
                   onClick={() => setRole('editor')}
                   disabled={sending}
-                  className="w-full px-4 py-3 text-left rounded-md transition-all duration-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full px-4 py-3 text-left rounded-md transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-[0_2px_6px_hsl(var(--foreground)/0.05)]"
                   style={{
-                    background: role === 'editor' ? 'hsl(var(--primary))' : 'hsl(var(--card))',
-                    boxShadow: role === 'editor' ? '0 2px 8px hsl(var(--foreground) / 0.06)' : '0 1px 3px hsl(var(--foreground) / 0.04)',
+                    background: 'hsl(var(--card))',
+                    border: role === 'editor'
+                      ? '2px solid hsl(var(--primary))'
+                      : '1px solid hsl(var(--border) / 0.3)',
+                    boxShadow: role === 'editor'
+                      ? '0 2px 8px hsl(var(--foreground) / 0.06)'
+                      : '0 1px 3px hsl(var(--foreground) / 0.04)',
                   }}
                 >
                   <div className="flex items-center justify-between mb-1">
-                    <span
-                      className="text-sm font-sans font-medium"
-                      style={{
-                        color: role === 'editor' ? 'hsl(var(--primary-foreground))' : 'hsl(var(--foreground))',
-                      }}
-                    >
+                    <span className="text-sm font-sans font-medium text-foreground">
                       Editor
                     </span>
                     <div
                       className="w-4 h-4 rounded-full border-2 flex items-center justify-center"
                       style={{
-                        borderColor: role === 'editor' ? 'hsl(var(--primary-foreground))' : 'hsl(var(--border))',
+                        borderColor: role === 'editor' ? 'hsl(var(--primary))' : 'hsl(var(--border))',
                       }}
                     >
                       {role === 'editor' && (
                         <div
                           className="w-2 h-2 rounded-full"
-                          style={{ background: 'hsl(var(--primary-foreground))' }}
+                          style={{ background: 'hsl(var(--primary))' }}
                         />
                       )}
                     </div>
                   </div>
-                  <p
-                    className="text-sm font-sans leading-relaxed"
-                    style={{
-                      color: role === 'editor' ? 'hsl(var(--primary-foreground) / 0.8)' : 'hsl(var(--muted-foreground))',
-                    }}
-                  >
+                  <p className="text-sm font-sans leading-relaxed text-muted-foreground">
                     Can view, create, and edit posts on this board
                   </p>
                 </button>
@@ -144,41 +140,36 @@ export default function ShareBoardModal({ board, onClose, onInvite }) {
                   type="button"
                   onClick={() => setRole('viewer')}
                   disabled={sending}
-                  className="w-full px-4 py-3 text-left rounded-md transition-all duration-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full px-4 py-3 text-left rounded-md transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-[0_2px_6px_hsl(var(--foreground)/0.05)]"
                   style={{
-                    background: role === 'viewer' ? 'hsl(var(--primary))' : 'hsl(var(--card))',
-                    boxShadow: role === 'viewer' ? '0 2px 8px hsl(var(--foreground) / 0.06)' : '0 1px 3px hsl(var(--foreground) / 0.04)',
+                    background: 'hsl(var(--card))',
+                    border: role === 'viewer'
+                      ? '2px solid hsl(var(--primary))'
+                      : '1px solid hsl(var(--border) / 0.3)',
+                    boxShadow: role === 'viewer'
+                      ? '0 2px 8px hsl(var(--foreground) / 0.06)'
+                      : '0 1px 3px hsl(var(--foreground) / 0.04)',
                   }}
                 >
                   <div className="flex items-center justify-between mb-1">
-                    <span
-                      className="text-sm font-sans font-medium"
-                      style={{
-                        color: role === 'viewer' ? 'hsl(var(--primary-foreground))' : 'hsl(var(--foreground))',
-                      }}
-                    >
+                    <span className="text-sm font-sans font-medium text-foreground">
                       Viewer
                     </span>
                     <div
                       className="w-4 h-4 rounded-full border-2 flex items-center justify-center"
                       style={{
-                        borderColor: role === 'viewer' ? 'hsl(var(--primary-foreground))' : 'hsl(var(--border))',
+                        borderColor: role === 'viewer' ? 'hsl(var(--primary))' : 'hsl(var(--border))',
                       }}
                     >
                       {role === 'viewer' && (
                         <div
                           className="w-2 h-2 rounded-full"
-                          style={{ background: 'hsl(var(--primary-foreground))' }}
+                          style={{ background: 'hsl(var(--primary))' }}
                         />
                       )}
                     </div>
                   </div>
-                  <p
-                    className="text-sm font-sans leading-relaxed"
-                    style={{
-                      color: role === 'viewer' ? 'hsl(var(--primary-foreground) / 0.8)' : 'hsl(var(--muted-foreground))',
-                    }}
-                  >
+                  <p className="text-sm font-sans leading-relaxed text-muted-foreground">
                     Can only view posts (read-only)
                   </p>
                 </button>
@@ -194,9 +185,15 @@ export default function ShareBoardModal({ board, onClose, onInvite }) {
 
             {/* Success message */}
             {success && (
-              <div className="mb-4 px-3 py-2 rounded-md bg-primary/10 border border-primary/10">
+              <motion.div
+                initial={{ scale: 0.8, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ duration: 0.2, ease: 'easeOut' }}
+                className="mb-4 px-3 py-2 rounded-md bg-primary/10 flex items-center gap-2"
+              >
+                <Check size={16} className="text-primary flex-shrink-0" />
                 <p className="text-sm text-primary/90 font-sans">Invitation sent!</p>
-              </div>
+              </motion.div>
             )}
 
             {/* Actions */}
