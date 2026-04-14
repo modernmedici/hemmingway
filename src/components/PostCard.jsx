@@ -154,7 +154,7 @@ export default function PostCard({ post, onMove, onDelete, onEdit, showAttributi
 
       {/* Body preview */}
       {post.body && (
-        <p className="text-sm font-sans text-muted-foreground leading-relaxed overflow-hidden mb-2.5 line-clamp-3">
+        <p className="text-sm font-serif text-muted-foreground leading-relaxed overflow-hidden mb-2.5 line-clamp-3">
           {post.body}
         </p>
       )}

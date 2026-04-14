@@ -63,6 +63,7 @@ Colors are defined as HSL values in `src/styles/tokens.css`. Use CSS variable na
 
 **Serif (Libre Baskerville):**
 - Post titles
+- Post body (full text and previews)
 - Board names (h1)
 - App logo
 - Any content the user wrote
