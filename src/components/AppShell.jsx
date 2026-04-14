@@ -156,7 +156,7 @@ export default function AppShell({
         {/* User info & sign out */}
         {sidebarExpanded && (
           <div className="pl-2 mb-3">
-            <p className="text-[11px] text-muted-foreground truncate">
+            <p className="text-[11px] font-sans text-muted-foreground truncate">
               {user?.email}
             </p>
           </div>
