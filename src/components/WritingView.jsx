@@ -288,7 +288,7 @@ export default function WritingView({ post, defaultColumn, onSave, onCancel, cur
               onClick={toggleTimer}
               onDoubleClick={resetTimer}
               title="Click to start/pause · Double-click to reset"
-              className="text-sm font-sans tabular-nums cursor-pointer transition-all duration-200"
+              className="text-xs font-sans tabular-nums cursor-pointer transition-all duration-200"
               style={{
                 color: timeLeft === 0 ? 'hsl(var(--destructive))' : timerRunning ? 'hsl(var(--primary))' : 'hsl(var(--muted-foreground))',
               }}
@@ -297,7 +297,7 @@ export default function WritingView({ post, defaultColumn, onSave, onCancel, cur
             </span>
             <button
               onClick={exitZenMode}
-              className="text-sm font-sans bg-muted text-muted-foreground border-none rounded-sm px-3 py-1.5 cursor-pointer transition-all duration-[120ms] hover:bg-secondary"
+              className="text-xs font-sans bg-muted text-muted-foreground border-none rounded-sm px-3 py-1.5 cursor-pointer transition-all duration-[120ms] hover:bg-secondary"
             >
               Exit Fullscreen (Esc)
             </button>
@@ -318,7 +318,7 @@ export default function WritingView({ post, defaultColumn, onSave, onCancel, cur
         <div className="ml-auto flex items-center gap-3">
           {/* Saved indicator */}
           {saved && (
-            <span className="text-[11px] font-sans text-primary flex items-center gap-1 animate-[fadeOut_1.5s_ease-out_forwards]">
+            <span className="text-xs font-sans text-primary flex items-center gap-1 animate-[fadeOut_1.5s_ease-out_forwards]">
               <Check size={12} />
               Saved!
             </span>
@@ -338,7 +338,7 @@ export default function WritingView({ post, defaultColumn, onSave, onCancel, cur
               onClick={toggleTimer}
               onDoubleClick={resetTimer}
               title="Click to start/pause · Double-click to reset"
-              className="text-sm font-sans tabular-nums cursor-pointer transition-all duration-200 rounded px-2 py-1"
+              className="text-xs font-sans tabular-nums cursor-pointer transition-all duration-200 rounded px-2 py-1"
               style={{
                 color: timeLeft === 0 ? 'hsl(var(--destructive))' : timerRunning ? 'hsl(var(--primary))' : 'hsl(var(--muted-foreground))',
                 background: timerRunning ? 'hsl(var(--primary) / 0.1)' : 'transparent',
@@ -346,10 +346,10 @@ export default function WritingView({ post, defaultColumn, onSave, onCancel, cur
             >
               {formatTime(timeLeft)}
             </span>
-            <span className="text-sm text-muted-foreground/40">·</span>
+            <span className="text-xs text-muted-foreground/40">·</span>
             {/* Word count */}
             <span
-              className="text-sm font-sans tabular-nums transition-all duration-200 ease-in-out"
+              className="text-xs font-sans tabular-nums transition-all duration-200 ease-in-out"
               style={{
                 color: countChanged ? 'hsl(var(--primary))' : 'hsl(var(--muted-foreground))',
                 transform: countChanged ? 'scale(1.05)' : 'scale(1)',
@@ -365,7 +365,7 @@ export default function WritingView({ post, defaultColumn, onSave, onCancel, cur
             <button
               onClick={enterZenMode}
               title="Fullscreen (⌘⇧F)"
-              className="flex items-center gap-1 bg-secondary/50 border-none cursor-pointer text-muted-foreground text-[11px] font-sans py-1.5 px-2 transition-all duration-[120ms] rounded-md hover:bg-secondary hover:text-foreground active:scale-95"
+              className="flex items-center gap-1 bg-secondary/50 border-none cursor-pointer text-muted-foreground text-xs font-sans py-1.5 px-2 transition-all duration-[120ms] rounded-md hover:bg-secondary hover:text-foreground active:scale-95"
             >
               <Maximize2 size={14} />
             </button>
@@ -373,7 +373,7 @@ export default function WritingView({ post, defaultColumn, onSave, onCancel, cur
             <button
               onClick={handleSave}
               disabled={!canSave}
-              className="text-[11px] font-sans font-medium border-none rounded-md py-1.5 px-3.5 transition-all duration-[120ms] flex items-center gap-1 active:scale-95 disabled:cursor-not-allowed"
+              className="text-xs font-sans font-medium border-none rounded-md py-1.5 px-3.5 transition-all duration-[120ms] flex items-center gap-1 active:scale-95 disabled:cursor-not-allowed"
               style={{
                 background: canSave ? 'hsl(var(--primary))' : 'hsl(var(--secondary))',
                 color: canSave ? 'hsl(var(--primary-foreground))' : 'hsl(var(--muted-foreground))',
