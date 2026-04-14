@@ -136,10 +136,20 @@ export default function AppShell({
         <nav className="flex-1">
           <button
             onClick={onNewIdea}
-            className={`w-full flex items-center rounded-md border border-border bg-transparent cursor-pointer text-xs font-medium text-foreground font-sans transition-all duration-[120ms] hover:bg-accent active:scale-95 ${sidebarExpanded ? 'justify-center gap-1.5 px-2.5 py-2' : 'justify-center py-2'}`}
+            className={`w-full flex items-center rounded-md bg-card cursor-pointer text-xs font-medium text-foreground transition-all duration-150 hover:shadow-[0_2px_6px_hsl(var(--foreground)/0.05)] active:scale-[0.98] ${sidebarExpanded ? 'justify-center gap-1.5 px-2.5 py-2' : 'justify-center py-2'}`}
+            style={{
+              boxShadow: '0 1px 3px hsl(var(--foreground) / 0.04)',
+            }}
             title={sidebarExpanded ? '' : 'New Idea'}
           >
-            {sidebarExpanded ? '+ New Idea' : '+'}
+            {sidebarExpanded ? (
+              <>
+                <span className="font-sans">+</span>
+                <span className="font-serif">New Idea</span>
+              </>
+            ) : (
+              '+'
+            )}
           </button>
         </nav>
 

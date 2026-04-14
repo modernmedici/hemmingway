@@ -33,17 +33,20 @@ export default function BoardSwitcher({
       {/* Active board button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full flex items-center justify-between px-3 py-2 rounded-md bg-card border border-border/30 text-foreground text-sm font-medium font-sans transition-colors duration-100 hover:bg-secondary"
+        className="w-full flex items-center justify-between px-3 py-2 rounded-md bg-card text-foreground transition-all duration-150 hover:shadow-[0_2px_6px_hsl(var(--foreground)/0.05)]"
+        style={{
+          boxShadow: '0 1px 3px hsl(var(--foreground) / 0.04)',
+        }}
       >
         <div className="flex items-center gap-2 min-w-0">
-          <span className="truncate">{activeBoard?.name || 'Loading...'}</span>
+          <span className="truncate text-sm font-serif font-bold">{activeBoard?.name || 'Loading...'}</span>
           {activeBoard?.members && activeBoard.members.length > 0 && (
             <Users size={12} className="text-muted-foreground/50 flex-shrink-0" />
           )}
         </div>
         <ChevronDown
-          size={14}
-          className="text-muted-foreground/50 flex-shrink-0 transition-transform duration-200"
+          size={12}
+          className="text-muted-foreground/40 flex-shrink-0 transition-transform duration-200"
           style={{ transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)' }}
         />
       </button>
@@ -58,7 +61,12 @@ export default function BoardSwitcher({
           />
 
           {/* Dropdown content */}
-          <div className="absolute top-full left-0 right-0 mt-1 z-20 bg-card border border-border/50 rounded-md shadow-sm overflow-hidden">
+          <div
+            className="absolute top-full left-0 right-0 mt-1 z-20 bg-card rounded-md overflow-hidden"
+            style={{
+              boxShadow: '0 4px 16px hsl(var(--foreground) / 0.08)',
+            }}
+          >
             {/* Board list */}
             <div className="max-h-64 overflow-y-auto">
               {boards.map(board => {
@@ -69,13 +77,12 @@ export default function BoardSwitcher({
                   <button
                     key={board.id}
                     onClick={() => handleSelectBoard(board.id)}
-                    className="w-full px-3 py-2 flex items-center justify-between text-left text-sm font-sans transition-colors duration-100 hover:bg-accent"
+                    className="w-full px-3 py-2 flex items-center justify-between text-left text-sm transition-colors duration-100 hover:bg-accent"
                     style={{
                       background: isActive ? 'hsl(var(--accent))' : 'transparent',
-                      fontWeight: isActive ? 500 : 400,
                     }}
                   >
-                    <span className="truncate">{board.name}</span>
+                    <span className={`truncate font-serif ${isActive ? 'font-bold' : 'font-normal'}`}>{board.name}</span>
                     {isShared && (
                       <Users size={12} className="text-muted-foreground/50 flex-shrink-0 ml-2" />
                     )}
