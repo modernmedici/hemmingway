@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { X, Mail, Loader2 } from 'lucide-react'
+import { X, Loader2 } from 'lucide-react'
 
 export default function ShareBoardModal({ board, onClose, onInvite }) {
   const [email, setEmail] = useState('')
@@ -50,8 +50,9 @@ export default function ShareBoardModal({ board, onClose, onInvite }) {
         >
           {/* Header */}
           <div className="flex items-center justify-between px-6 py-4 border-b border-border/15">
-            <h2 className="text-lg font-semibold font-sans text-foreground">
-              Share "{board.name}"
+            <h2 className="text-base font-sans text-foreground">
+              <span className="font-medium">Share</span>{' '}
+              <span className="font-serif font-bold">"{board.name}"</span>
             </h2>
             <button
               onClick={onClose}
@@ -71,62 +72,110 @@ export default function ShareBoardModal({ board, onClose, onInvite }) {
               >
                 Email address
               </label>
-              <div className="relative">
-                <Mail
-                  size={16}
-                  className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/50 pointer-events-none"
-                />
-                <input
-                  id="invite-email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="colleague@example.com"
-                  autoFocus
-                  disabled={sending}
-                  className="w-full pl-10 pr-4 py-2.5 text-sm font-sans bg-background border border-border/30 rounded-md text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-primary/50 disabled:opacity-50 disabled:cursor-not-allowed"
-                />
-              </div>
+              <input
+                id="invite-email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="colleague@example.com"
+                autoFocus
+                disabled={sending}
+                className="w-full px-3 py-2.5 text-sm font-sans bg-secondary/30 border border-border/20 rounded-md text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:border-border/50 focus:bg-card transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              />
             </div>
 
             {/* Role selector */}
             <div className="mb-5">
-              <label className="block text-sm font-medium font-sans text-foreground mb-2">
+              <label className="block text-sm font-medium font-sans text-foreground mb-3">
                 Role
               </label>
-              <div className="flex gap-2">
+              <div className="flex flex-col gap-2">
                 <button
                   type="button"
                   onClick={() => setRole('editor')}
                   disabled={sending}
-                  className="flex-1 px-4 py-2 text-sm font-sans font-medium rounded-md border transition-all duration-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full px-4 py-3 text-left rounded-md border transition-all duration-100 disabled:opacity-50 disabled:cursor-not-allowed hover:border-border/50"
                   style={{
-                    background: role === 'editor' ? 'hsl(var(--primary))' : 'transparent',
-                    color: role === 'editor' ? 'hsl(var(--primary-foreground))' : 'hsl(var(--foreground) / 0.7)',
+                    background: role === 'editor' ? 'hsl(var(--primary))' : 'hsl(var(--card))',
                     borderColor: role === 'editor' ? 'hsl(var(--primary))' : 'hsl(var(--border) / 0.3)',
                   }}
                 >
-                  Editor
+                  <div className="flex items-center justify-between mb-1">
+                    <span
+                      className="text-sm font-sans font-medium"
+                      style={{
+                        color: role === 'editor' ? 'hsl(var(--primary-foreground))' : 'hsl(var(--foreground))',
+                      }}
+                    >
+                      Editor
+                    </span>
+                    <div
+                      className="w-4 h-4 rounded-full border-2 flex items-center justify-center"
+                      style={{
+                        borderColor: role === 'editor' ? 'hsl(var(--primary-foreground))' : 'hsl(var(--border))',
+                      }}
+                    >
+                      {role === 'editor' && (
+                        <div
+                          className="w-2 h-2 rounded-full"
+                          style={{ background: 'hsl(var(--primary-foreground))' }}
+                        />
+                      )}
+                    </div>
+                  </div>
+                  <p
+                    className="text-sm font-sans leading-relaxed"
+                    style={{
+                      color: role === 'editor' ? 'hsl(var(--primary-foreground) / 0.8)' : 'hsl(var(--muted-foreground))',
+                    }}
+                  >
+                    Can view, create, and edit posts on this board
+                  </p>
                 </button>
+
                 <button
                   type="button"
                   onClick={() => setRole('viewer')}
                   disabled={sending}
-                  className="flex-1 px-4 py-2 text-sm font-sans font-medium rounded-md border transition-all duration-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full px-4 py-3 text-left rounded-md border transition-all duration-100 disabled:opacity-50 disabled:cursor-not-allowed hover:border-border/50"
                   style={{
-                    background: role === 'viewer' ? 'hsl(var(--primary))' : 'transparent',
-                    color: role === 'viewer' ? 'hsl(var(--primary-foreground))' : 'hsl(var(--foreground) / 0.7)',
+                    background: role === 'viewer' ? 'hsl(var(--primary))' : 'hsl(var(--card))',
                     borderColor: role === 'viewer' ? 'hsl(var(--primary))' : 'hsl(var(--border) / 0.3)',
                   }}
                 >
-                  Viewer
+                  <div className="flex items-center justify-between mb-1">
+                    <span
+                      className="text-sm font-sans font-medium"
+                      style={{
+                        color: role === 'viewer' ? 'hsl(var(--primary-foreground))' : 'hsl(var(--foreground))',
+                      }}
+                    >
+                      Viewer
+                    </span>
+                    <div
+                      className="w-4 h-4 rounded-full border-2 flex items-center justify-center"
+                      style={{
+                        borderColor: role === 'viewer' ? 'hsl(var(--primary-foreground))' : 'hsl(var(--border))',
+                      }}
+                    >
+                      {role === 'viewer' && (
+                        <div
+                          className="w-2 h-2 rounded-full"
+                          style={{ background: 'hsl(var(--primary-foreground))' }}
+                        />
+                      )}
+                    </div>
+                  </div>
+                  <p
+                    className="text-sm font-sans leading-relaxed"
+                    style={{
+                      color: role === 'viewer' ? 'hsl(var(--primary-foreground) / 0.8)' : 'hsl(var(--muted-foreground))',
+                    }}
+                  >
+                    Can only view posts (read-only)
+                  </p>
                 </button>
               </div>
-              <p className="text-xs text-muted-foreground/60 mt-2 font-sans">
-                {role === 'editor'
-                  ? 'Can view, create, and edit posts on this board'
-                  : 'Can only view posts (read-only)'}
-              </p>
             </div>
 
             {/* Error message */}
@@ -156,11 +205,7 @@ export default function ShareBoardModal({ board, onClose, onInvite }) {
               <button
                 type="submit"
                 disabled={!email.trim() || sending}
-                className="flex-1 px-4 py-2.5 text-sm font-sans font-medium rounded-md border-none transition-opacity duration-100 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                style={{
-                  background: 'hsl(var(--primary))',
-                  color: 'hsl(var(--primary-foreground))',
-                }}
+                className="flex-1 px-4 py-2.5 text-sm font-sans font-medium rounded-md bg-primary text-primary-foreground transition-opacity duration-100 hover:opacity-90 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed active:scale-95"
               >
                 {sending && <Loader2 size={14} className="animate-spin" />}
                 {sending ? 'Sending...' : 'Send Invitation'}
