@@ -96,14 +96,17 @@ export default function BoardSwitcher({
 
             {/* Create new board section */}
             {isCreating ? (
-              <form onSubmit={handleCreateBoard} className="p-2">
+              <form onSubmit={handleCreateBoard} className="p-3">
                 <input
                   type="text"
                   value={newBoardName}
                   onChange={(e) => setNewBoardName(e.target.value)}
                   placeholder="Board name"
                   autoFocus
-                  className="w-full px-2 py-1.5 text-sm font-sans bg-card border border-border rounded text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-shadow"
+                  className="w-full px-3 py-2 text-sm font-serif bg-card rounded-md text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-shadow"
+                  style={{
+                    boxShadow: '0 1px 3px hsl(var(--foreground) / 0.04)',
+                  }}
                   onBlur={(e) => {
                     // Don't close if clicking the create button
                     if (!e.relatedTarget?.dataset?.createButton) {
@@ -112,11 +115,11 @@ export default function BoardSwitcher({
                     }
                   }}
                 />
-                <div className="flex gap-2 mt-2">
+                <div className="flex gap-2 mt-3">
                   <button
                     type="submit"
                     data-create-button="true"
-                    className="flex-1 px-2 py-1 text-xs font-sans font-medium rounded bg-primary text-primary-foreground hover:opacity-90 transition-opacity"
+                    className="flex-1 px-3 py-2 text-xs font-sans font-medium rounded-md bg-primary text-primary-foreground hover:opacity-90 transition-opacity active:scale-[0.98]"
                   >
                     Create
                   </button>
@@ -126,7 +129,10 @@ export default function BoardSwitcher({
                       setIsCreating(false)
                       setNewBoardName('')
                     }}
-                    className="flex-1 px-2 py-1 text-xs font-sans rounded bg-secondary text-secondary-foreground hover:bg-secondary/80 transition-colors"
+                    className="flex-1 px-3 py-2 text-xs font-sans font-medium rounded-md bg-transparent text-foreground/70 hover:bg-secondary transition-colors"
+                    style={{
+                      boxShadow: '0 1px 3px hsl(var(--foreground) / 0.04)',
+                    }}
                   >
                     Cancel
                   </button>
@@ -135,10 +141,10 @@ export default function BoardSwitcher({
             ) : (
               <button
                 onClick={() => setIsCreating(true)}
-                className="w-full px-3 py-2 flex items-center gap-2 text-left text-sm font-sans text-foreground/70 transition-colors duration-100 hover:bg-accent hover:text-foreground"
+                className="w-full px-3 py-2 flex items-center gap-2 text-left text-sm transition-colors duration-100 hover:bg-accent"
               >
-                <Plus size={14} />
-                New Board
+                <Plus size={14} className="text-foreground/70" />
+                <span className="font-serif text-foreground/70">New Board</span>
               </button>
             )}
           </div>
