@@ -315,7 +315,7 @@ export default function WritingView({ post, defaultColumn, onSave, onCancel, cur
           Back to Board
         </button>
 
-        <div className="ml-auto flex items-center gap-2.5">
+        <div className="ml-auto flex items-center gap-3">
           {/* Saved indicator */}
           {saved && (
             <span className="text-[11px] font-sans text-primary flex items-center gap-1 animate-[fadeOut_1.5s_ease-out_forwards]">
@@ -330,49 +330,59 @@ export default function WritingView({ post, defaultColumn, onSave, onCancel, cur
               currentUserId={presence?.user?.id}
             />
           )}
-          {/* Timer */}
-          <span
-            onClick={toggleTimer}
-            onDoubleClick={resetTimer}
-            title="Click to start/pause · Double-click to reset"
-            className="text-[11px] font-sans tabular-nums cursor-pointer transition-all duration-200"
-            style={{
-              color: timeLeft === 0 ? 'hsl(var(--destructive))' : timerRunning ? 'hsl(var(--primary))' : 'hsl(var(--muted-foreground))',
-            }}
-          >
-            {formatTime(timeLeft)}
-          </span>
-          {/* Word count */}
-          <span
-            className="text-[11px] font-sans tabular-nums transition-all duration-200 ease-in-out"
-            style={{
-              color: countChanged ? 'hsl(var(--primary))' : 'hsl(var(--muted-foreground))',
-              transform: countChanged ? 'scale(1.1)' : 'scale(1)',
-            }}
-          >
-            {wordCount.toLocaleString()} {wordCount === 1 ? 'word' : 'words'}
-          </span>
-          {/* Zen Mode Toggle */}
-          <button
-            onClick={enterZenMode}
-            title="Fullscreen (⌘⇧F)"
-            className="flex items-center gap-1 bg-transparent border-none cursor-pointer text-muted-foreground text-[11px] font-sans py-1.5 px-2 transition-all duration-[120ms] rounded-sm hover:text-foreground hover:bg-secondary"
-          >
-            <Maximize2 size={14} />
-          </button>
-          {/* Save */}
-          <button
-            onClick={handleSave}
-            disabled={!canSave}
-            className="text-[11px] font-sans font-medium border-none rounded-sm py-1.5 px-3.5 transition-all duration-[120ms] flex items-center gap-1 active:scale-95 disabled:cursor-not-allowed"
-            style={{
-              background: canSave ? 'hsl(var(--primary))' : 'hsl(var(--muted))',
-              color: canSave ? 'hsl(var(--primary-foreground))' : 'hsl(var(--muted-foreground))',
-            }}
-          >
-            {saving && <Loader2 size={12} className="animate-spin" />}
-            {saving ? 'Saving...' : 'Save'}
-          </button>
+
+          {/* Metadata group: timer + word count */}
+          <div className="flex items-center gap-2">
+            {/* Timer */}
+            <span
+              onClick={toggleTimer}
+              onDoubleClick={resetTimer}
+              title="Click to start/pause · Double-click to reset"
+              className="text-[11px] font-sans tabular-nums cursor-pointer transition-all duration-200 rounded px-2 py-1"
+              style={{
+                color: timeLeft === 0 ? 'hsl(var(--destructive))' : timerRunning ? 'hsl(var(--primary))' : 'hsl(var(--muted-foreground))',
+                background: timerRunning ? 'hsl(var(--primary) / 0.1)' : 'transparent',
+              }}
+            >
+              {formatTime(timeLeft)}
+            </span>
+            <span className="text-[11px] text-muted-foreground/40">·</span>
+            {/* Word count */}
+            <span
+              className="text-sm font-sans tabular-nums transition-all duration-200 ease-in-out"
+              style={{
+                color: countChanged ? 'hsl(var(--primary))' : 'hsl(var(--muted-foreground))',
+                transform: countChanged ? 'scale(1.05)' : 'scale(1)',
+              }}
+            >
+              {wordCount.toLocaleString()} {wordCount === 1 ? 'word' : 'words'}
+            </span>
+          </div>
+
+          {/* Actions group: expand + save */}
+          <div className="flex items-center gap-2">
+            {/* Zen Mode Toggle */}
+            <button
+              onClick={enterZenMode}
+              title="Fullscreen (⌘⇧F)"
+              className="flex items-center gap-1 bg-secondary/50 border-none cursor-pointer text-muted-foreground text-[11px] font-sans py-1.5 px-2 transition-all duration-[120ms] rounded-md hover:bg-secondary hover:text-foreground active:scale-95"
+            >
+              <Maximize2 size={14} />
+            </button>
+            {/* Save */}
+            <button
+              onClick={handleSave}
+              disabled={!canSave}
+              className="text-[11px] font-sans font-medium border-none rounded-md py-1.5 px-3.5 transition-all duration-[120ms] flex items-center gap-1 active:scale-95 disabled:cursor-not-allowed"
+              style={{
+                background: canSave ? 'hsl(var(--primary))' : 'hsl(var(--secondary))',
+                color: canSave ? 'hsl(var(--primary-foreground))' : 'hsl(var(--muted-foreground))',
+              }}
+            >
+              {saving && <Loader2 size={12} className="animate-spin" />}
+              {saving ? 'Saving...' : 'Save'}
+            </button>
+          </div>
         </div>
       </div>)}
 
