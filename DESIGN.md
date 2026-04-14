@@ -156,6 +156,41 @@ Defined in tokens.css:
 
 ---
 
+## Shadow Scale
+
+Shadows create elevation and hierarchy without heavy borders. All shadows use `hsl(var(--foreground) / opacity)` to adapt to the color palette.
+
+**Tiers:**
+- `0 1px 3px hsl(var(--foreground) / 0.04)` - Default elevation (cards, buttons)
+- `0 2px 6px hsl(var(--foreground) / 0.05)` - Hover state (lift on interaction)
+- `0 2px 8px hsl(var(--foreground) / 0.06)` - Selected state (distinct but not shouty)
+- `0 4px 16px hsl(var(--foreground) / 0.08)` - Modal elevation (clear separation from canvas)
+
+**Usage:**
+```jsx
+// Default card
+style={{ boxShadow: '0 1px 3px hsl(var(--foreground) / 0.04)' }}
+
+// Hover state (add to className)
+className="hover:shadow-[0_2px_6px_hsl(var(--foreground)/0.05)]"
+
+// Selected card
+style={{
+  boxShadow: isSelected 
+    ? '0 2px 8px hsl(var(--foreground) / 0.06)' 
+    : '0 1px 3px hsl(var(--foreground) / 0.04)'
+}}
+
+// Modal
+style={{ boxShadow: '0 4px 16px hsl(var(--foreground) / 0.08)' }}
+```
+
+**Why explicit shadow values:** Tailwind's shadow utilities (`shadow-sm`, `shadow-md`) don't adapt to CSS variables. Explicit HSL values ensure shadows match the palette and remain warm.
+
+**Philosophy:** Shadows create depth through subtle lift, not harsh outlines. Each tier is perceptible but calm.
+
+---
+
 ## Motion
 
 **Durations:**
@@ -194,9 +229,12 @@ Defined in tokens.css:
 </button>
 ```
 
-**Secondary button (outline):**
+**Secondary button (shadow-based):**
 ```jsx
-<button className="px-3 py-1.5 rounded-md border border-border/30 bg-transparent text-foreground/70 font-medium text-xs transition-colors hover:bg-secondary active:scale-95">
+<button 
+  className="px-3 py-1.5 rounded-md bg-card text-foreground/70 font-medium text-xs transition-all duration-150 hover:shadow-[0_2px_6px_hsl(var(--foreground)/0.05)] active:scale-95"
+  style={{ boxShadow: '0 1px 3px hsl(var(--foreground) / 0.04)' }}
+>
   Label
 </button>
 ```
@@ -225,16 +263,81 @@ Defined in tokens.css:
 
 **Styling:**
 ```jsx
-<div className="rounded-md bg-card p-3.5 border border-border/50 shadow-sm hover:shadow-md">
+<div 
+  className="rounded-md bg-card p-3.5 cursor-pointer transition-shadow duration-150"
+  style={{
+    border: '1px solid hsl(var(--border) / 0.5)',
+    boxShadow: hovered 
+      ? '0 2px 8px hsl(var(--foreground) / 0.06)' 
+      : '0 1px 3px hsl(var(--foreground) / 0.04)'
+  }}
+>
 ```
+
+### Selection States
+
+**Principle:** Selection and focus use **border accent + shadow lift**, not dark fills or binary color inversion. This creates calm hierarchy: "felt, not shouted."
+
+**Pattern:**
+```jsx
+// Unselected
+style={{
+  background: 'hsl(var(--card))',
+  border: '1px solid hsl(var(--border) / 0.3)',
+  boxShadow: '0 1px 3px hsl(var(--foreground) / 0.04)',
+}}
+
+// Selected
+style={{
+  background: 'hsl(var(--card))', // stays light
+  border: '2px solid hsl(var(--primary))', // accent border
+  boxShadow: '0 2px 8px hsl(var(--foreground) / 0.06)', // shadow lift
+}}
+```
+
+**Hover state (before selection):**
+```jsx
+className="hover:shadow-[0_2px_6px_hsl(var(--foreground)/0.05)]"
+```
+
+**When to use:**
+- Role selector cards (ShareBoardModal)
+- Tab selection (future tab components)
+- Radio card groups
+- Active board indicators
+
+**What NOT to do:**
+- Dark fills (`bg-primary`) that invert text color
+- Heavy border changes without shadow coordination
+- Color-only selection (always combine border + shadow)
 
 ### Modals
 
 **Structure:**
-1. Backdrop (`bg-black/40`)
-2. Modal (`bg-card border border-border/20 rounded-lg shadow-xl`)
-3. Header (`px-6 py-4 border-b border-border/15`)
+1. Backdrop (warmed overlay: `hsl(var(--foreground) / 0.15)`)
+2. Modal container (`bg-background border border-border/20 rounded-lg`)
+3. Header (`px-6 py-4`, no border)
 4. Body (`px-6 py-5`)
+
+**Styling:**
+```jsx
+// Backdrop
+<div style={{ background: 'hsl(var(--foreground) / 0.15)' }} />
+
+// Modal
+<div 
+  className="bg-background border border-border/20 rounded-lg"
+  style={{ boxShadow: '0 4px 16px hsl(var(--foreground) / 0.08)' }}
+>
+```
+
+**Header typography pattern:**
+```jsx
+{/* System action label */}
+<p className="text-sm font-sans text-foreground/70 mb-0.5">Share</p>
+{/* User content hero */}
+<h2 className="text-xl font-serif font-bold text-foreground">"{board.name}"</h2>
+```
 
 **Entry animation:**
 ```jsx
@@ -447,6 +550,7 @@ initial={{ opacity: 0, y: -8 }}
 
 | Date | Decision | Rationale |
 |------|----------|-----------|
+| 2026-04-14 | A-level design refinement: shadow-based elevation system | Elevated all interactive components from border-based styling to shadow-based "warm academic" aesthetic. Replaced binary selection states (dark fills, inverted text) with calm hierarchy pattern: 2px primary border + shadow lift. Updated 7 components: ShareBoardModal, BoardSwitcher, sidebar buttons (New Idea, Sign Out), PostCard three-dot menu, board creation form, Share Board button. Documented explicit shadow scale (4 tiers), selection state pattern, and modal structure. Added success state animations (Check icon scale-in). Removed all header dividers from modals for visual lightness. Result: A-grade design that feels "felt, not shouted" - every element earns its pixels. |
 | 2026-04-14 | Fixed WritingView scroll area - body textarea now auto-expands | Body textarea had fixed `min-h-[500px]` which cut off longer content. Added `bodyRef` and `autoResizeBody()` function (mirroring title auto-resize). Textarea now expands to fit all content via `scrollHeight` calculation. Page scrolls to show full essay instead of textarea having internal scroll. Also reduced bottom padding from 256px to 48px for better space utilization. |
 | 2026-04-14 | Reduced PostCard text sizes for better scanning density | Title reduced from `text-base` (16px) to `text-sm` (14px). Body preview reduced from `text-sm` (14px) to `text-xs` (12px). Kanban board views need tighter density to scan many cards at once. WritingView retains large text (28-40px titles) for focused reading. |
 | 2026-04-14 | Standardized form input patterns and removed hardcoded blue from auth | Auth buttons used hardcoded SaaS blue (`hsl(200, 70%, 50%)`) that violated warm academic palette. Replaced with `bg-primary`. Unified all form inputs: `bg-card`, `border-border`, `focus:ring-2 ring-primary/20`, `rounded-md`. Removed inconsistent patterns (`bg-secondary/30`, varying focus states). Documented standard and compact input patterns. |
