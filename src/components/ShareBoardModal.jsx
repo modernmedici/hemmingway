@@ -80,7 +80,10 @@ export default function ShareBoardModal({ board, onClose, onInvite }) {
                 placeholder="colleague@example.com"
                 autoFocus
                 disabled={sending}
-                className="w-full px-3 py-2.5 text-sm font-sans bg-secondary/30 border border-border/20 rounded-md text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:border-border/50 focus:bg-card transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full px-4 py-3 text-sm font-sans bg-card rounded-md text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-shadow disabled:opacity-50 disabled:cursor-not-allowed"
+                style={{
+                  boxShadow: '0 1px 3px hsl(var(--foreground) / 0.04)',
+                }}
               />
             </div>
 
@@ -94,10 +97,10 @@ export default function ShareBoardModal({ board, onClose, onInvite }) {
                   type="button"
                   onClick={() => setRole('editor')}
                   disabled={sending}
-                  className="w-full px-4 py-3 text-left rounded-md border transition-all duration-100 disabled:opacity-50 disabled:cursor-not-allowed hover:border-border/50"
+                  className="w-full px-4 py-3 text-left rounded-md transition-all duration-100 disabled:opacity-50 disabled:cursor-not-allowed"
                   style={{
                     background: role === 'editor' ? 'hsl(var(--primary))' : 'hsl(var(--card))',
-                    borderColor: role === 'editor' ? 'hsl(var(--primary))' : 'hsl(var(--border) / 0.3)',
+                    boxShadow: role === 'editor' ? '0 2px 8px hsl(var(--foreground) / 0.06)' : '0 1px 3px hsl(var(--foreground) / 0.04)',
                   }}
                 >
                   <div className="flex items-center justify-between mb-1">
@@ -137,10 +140,10 @@ export default function ShareBoardModal({ board, onClose, onInvite }) {
                   type="button"
                   onClick={() => setRole('viewer')}
                   disabled={sending}
-                  className="w-full px-4 py-3 text-left rounded-md border transition-all duration-100 disabled:opacity-50 disabled:cursor-not-allowed hover:border-border/50"
+                  className="w-full px-4 py-3 text-left rounded-md transition-all duration-100 disabled:opacity-50 disabled:cursor-not-allowed"
                   style={{
                     background: role === 'viewer' ? 'hsl(var(--primary))' : 'hsl(var(--card))',
-                    borderColor: role === 'viewer' ? 'hsl(var(--primary))' : 'hsl(var(--border) / 0.3)',
+                    boxShadow: role === 'viewer' ? '0 2px 8px hsl(var(--foreground) / 0.06)' : '0 1px 3px hsl(var(--foreground) / 0.04)',
                   }}
                 >
                   <div className="flex items-center justify-between mb-1">
@@ -198,7 +201,10 @@ export default function ShareBoardModal({ board, onClose, onInvite }) {
                 type="button"
                 onClick={onClose}
                 disabled={sending}
-                className="flex-1 px-4 py-2.5 text-sm font-sans font-medium rounded-md border border-border/30 bg-transparent text-foreground/70 transition-colors duration-100 hover:bg-secondary disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-1 px-4 py-2.5 text-sm font-sans font-medium rounded-md bg-transparent text-foreground/70 transition-colors duration-100 hover:bg-secondary disabled:opacity-50 disabled:cursor-not-allowed"
+                style={{
+                  boxShadow: '0 1px 3px hsl(var(--foreground) / 0.04)',
+                }}
               >
                 Cancel
               </button>
@@ -206,6 +212,9 @@ export default function ShareBoardModal({ board, onClose, onInvite }) {
                 type="submit"
                 disabled={!email.trim() || sending}
                 className="flex-1 px-4 py-2.5 text-sm font-sans font-medium rounded-md bg-primary text-primary-foreground transition-opacity duration-100 hover:opacity-90 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed active:scale-95"
+                style={{
+                  boxShadow: '0 1px 3px hsl(var(--foreground) / 0.04)',
+                }}
               >
                 {sending && <Loader2 size={14} className="animate-spin" />}
                 {sending ? 'Sending...' : 'Send Invitation'}
