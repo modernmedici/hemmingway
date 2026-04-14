@@ -33,7 +33,7 @@ export default function BoardSwitcher({
       {/* Active board button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full flex items-center justify-between px-3 py-2 rounded-md bg-sidebar-accent text-sidebar-foreground text-sm font-medium font-sans transition-colors duration-100 hover:bg-sidebar-accent/80"
+        className="w-full flex items-center justify-between px-3 py-2 rounded-md bg-card border border-border/30 text-foreground text-sm font-medium font-sans transition-colors duration-100 hover:bg-secondary"
       >
         <div className="flex items-center gap-2 min-w-0">
           <span className="truncate">{activeBoard?.name || 'Loading...'}</span>
@@ -58,7 +58,7 @@ export default function BoardSwitcher({
           />
 
           {/* Dropdown content */}
-          <div className="absolute top-full left-0 right-0 mt-1 z-20 bg-card border border-border/20 rounded-md shadow-lg overflow-hidden">
+          <div className="absolute top-full left-0 right-0 mt-1 z-20 bg-card border border-border/50 rounded-md shadow-sm overflow-hidden">
             {/* Board list */}
             <div className="max-h-64 overflow-y-auto">
               {boards.map(board => {
@@ -85,7 +85,7 @@ export default function BoardSwitcher({
             </div>
 
             {/* Divider */}
-            <div className="h-px bg-border/20" />
+            <div className="h-px bg-border/15" />
 
             {/* Create new board section */}
             {isCreating ? (
@@ -96,7 +96,7 @@ export default function BoardSwitcher({
                   onChange={(e) => setNewBoardName(e.target.value)}
                   placeholder="Board name"
                   autoFocus
-                  className="w-full px-2 py-1.5 text-sm font-sans bg-background border border-border/30 rounded text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-1 focus:ring-primary/50"
+                  className="w-full px-2 py-1.5 text-sm font-sans bg-secondary/30 border border-border/20 rounded text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:border-border/50 focus:bg-card transition-colors"
                   onBlur={(e) => {
                     // Don't close if clicking the create button
                     if (!e.relatedTarget?.dataset?.createButton) {
@@ -128,7 +128,7 @@ export default function BoardSwitcher({
             ) : (
               <button
                 onClick={() => setIsCreating(true)}
-                className="w-full px-3 py-2 flex items-center gap-2 text-left text-sm font-sans text-muted-foreground/60 transition-colors duration-100 hover:bg-accent hover:text-foreground"
+                className="w-full px-3 py-2 flex items-center gap-2 text-left text-sm font-sans text-foreground/70 transition-colors duration-100 hover:bg-accent hover:text-foreground"
               >
                 <Plus size={14} />
                 New Board
