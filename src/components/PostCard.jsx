@@ -80,7 +80,10 @@ export default function PostCard({ post, onMove, onDelete, onEdit, showAttributi
             exit={{ opacity: 0, y: -8 }}
             transition={{ duration: 0.15 }}
             onClick={e => e.stopPropagation()}
-            className="absolute right-0 top-full z-50 bg-card border border-border rounded-md shadow-[0_4px_16px_hsl(var(--foreground)/0.1)] p-1 min-w-[160px] font-sans text-xs mt-1"
+            className="absolute right-0 top-full z-50 bg-card rounded-md p-1 min-w-[160px] font-sans text-xs mt-1"
+            style={{
+              boxShadow: '0 4px 16px hsl(var(--foreground) / 0.08)',
+            }}
           >
             {COLUMN_IDS.filter(c => c !== post.column).map(col => (
               <button
