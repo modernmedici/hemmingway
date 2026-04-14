@@ -16,7 +16,9 @@ DerivedData/
 # Node
 node_modules/
 dist/
+.env
 .env.local
+package-lock.json
 
 # Git worktrees
 .worktrees/
