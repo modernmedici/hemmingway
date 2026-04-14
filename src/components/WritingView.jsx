@@ -288,7 +288,7 @@ export default function WritingView({ post, defaultColumn, onSave, onCancel, cur
               onClick={toggleTimer}
               onDoubleClick={resetTimer}
               title="Click to start/pause · Double-click to reset"
-              className="text-[11px] font-sans tabular-nums cursor-pointer transition-all duration-200"
+              className="text-sm font-sans tabular-nums cursor-pointer transition-all duration-200"
               style={{
                 color: timeLeft === 0 ? 'hsl(var(--destructive))' : timerRunning ? 'hsl(var(--primary))' : 'hsl(var(--muted-foreground))',
               }}
@@ -297,7 +297,7 @@ export default function WritingView({ post, defaultColumn, onSave, onCancel, cur
             </span>
             <button
               onClick={exitZenMode}
-              className="text-[11px] font-sans bg-muted text-muted-foreground border-none rounded-sm px-3 py-1.5 cursor-pointer transition-all duration-[120ms] hover:bg-secondary"
+              className="text-sm font-sans bg-muted text-muted-foreground border-none rounded-sm px-3 py-1.5 cursor-pointer transition-all duration-[120ms] hover:bg-secondary"
             >
               Exit Fullscreen (Esc)
             </button>
@@ -338,7 +338,7 @@ export default function WritingView({ post, defaultColumn, onSave, onCancel, cur
               onClick={toggleTimer}
               onDoubleClick={resetTimer}
               title="Click to start/pause · Double-click to reset"
-              className="text-[11px] font-sans tabular-nums cursor-pointer transition-all duration-200 rounded px-2 py-1"
+              className="text-sm font-sans tabular-nums cursor-pointer transition-all duration-200 rounded px-2 py-1"
               style={{
                 color: timeLeft === 0 ? 'hsl(var(--destructive))' : timerRunning ? 'hsl(var(--primary))' : 'hsl(var(--muted-foreground))',
                 background: timerRunning ? 'hsl(var(--primary) / 0.1)' : 'transparent',
@@ -346,7 +346,7 @@ export default function WritingView({ post, defaultColumn, onSave, onCancel, cur
             >
               {formatTime(timeLeft)}
             </span>
-            <span className="text-[11px] text-muted-foreground/40">·</span>
+            <span className="text-sm text-muted-foreground/40">·</span>
             {/* Word count */}
             <span
               className="text-sm font-sans tabular-nums transition-all duration-200 ease-in-out"
