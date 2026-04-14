@@ -36,20 +36,24 @@ export default function ShareBoardModal({ board, onClose, onInvite }) {
     <>
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-black/40 z-50 animate-[fadeIn_0.15s_ease]"
+        className="fixed inset-0 z-50 animate-[fadeIn_0.15s_ease]"
+        style={{
+          background: 'hsl(var(--foreground) / 0.15)',
+        }}
         onClick={onClose}
       />
 
       {/* Modal */}
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none">
         <div
-          className="bg-card border border-border/20 rounded-lg shadow-xl w-full max-w-md pointer-events-auto"
+          className="bg-background border border-border/20 rounded-lg w-full max-w-md pointer-events-auto"
           style={{
             animation: 'viewFadeIn 0.2s ease forwards',
+            boxShadow: '0 4px 16px hsl(var(--foreground) / 0.08)',
           }}
         >
           {/* Header */}
-          <div className="flex items-center justify-between px-6 py-4 border-b border-border/15">
+          <div className="flex items-center justify-between px-6 py-4">
             <h2 className="text-base font-sans text-foreground">
               <span className="font-medium">Share</span>{' '}
               <span className="font-serif font-bold">"{board.name}"</span>
