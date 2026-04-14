@@ -68,20 +68,42 @@ Colors are defined as HSL values in `src/styles/tokens.css`. Use CSS variable na
 - App logo
 - Any content the user wrote
 
-**Sans (Inter):**
+**Sans (Plus Jakarta Sans):**
 - All UI labels
 - Buttons
 - Timestamps
 - Navigation
 - System messages
 
+**Why Plus Jakarta Sans:**
+Rounded humanist sans with warmth that complements Libre Baskerville's traditional serifs. Excellent small-size rendering (critical for 12px UI labels). Less generic than Inter, adds character without competing with content. The rounded terminals create visual harmony with the warm beige/cream palette.
+
+**Loading fonts:**
+```html
+<link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:wght@400;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+```
+
+Or via Tailwind CSS (recommended):
+```js
+// tailwind.config.js
+theme: {
+  extend: {
+    fontFamily: {
+      serif: ['Libre Baskerville', 'serif'],
+      sans: ['Plus Jakarta Sans', 'sans-serif'],
+    }
+  }
+}
+```
+
 **Scale:**
 - `text-4xl` (36px) - App logo, auth headlines
 - `text-2xl` (24px) - Board name
-- `text-base` (16px) - Post title
-- `text-sm` (14px) - Post body preview
-- `text-xs` (12px) - UI labels, buttons
+- `text-sm` (14px) - Post title (card view)
+- `text-xs` (12px) - Post body preview (card view), UI labels, buttons
 - `text-[11px]` - Column headers (uppercase), timestamps, metadata (word count, attribution)
+
+**Why smaller text in cards:** Kanban board views require tighter density for scanning. Titles at 14px and previews at 12px let users quickly parse many cards. The WritingView uses much larger serif text (28-40px titles, 17px body) for focused reading and composition.
 
 **Font weight:**
 - `font-bold` - Post titles, board names
@@ -109,6 +131,7 @@ Use Tailwind spacing utilities. Current scale in use:
 - Column: `p-5` (20px padding)
 - Modal: `px-6 py-4` header, `px-6 py-5` body
 - Button: `px-3 py-1.5` (small), `px-4 py-2.5` (medium)
+- WritingView: `padding-top: 64px` (128px in zen mode), `padding-bottom: 48px` - minimal breathing room, maximizes visible content
 
 **Gaps between elements:**
 - PostCard to PostCard: `gap-2` (8px)
@@ -218,6 +241,50 @@ Defined in tokens.css:
 animate={{ opacity: 1, y: 0 }}
 initial={{ opacity: 0, y: -8 }}
 ```
+
+### Form Inputs
+
+**Text input (standard):**
+```jsx
+<input
+  type="email"
+  className="w-full px-4 py-3 rounded-md bg-card border border-border text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-shadow"
+  placeholder="your@email.com"
+/>
+```
+
+**Text input (inline/compact):**
+```jsx
+<input
+  type="text"
+  className="w-full px-2 py-1.5 text-sm bg-card border border-border rounded text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-shadow"
+  placeholder="Board name"
+/>
+```
+
+**Textarea (distraction-free writing):**
+```jsx
+<textarea
+  className="w-full bg-transparent border-none outline-none text-foreground"
+  style={{ fontFamily: "'Libre Baskerville', serif" }}
+/>
+```
+
+**Input states:**
+- Default: `bg-card border-border`
+- Focus: `focus:ring-2 focus:ring-primary/20` (subtle dark ring, not accent)
+- Disabled: `disabled:opacity-50 disabled:cursor-not-allowed`
+- Error: Add `border-destructive` (not shown by default)
+
+**When to use each:**
+- Standard inputs: Auth forms, modals, settings (full padding, comfortable)
+- Compact inputs: Inline editing, dropdowns, quick create (less padding)
+- Transparent: Writing views, content editing (no visual weight)
+
+**Never use:**
+- Colored backgrounds (`bg-secondary/30`) - inconsistent with card elevation
+- Multiple focus state patterns - always use ring, not border color change
+- `rounded-lg` on inputs - reserve for modals/large surfaces
 
 ### Empty States
 
@@ -352,7 +419,7 @@ initial={{ opacity: 0, y: -8 }}
 - Center-align content text (left-align for readability)
 - Use animation for the sake of animation (logo flutter removed)
 - Add emoji (this is a professional writing tool)
-- Use default font stacks (Inter/Roboto/Arial)
+- Use generic overused fonts (Roboto, Arial, default system stack) - Plus Jakarta Sans has character
 - Create generic card grids with icons in circles
 
 **Do:**
@@ -373,6 +440,17 @@ initial={{ opacity: 0, y: -8 }}
 **Accessibility audit:** Add ARIA landmarks, improve screen reader announcements.
 
 **Keyboard shortcuts:** Add visible affordance for Cmd+S, Cmd+Enter, etc.
+
+---
+
+## Decisions Log
+
+| Date | Decision | Rationale |
+|------|----------|-----------|
+| 2026-04-14 | Fixed WritingView scroll area - body textarea now auto-expands | Body textarea had fixed `min-h-[500px]` which cut off longer content. Added `bodyRef` and `autoResizeBody()` function (mirroring title auto-resize). Textarea now expands to fit all content via `scrollHeight` calculation. Page scrolls to show full essay instead of textarea having internal scroll. Also reduced bottom padding from 256px to 48px for better space utilization. |
+| 2026-04-14 | Reduced PostCard text sizes for better scanning density | Title reduced from `text-base` (16px) to `text-sm` (14px). Body preview reduced from `text-sm` (14px) to `text-xs` (12px). Kanban board views need tighter density to scan many cards at once. WritingView retains large text (28-40px titles) for focused reading. |
+| 2026-04-14 | Standardized form input patterns and removed hardcoded blue from auth | Auth buttons used hardcoded SaaS blue (`hsl(200, 70%, 50%)`) that violated warm academic palette. Replaced with `bg-primary`. Unified all form inputs: `bg-card`, `border-border`, `focus:ring-2 ring-primary/20`, `rounded-md`. Removed inconsistent patterns (`bg-secondary/30`, varying focus states). Documented standard and compact input patterns. |
+| 2026-04-14 | Replaced Inter with Plus Jakarta Sans for UI typography | Rounded humanist sans with warmth that complements Libre Baskerville. Better small-size rendering at 12px (UI labels). Less generic than Inter - adds character without competing with content. Creates unified warm aesthetic across UI and content. |
 
 ---
 

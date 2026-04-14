@@ -124,7 +124,7 @@ export default function PostCard({ post, onMove, onDelete, onEdit, showAttributi
       </div>
 
       {/* Title (hero element) */}
-      <p className="text-base font-bold font-serif text-foreground leading-[1.4] mb-1.5 pr-6">
+      <p className="text-sm font-bold font-serif text-foreground leading-[1.4] mb-1.5 pr-6">
         {post.title}
       </p>
 
@@ -154,7 +154,7 @@ export default function PostCard({ post, onMove, onDelete, onEdit, showAttributi
 
       {/* Body preview */}
       {post.body && (
-        <p className="text-sm font-serif text-muted-foreground leading-relaxed overflow-hidden mb-2.5 line-clamp-3">
+        <p className="text-xs font-serif text-muted-foreground leading-relaxed overflow-hidden mb-2.5 line-clamp-3">
           {post.body}
         </p>
       )}

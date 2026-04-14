@@ -96,7 +96,7 @@ export default function BoardSwitcher({
                   onChange={(e) => setNewBoardName(e.target.value)}
                   placeholder="Board name"
                   autoFocus
-                  className="w-full px-2 py-1.5 text-sm font-sans bg-secondary/30 border border-border/20 rounded text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:border-border/50 focus:bg-card transition-colors"
+                  className="w-full px-2 py-1.5 text-sm font-sans bg-card border border-border rounded text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-shadow"
                   onBlur={(e) => {
                     // Don't close if clicking the create button
                     if (!e.relatedTarget?.dataset?.createButton) {

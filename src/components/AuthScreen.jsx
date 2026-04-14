@@ -63,7 +63,7 @@ export function AuthScreen() {
                 value={code}
                 onChange={(e) => setCode(e.target.value)}
                 placeholder={email === 'modernmedici88@gmail.com' ? '424242' : 'Enter code from email'}
-                className="w-full px-4 py-3 rounded-lg bg-card border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-accent"
+                className="w-full px-4 py-3 rounded-md bg-card border border-border text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-shadow"
                 autoFocus
                 required
               />
@@ -75,8 +75,7 @@ export function AuthScreen() {
             <button
               type="submit"
               disabled={verifying}
-              className="w-full py-3 rounded-lg text-white font-medium hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
-              style={{ background: 'hsl(200, 70%, 50%)' }}
+              className="w-full py-3 rounded-md bg-primary text-primary-foreground font-medium text-sm hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.99]"
             >
               {verifying ? 'Verifying...' : 'Sign in'}
             </button>
@@ -94,8 +93,7 @@ export function AuthScreen() {
               setCode('')
               setError(null)
             }}
-            className="text-sm hover:underline mt-4"
-            style={{ color: 'hsl(200, 70%, 50%)' }}
+            className="text-sm text-foreground/70 hover:text-foreground hover:underline mt-4 transition-colors"
           >
             Use a different email
           </button>
@@ -123,7 +121,7 @@ export function AuthScreen() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="your@email.com"
-              className="w-full px-4 py-3 rounded-lg bg-card border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-accent"
+              className="w-full px-4 py-3 rounded-md bg-card border border-border text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-shadow"
               required
             />
           </div>
@@ -131,8 +129,7 @@ export function AuthScreen() {
           <button
             type="submit"
             disabled={sending}
-            className="w-full py-3 rounded-lg text-white font-medium hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
-            style={{ background: 'hsl(200, 70%, 50%)' }}
+            className="w-full py-3 rounded-md bg-primary text-primary-foreground font-medium text-sm hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.99]"
           >
             {sending ? 'Sending...' : 'Send verification code'}
           </button>

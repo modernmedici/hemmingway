@@ -32,6 +32,7 @@ export default function WritingView({ post, defaultColumn, onSave, onCancel, cur
   const [timeLeft, setTimeLeft] = useState(25 * 60); // 25 minutes in seconds
   const [timerRunning, setTimerRunning] = useState(false);
   const titleRef = useRef(null);
+  const bodyRef = useRef(null);
   const containerRef = useRef(null);
 
   // Collaborative editing state
@@ -152,7 +153,15 @@ export default function WritingView({ post, defaultColumn, onSave, onCancel, cur
     el.style.height = el.scrollHeight + 'px';
   }, []);
 
+  const autoResizeBody = useCallback(() => {
+    const el = bodyRef.current;
+    if (!el) return;
+    el.style.height = 'auto';
+    el.style.height = el.scrollHeight + 'px';
+  }, []);
+
   useEffect(() => { autoResizeTitle(); }, [title, autoResizeTitle]);
+  useEffect(() => { autoResizeBody(); }, [body, autoResizeBody]);
 
   // Timer countdown effect
   useEffect(() => {
@@ -394,7 +403,7 @@ export default function WritingView({ post, defaultColumn, onSave, onCancel, cur
           paddingLeft: '32px',
           paddingRight: '32px',
           paddingTop: zenMode ? '128px' : '64px',
-          paddingBottom: '256px',
+          paddingBottom: '48px',
         }}
       >
         {/* Edit lock banner */}
@@ -421,15 +430,17 @@ export default function WritingView({ post, defaultColumn, onSave, onCancel, cur
           }}
         />
         <textarea
+          ref={bodyRef}
           value={body}
-          onChange={e => setBody(e.target.value)}
+          onChange={e => { setBody(e.target.value); autoResizeBody(); }}
           placeholder={isReadOnly ? "Read only - you'll see changes in real time" : "Start writing your thoughts..."}
           readOnly={isReadOnly}
-          className="block w-full min-h-[500px] text-foreground border-none outline-none bg-transparent resize-none"
+          className="block w-full text-foreground border-none outline-none bg-transparent resize-none overflow-hidden"
           style={{
             fontSize: '17px',
             fontFamily: "'Libre Baskerville', Georgia, serif",
             lineHeight: '1.9',
+            minHeight: '500px',
             opacity: isReadOnly ? 0.7 : 1,
             cursor: isReadOnly ? 'default' : 'text',
           }}
