@@ -277,15 +277,6 @@ export default function WritingView({ post, defaultColumn, onSave, onCancel, cur
 
   return (
     <div ref={containerRef} className="view-enter min-h-screen bg-background flex flex-col font-sans relative">
-      {/* Editor presence bar (collaborative mode only) */}
-      {!zenMode && isCollaborative && (
-        <EditorPresenceBar
-          peers={presence?.peers}
-          currentUserId={presence?.user?.id}
-          editorPeer={editorPeer}
-        />
-      )}
-
       {/* Zen mode indicator */}
       {zenMode && (
         <div
@@ -331,6 +322,13 @@ export default function WritingView({ post, defaultColumn, onSave, onCancel, cur
               <Check size={12} />
               Saved!
             </span>
+          )}
+          {/* Presence indicator (collaborative mode only) */}
+          {isCollaborative && (
+            <EditorPresenceBar
+              peers={presence?.peers}
+              currentUserId={presence?.user?.id}
+            />
           )}
           {/* Timer */}
           <span
