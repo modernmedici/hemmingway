@@ -13,7 +13,7 @@ export default function Column({ column, posts, onMovePost, onDeletePost, onNewP
     >
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-[11px] font-medium tracking-widest uppercase text-muted-foreground font-sans">
+        <h2 className="text-[12px] font-medium tracking-widest uppercase text-muted-foreground font-sans">
           {column.label}
         </h2>
         {posts.length > 0 && (
@@ -34,7 +34,7 @@ export default function Column({ column, posts, onMovePost, onDeletePost, onNewP
             },
           },
         }}
-        className="flex-1 overflow-y-auto max-h-[calc(100vh-14rem)] flex flex-col gap-2"
+        className="flex-1 overflow-y-auto max-h-[calc(100vh-14rem)] flex flex-col gap-4"
       >
         <AnimatePresence>
           {posts.length === 0 && (
@@ -81,6 +81,7 @@ export default function Column({ column, posts, onMovePost, onDeletePost, onNewP
               onDelete={onDeletePost}
               onEdit={onEditPost}
               showAttribution={showAttribution}
+              columnId={column.id}
             />
           ))}
         </AnimatePresence>
