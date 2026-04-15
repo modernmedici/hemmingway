@@ -97,6 +97,7 @@ export default function Board({
             onNewPost={onNewPost}
             onEditPost={onEditPost}
             showAttribution={isShared}
+            boardName={board.name}
           />
         ))}
       </div>
