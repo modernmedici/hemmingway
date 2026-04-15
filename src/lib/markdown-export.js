@@ -50,9 +50,9 @@ export function generateMarkdown(post, boardName) {
 title: ${title}
 status: ${column}
 board: ${boardName}
-createdAt: ${createdAtISO}
-updatedAt: ${updatedAtISO}
-wordCount: ${totalWords}
+date: ${createdAtISO}
+updated: ${updatedAtISO}
+words: ${totalWords}
 ---`;
 
   // Combine frontmatter with body
@@ -127,10 +127,10 @@ export async function downloadBulkMarkdown(posts, boardName) {
   // Generate ZIP file
   const blob = await zip.generateAsync({ type: 'blob' });
 
-  // Create download filename: {board-slug}-YYYY-MM-DD.zip
+  // Create download filename: {board-slug}-published-YYYY-MM-DD.zip
   const boardSlug = slugify(boardName);
   const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
-  const zipFilename = `${boardSlug}-${today}.zip`;
+  const zipFilename = `${boardSlug}-published-${today}.zip`;
 
   // Trigger download
   const url = URL.createObjectURL(blob);

@@ -18,15 +18,15 @@ describe('generateMarkdown', () => {
     expect(markdown).toContain('title: My Test Post');
     expect(markdown).toContain('status: finalized');
     expect(markdown).toContain('board: Published');
-    expect(markdown).toContain('createdAt: 2026-01-15T10:30:00.000Z');
-    expect(markdown).toContain('updatedAt: 2026-01-20T14:45:00.000Z');
+    expect(markdown).toContain('date: 2026-01-15T10:30:00.000Z');
+    expect(markdown).toContain('updated: 2026-01-20T14:45:00.000Z');
   });
 
   it('includes word count in frontmatter', () => {
     const markdown = generateMarkdown(post, 'Published');
 
     // "My Test Post" (3) + "This is the body text. With multiple paragraphs." (8) = 11
-    expect(markdown).toContain('wordCount: 11');
+    expect(markdown).toContain('words: 11');
   });
 
   it('includes post body after frontmatter', () => {
@@ -39,15 +39,15 @@ describe('generateMarkdown', () => {
   it('formats dates as ISO 8601', () => {
     const markdown = generateMarkdown(post, 'Published');
 
-    expect(markdown).toContain('createdAt: 2026-01-15T10:30:00.000Z');
-    expect(markdown).toContain('updatedAt: 2026-01-20T14:45:00.000Z');
+    expect(markdown).toContain('date: 2026-01-15T10:30:00.000Z');
+    expect(markdown).toContain('updated: 2026-01-20T14:45:00.000Z');
   });
 
   it('handles posts with empty body', () => {
     const emptyPost = { ...post, body: '' };
     const markdown = generateMarkdown(emptyPost, 'Published');
 
-    expect(markdown).toContain('wordCount: 3'); // Only title words
+    expect(markdown).toContain('words: 3'); // Only title words
     expect(markdown).toContain('---\n\n'); // Empty body section
   });
 
@@ -55,7 +55,7 @@ describe('generateMarkdown', () => {
     const whitespacePost = { ...post, body: '   \n\n   ' };
     const markdown = generateMarkdown(whitespacePost, 'Published');
 
-    expect(markdown).toContain('wordCount: 3'); // Only title words
+    expect(markdown).toContain('words: 3'); // Only title words
   });
 
   it('counts words correctly across title and body', () => {
@@ -66,7 +66,7 @@ describe('generateMarkdown', () => {
     };
     const markdown = generateMarkdown(testPost, 'Published');
 
-    expect(markdown).toContain('wordCount: 5');
+    expect(markdown).toContain('words: 5');
   });
 });
 
@@ -238,14 +238,14 @@ describe('downloadBulkMarkdown', () => {
     await downloadBulkMarkdown(posts, 'Published');
 
     const anchor = createElementSpy.mock.results[0].value;
-    expect(anchor.download).toMatch(/^published-\d{4}-\d{2}-\d{2}\.zip$/);
+    expect(anchor.download).toMatch(/^published-published-\d{4}-\d{2}-\d{2}\.zip$/);
   });
 
   it('uses kebab-case slug from board name', async () => {
     await downloadBulkMarkdown(posts, 'My Draft Board');
 
     const anchor = createElementSpy.mock.results[0].value;
-    expect(anchor.download).toMatch(/^my-draft-board-\d{4}-\d{2}-\d{2}\.zip$/);
+    expect(anchor.download).toMatch(/^my-draft-board-published-\d{4}-\d{2}-\d{2}\.zip$/);
   });
 
   it('handles filename collisions within ZIP', async () => {
