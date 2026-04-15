@@ -98,6 +98,37 @@ describe('generateMarkdown', () => {
     // Should end with frontmatter and empty body section (no extra whitespace)
     expect(markdown).toMatch(/---\n\n$/);
   });
+
+  it('handles null title without crashing', () => {
+    const nullTitlePost = { ...post, title: null };
+    const markdown = generateMarkdown(nullTitlePost, 'Published');
+
+    expect(markdown).toContain('title: ""');
+    expect(markdown).toContain('words: 8'); // Only body words
+  });
+
+  it('handles undefined title without crashing', () => {
+    const undefinedTitlePost = { ...post, title: undefined };
+    const markdown = generateMarkdown(undefinedTitlePost, 'Published');
+
+    expect(markdown).toContain('title: ""');
+    expect(markdown).toContain('words: 8'); // Only body words
+  });
+
+  it('escapes newlines in title for YAML frontmatter', () => {
+    const newlinePost = { ...post, title: 'Line One\nLine Two' };
+    const markdown = generateMarkdown(newlinePost, 'Published');
+
+    expect(markdown).toContain('title: "Line One\\nLine Two"');
+    expect(markdown).not.toContain('title: "Line One\nLine Two"'); // Should not have literal newline
+  });
+
+  it('escapes carriage returns in title for YAML frontmatter', () => {
+    const crPost = { ...post, title: 'Line One\r\nLine Two' };
+    const markdown = generateMarkdown(crPost, 'Published');
+
+    expect(markdown).toContain('title: "Line One\\r\\nLine Two"');
+  });
 });
 
 describe('downloadMarkdown', () => {

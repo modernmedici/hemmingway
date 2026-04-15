@@ -62,8 +62,11 @@ function generateFilename(title, usedFilenames) {
 export function generateMarkdown(post, boardName) {
   const { title, body, column, createdAt, updatedAt } = post;
 
+  // Guard against null/undefined title
+  const safeTitle = title || '';
+
   // Count words in title and body
-  const titleWords = countWords(title);
+  const titleWords = countWords(safeTitle);
   const bodyWords = countWords(body);
   const totalWords = titleWords + bodyWords;
 
@@ -71,8 +74,12 @@ export function generateMarkdown(post, boardName) {
   const createdAtISO = createdAt instanceof Date ? createdAt.toISOString() : createdAt;
   const updatedAtISO = updatedAt instanceof Date ? updatedAt.toISOString() : updatedAt;
 
-  // Escape title for YAML: escape backslashes and quotes
-  const escapedTitle = title.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+  // Escape title for YAML: escape backslashes, quotes, and newlines
+  const escapedTitle = safeTitle
+    .replace(/\\/g, '\\\\')
+    .replace(/"/g, '\\"')
+    .replace(/\n/g, '\\n')
+    .replace(/\r/g, '\\r');
 
   // Build YAML frontmatter with quoted title to handle colons and other special characters
   const frontmatter = `---
