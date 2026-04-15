@@ -159,6 +159,7 @@ export default function App() {
         pendingInvitations={pendingInvitations}
         onAcceptInvitation={handleAcceptInvitation}
         onDeclineInvitation={handleDeclineInvitation}
+        posts={posts}
       >
 
         <main style={{ flex: 1, padding: '32px 36px', overflow: 'hidden' }}>
