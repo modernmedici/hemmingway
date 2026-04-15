@@ -15,7 +15,7 @@ describe('generateMarkdown', () => {
     const markdown = generateMarkdown(post, 'Published');
 
     expect(markdown).toContain('---');
-    expect(markdown).toContain('title: My Test Post');
+    expect(markdown).toContain('title: "My Test Post"');
     expect(markdown).toContain('status: finalized');
     expect(markdown).toContain('board: Published');
     expect(markdown).toContain('date: 2026-01-15T10:30:00.000Z');
@@ -67,6 +67,36 @@ describe('generateMarkdown', () => {
     const markdown = generateMarkdown(testPost, 'Published');
 
     expect(markdown).toContain('words: 5');
+  });
+
+  it('escapes titles with colons in YAML frontmatter', () => {
+    const colonPost = { ...post, title: 'My Post: A Reflection' };
+    const markdown = generateMarkdown(colonPost, 'Published');
+
+    expect(markdown).toContain('title: "My Post: A Reflection"');
+    expect(markdown).not.toContain('title: My Post: A Reflection'); // Should be quoted
+  });
+
+  it('escapes titles with double quotes in YAML frontmatter', () => {
+    const quotePost = { ...post, title: 'A "Quoted" Title' };
+    const markdown = generateMarkdown(quotePost, 'Published');
+
+    expect(markdown).toContain('title: "A \\"Quoted\\" Title"');
+  });
+
+  it('escapes titles with backslashes in YAML frontmatter', () => {
+    const backslashPost = { ...post, title: 'Path\\To\\File' };
+    const markdown = generateMarkdown(backslashPost, 'Published');
+
+    expect(markdown).toContain('title: "Path\\\\To\\\\File"');
+  });
+
+  it('trims whitespace-only body', () => {
+    const whitespacePost = { ...post, body: '   \n\n   ' };
+    const markdown = generateMarkdown(whitespacePost, 'Published');
+
+    // Should end with frontmatter and empty body section (no extra whitespace)
+    expect(markdown).toMatch(/---\n\n$/);
   });
 });
 
@@ -142,12 +172,36 @@ describe('downloadMarkdown', () => {
     expect(anchor.download).toBe('my-complex-title-with-symbols.md');
   });
 
-  it('appends timestamp on filename collision', () => {
+  it('appends counter on filename collision', () => {
     const usedFilenames = new Set(['download-test.md']);
     downloadMarkdown(post, 'Published', usedFilenames);
 
     const anchor = createElementSpy.mock.results[0].value;
-    expect(anchor.download).toMatch(/^download-test-\d{13}\.md$/);
+    expect(anchor.download).toBe('download-test-1.md');
+  });
+
+  it('handles empty title by using "untitled"', () => {
+    const emptyTitlePost = { ...post, title: '' };
+    downloadMarkdown(emptyTitlePost, 'Published');
+
+    const anchor = createElementSpy.mock.results[0].value;
+    expect(anchor.download).toBe('untitled.md');
+  });
+
+  it('handles special-character-only title by using "untitled"', () => {
+    const specialPost = { ...post, title: '!!!' };
+    downloadMarkdown(specialPost, 'Published');
+
+    const anchor = createElementSpy.mock.results[0].value;
+    expect(anchor.download).toBe('untitled.md');
+  });
+
+  it('adds filename to usedFilenames set', () => {
+    const usedFilenames = new Set();
+    const filename = downloadMarkdown(post, 'Published', usedFilenames);
+
+    expect(usedFilenames.has(filename)).toBe(true);
+    expect(usedFilenames.has('download-test.md')).toBe(true);
   });
 
   it('triggers download', () => {
@@ -168,11 +222,11 @@ describe('downloadMarkdown', () => {
     expect(filename).toBe('download-test.md');
   });
 
-  it('returns timestamped filename when collision detected', () => {
+  it('returns counter-suffixed filename when collision detected', () => {
     const usedFilenames = new Set(['download-test.md']);
     const filename = downloadMarkdown(post, 'Published', usedFilenames);
 
-    expect(filename).toMatch(/^download-test-\d{13}\.md$/);
+    expect(filename).toBe('download-test-1.md');
   });
 });
 
@@ -257,6 +311,21 @@ describe('downloadBulkMarkdown', () => {
     await downloadBulkMarkdown(duplicatePosts, 'Published');
 
     // Should not throw, and should create unique filenames
+    expect(clickSpy).toHaveBeenCalledOnce();
+  });
+
+  it('handles 3+ posts with same title using incrementing counter', async () => {
+    const triplicatePosts = [
+      { ...posts[0], id: 'post-1', title: 'Duplicate Title' },
+      { ...posts[0], id: 'post-2', title: 'Duplicate Title' },
+      { ...posts[0], id: 'post-3', title: 'Duplicate Title' },
+      { ...posts[0], id: 'post-4', title: 'Duplicate Title' },
+    ];
+
+    // This should not throw and should generate unique filenames
+    // (duplicate-title.md, duplicate-title-1.md, duplicate-title-2.md, duplicate-title-3.md)
+    await downloadBulkMarkdown(triplicatePosts, 'Published');
+
     expect(clickSpy).toHaveBeenCalledOnce();
   });
 

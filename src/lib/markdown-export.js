@@ -19,12 +19,38 @@ function countWords(text) {
  * @returns {string} Kebab-case slug
  */
 function slugify(text) {
-  return text
+  // Guard against falsy input
+  if (!text) return 'untitled';
+
+  const slug = text
     .toLowerCase()
     .replace(/[^a-z0-9\s-]/g, '') // Remove special characters
     .trim()
     .replace(/\s+/g, '-') // Replace spaces with hyphens
     .replace(/-+/g, '-'); // Replace multiple hyphens with single hyphen
+
+  // Return fallback if slug is empty (e.g., input was only special characters)
+  return slug || 'untitled';
+}
+
+/**
+ * Generates a unique filename from a title, handling collisions with incrementing counter
+ * @param {string} title - The title to convert to filename
+ * @param {Set<string>} usedFilenames - Set of already used filenames to avoid collisions
+ * @returns {string} Unique filename with .md extension
+ */
+function generateFilename(title, usedFilenames) {
+  const baseFilename = slugify(title);
+  let filename = `${baseFilename}.md`;
+
+  // Handle collision by appending incrementing counter
+  let counter = 1;
+  while (usedFilenames.has(filename)) {
+    filename = `${baseFilename}-${counter}.md`;
+    counter++;
+  }
+
+  return filename;
 }
 
 /**
@@ -45,9 +71,12 @@ export function generateMarkdown(post, boardName) {
   const createdAtISO = createdAt instanceof Date ? createdAt.toISOString() : createdAt;
   const updatedAtISO = updatedAt instanceof Date ? updatedAt.toISOString() : updatedAt;
 
-  // Build YAML frontmatter
+  // Escape title for YAML: escape backslashes and quotes
+  const escapedTitle = title.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+
+  // Build YAML frontmatter with quoted title to handle colons and other special characters
   const frontmatter = `---
-title: ${title}
+title: "${escapedTitle}"
 status: ${column}
 board: ${boardName}
 date: ${createdAtISO}
@@ -55,8 +84,11 @@ updated: ${updatedAtISO}
 words: ${totalWords}
 ---`;
 
+  // Trim body to remove whitespace-only content
+  const trimmedBody = body ? body.trim() : '';
+
   // Combine frontmatter with body
-  return `${frontmatter}\n\n${body || ''}`;
+  return `${frontmatter}\n\n${trimmedBody}`;
 }
 
 /**
@@ -69,15 +101,11 @@ words: ${totalWords}
 export function downloadMarkdown(post, boardName, usedFilenames = new Set()) {
   const markdown = generateMarkdown(post, boardName);
 
-  // Generate filename from title
-  let baseFilename = slugify(post.title);
-  let filename = `${baseFilename}.md`;
+  // Generate unique filename
+  const filename = generateFilename(post.title, usedFilenames);
 
-  // Handle collision by appending timestamp
-  if (usedFilenames.has(filename)) {
-    const timestamp = Date.now();
-    filename = `${baseFilename}-${timestamp}.md`;
-  }
+  // Add to used filenames set
+  usedFilenames.add(filename);
 
   // Create blob and download
   const blob = new Blob([markdown], { type: 'text/markdown;charset=utf-8' });
@@ -110,17 +138,10 @@ export async function downloadBulkMarkdown(posts, boardName) {
   for (const post of posts) {
     const markdown = generateMarkdown(post, boardName);
 
-    // Generate unique filename
-    let baseFilename = slugify(post.title);
-    let filename = `${baseFilename}.md`;
-
-    // Handle collision by appending timestamp
-    if (usedFilenames.has(filename)) {
-      const timestamp = Date.now();
-      filename = `${baseFilename}-${timestamp}.md`;
-    }
-
+    // Generate unique filename using shared helper
+    const filename = generateFilename(post.title, usedFilenames);
     usedFilenames.add(filename);
+
     zip.file(filename, markdown);
   }
 
