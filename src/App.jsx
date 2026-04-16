@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { Analytics } from '@vercel/analytics/react'
 import { useKanban } from './hooks/useKanban'
 import { useBoards } from './hooks/useBoards'
 import db from './lib/db'
@@ -203,6 +204,9 @@ export default function App() {
           onInvite={handleInvite}
         />
       )}
+
+      {/* Vercel Web Analytics */}
+      <Analytics />
     </>
   )
 }
