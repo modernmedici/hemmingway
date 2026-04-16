@@ -16,7 +16,7 @@ export default async function handler(req, res) {
     }
 
     // Construct the invitation URL
-    const inviteUrl = `${appUrl || 'https://hemingway.vercel.app'}`
+    const inviteUrl = `${appUrl || 'https://hemingway-eight.vercel.app'}`
 
     // Send email via Resend
     const { data, error } = await resend.emails.send({
