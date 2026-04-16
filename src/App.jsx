@@ -38,6 +38,20 @@ export default function App() {
 
   // Track active board (default to first board)
   const [activeBoardId, setActiveBoardId] = useState(null)
+  const [creatingDefaultBoard, setCreatingDefaultBoard] = useState(false)
+
+  // Auto-create default board for new users
+  useEffect(() => {
+    if (user && !boardsLoading && boards.length === 0 && !creatingDefaultBoard) {
+      setCreatingDefaultBoard(true)
+      createBoard('My Writing').then((result) => {
+        if (result?.id) {
+          setActiveBoardId(result.id)
+        }
+        setCreatingDefaultBoard(false)
+      })
+    }
+  }, [user, boards, boardsLoading, creatingDefaultBoard, createBoard])
 
   // Set default active board when boards load
   useEffect(() => {
