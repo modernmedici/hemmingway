@@ -48,18 +48,10 @@ export default function Board({
       {/* Board header */}
       {board && (
         <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-2">
+          <div>
             <h1 className="text-2xl font-serif font-bold text-foreground">
               {board.name}
             </h1>
-            {isShared && (
-              <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-secondary/60">
-                <Users size={12} className="text-muted-foreground/50" />
-                <span className="text-[10px] font-sans font-medium text-muted-foreground/60">
-                  Shared
-                </span>
-              </div>
-            )}
           </div>
 
           <div className="flex items-center gap-3">

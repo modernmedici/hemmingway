@@ -13,13 +13,23 @@ export default function EditorPresenceBar({ peers, currentUserId }) {
   // Handle null/undefined peers
   if (!peers) return null
 
-  // Filter out current user
-  const otherPeers = Object.entries(peers)
+  // Filter out current user and deduplicate by email
+  const peerList = Object.entries(peers)
     .filter(([peerId]) => peerId !== currentUserId)
     .map(([peerId, peerData]) => ({
       id: peerId,
       ...peerData,
     }))
+
+  // Deduplicate by email - keep only one peer per unique email
+  const seenEmails = new Set()
+  const otherPeers = peerList.filter(peer => {
+    if (!peer.email || seenEmails.has(peer.email)) {
+      return false
+    }
+    seenEmails.add(peer.email)
+    return true
+  })
 
   // Don't show anything if alone
   if (otherPeers.length === 0) return null

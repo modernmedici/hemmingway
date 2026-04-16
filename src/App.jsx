@@ -1,4 +1,6 @@
 import { useState, useEffect } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { Analytics } from '@vercel/analytics/react'
 import { useKanban } from './hooks/useKanban'
 import { useBoards } from './hooks/useBoards'
 import db from './lib/db'
@@ -8,6 +10,7 @@ import Board from './components/Board'
 import WritingView from './components/WritingView'
 import ShareBoardModal from './components/ShareBoardModal'
 import InvitationBanner from './components/InvitationBanner'
+import SafariBanner from './components/SafariBanner'
 import './index.css'
 
 export default function App() {
@@ -36,6 +39,20 @@ export default function App() {
 
   // Track active board (default to first board)
   const [activeBoardId, setActiveBoardId] = useState(null)
+  const [creatingDefaultBoard, setCreatingDefaultBoard] = useState(false)
+
+  // Auto-create default board for new users
+  useEffect(() => {
+    if (user && !boardsLoading && boards.length === 0 && !creatingDefaultBoard) {
+      setCreatingDefaultBoard(true)
+      createBoard('My Writing').then((result) => {
+        if (result?.id) {
+          setActiveBoardId(result.id)
+        }
+        setCreatingDefaultBoard(false)
+      })
+    }
+  }, [user, boards, boardsLoading, creatingDefaultBoard, createBoard])
 
   // Set default active board when boards load
   useEffect(() => {
@@ -132,18 +149,6 @@ export default function App() {
     setView('board')
   }
 
-  if (view === 'editor') {
-    return (
-      <WritingView
-        post={editingPost}
-        defaultColumn={pendingColumn}
-        onSave={handleSave}
-        onCancel={() => setView('board')}
-        currentUser={user}
-      />
-    )
-  }
-
   const activeBoard = boards.find(b => b.id === activeBoardId)
 
   return (
@@ -178,6 +183,64 @@ export default function App() {
           />
         </main>
       </AppShell>
+      <AnimatePresence mode="wait">
+        {view === 'editor' ? (
+          <motion.div
+            key="editor"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+          >
+            <WritingView
+              post={editingPost}
+              defaultColumn={pendingColumn}
+              onSave={handleSave}
+              onCancel={() => setView('board')}
+              currentUser={user}
+            />
+          </motion.div>
+        ) : (
+          <motion.div
+            key="board"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.15 }}
+          >
+            <SafariBanner />
+            <AppShell
+              onNewIdea={() => handleNewPost('ideas')}
+              user={user}
+              boards={boards}
+              activeBoardId={activeBoardId}
+              onSelectBoard={handleSelectBoard}
+              onCreateBoard={handleCreateBoard}
+              isOwner={isOwner}
+              pendingInvitations={pendingInvitations}
+              onAcceptInvitation={handleAcceptInvitation}
+              onDeclineInvitation={handleDeclineInvitation}
+            >
+
+              <main style={{ flex: 1, padding: '32px 36px', overflow: 'hidden' }}>
+                <Board
+                  board={activeBoard}
+                  posts={posts}
+                  loading={loading}
+                  error={error}
+                  onMovePost={movePost}
+                  onDeletePost={deletePost}
+                  onNewPost={handleNewPost}
+                  onEditPost={handleEditPost}
+                  onShareBoard={handleShareBoard}
+                  isOwner={isOwner}
+                  currentUser={user}
+                />
+              </main>
+            </AppShell>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Share board modal */}
       {shareModalBoard && (
@@ -187,6 +250,9 @@ export default function App() {
           onInvite={handleInvite}
         />
       )}
+
+      {/* Vercel Web Analytics */}
+      <Analytics />
     </>
   )
 }

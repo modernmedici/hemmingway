@@ -138,6 +138,30 @@ export function useBoards() {
         }),
       ])
 
+      // Send invitation email via API
+      try {
+        const response = await fetch('/api/send-invite', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: email.trim().toLowerCase(),
+            boardName: board.name,
+            boardId: boardId,
+            inviterName: user.email?.split('@')[0] || 'Someone',
+            appUrl: window.location.origin,
+          }),
+        })
+
+        if (!response.ok) {
+          const error = await response.json()
+          console.error('Failed to send invitation email:', error)
+          // Don't throw - invitation is still created in DB
+        }
+      } catch (error) {
+        console.error('Error sending invitation email:', error)
+        // Don't throw - invitation is still created in DB
+      }
+
       return { id: invitationId }
     },
     [user, allBoards]

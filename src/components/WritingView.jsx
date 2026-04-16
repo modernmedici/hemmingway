@@ -54,14 +54,15 @@ export default function WritingView({ post, defaultColumn, onSave, onCancel, cur
     });
   }, [postId, isCollaborative, presence]);
 
-  // Check if someone else has the edit lock
+  // Check if someone else (different user) has the edit lock
   const editorPeer = useMemo(() => {
     if (!presence?.peers || !currentUser) return null;
 
-    // Find the peer who has the edit lock (field === 'body' or 'title')
+    // Find a peer who has the edit lock AND is a different user (different email)
     const editorEntry = Object.entries(presence.peers).find(
       ([peerId, peerData]) =>
         peerId !== presence.user?.id &&
+        peerData?.email !== currentUser.email &&
         (peerData?.field === 'body' || peerData?.field === 'title')
     );
 
@@ -285,7 +286,7 @@ export default function WritingView({ post, defaultColumn, onSave, onCancel, cur
   const canSave = title.trim().length > 0 && !saving;
 
   return (
-    <div ref={containerRef} className="view-enter min-h-screen bg-background flex flex-col font-sans relative">
+    <div ref={containerRef} className="min-h-screen bg-background flex flex-col font-sans relative">
       {/* Zen mode indicator */}
       {zenMode && (
         <div
@@ -318,7 +319,7 @@ export default function WritingView({ post, defaultColumn, onSave, onCancel, cur
       {!zenMode && (<div className="sticky top-0 z-10 bg-background/80 backdrop-blur-sm py-3.5 px-10 pl-[88px] flex items-center">
         <button
           onClick={handleCancel}
-          className="flex items-center gap-1.5 bg-transparent border-none cursor-pointer text-muted-foreground text-xs font-sans p-0 transition-all duration-[120ms] hover:text-foreground active:scale-95"
+          className="flex items-center gap-1.5 bg-transparent border-none cursor-pointer text-muted-foreground/70 text-xs font-sans p-0 transition-all duration-[120ms] hover:text-foreground active:scale-95"
         >
           <ArrowLeft size={14} />
           Back to Board
@@ -341,21 +342,19 @@ export default function WritingView({ post, defaultColumn, onSave, onCancel, cur
           )}
 
           {/* Metadata group: timer + word count */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-4">
             {/* Timer */}
             <span
               onClick={toggleTimer}
               onDoubleClick={resetTimer}
               title="Click to start/pause · Double-click to reset"
-              className="text-xs font-sans tabular-nums cursor-pointer transition-all duration-200 rounded px-2 py-1"
+              className="text-xs font-sans tabular-nums cursor-pointer transition-all duration-200"
               style={{
                 color: timeLeft === 0 ? 'hsl(var(--destructive))' : timerRunning ? 'hsl(var(--primary))' : 'hsl(var(--muted-foreground))',
-                background: timerRunning ? 'hsl(var(--primary) / 0.1)' : 'transparent',
               }}
             >
               {formatTime(timeLeft)}
             </span>
-            <span className="text-xs text-muted-foreground/40">·</span>
             {/* Word count */}
             <span
               className="text-xs font-sans tabular-nums transition-all duration-200 ease-in-out"
@@ -374,7 +373,7 @@ export default function WritingView({ post, defaultColumn, onSave, onCancel, cur
             <button
               onClick={enterZenMode}
               title="Fullscreen (⌘⇧F)"
-              className="flex items-center gap-1 bg-secondary/50 border-none cursor-pointer text-muted-foreground text-xs font-sans py-1.5 px-2 transition-all duration-[120ms] rounded-md hover:bg-secondary hover:text-foreground active:scale-95"
+              className="flex items-center gap-1 bg-transparent border-none cursor-pointer text-muted-foreground text-xs font-sans py-1.5 px-2 transition-all duration-[120ms] hover:text-foreground active:scale-95"
             >
               <Maximize2 size={14} />
             </button>
@@ -382,10 +381,17 @@ export default function WritingView({ post, defaultColumn, onSave, onCancel, cur
             <button
               onClick={handleSave}
               disabled={!canSave}
-              className="text-xs font-sans font-medium border-none rounded-md py-1.5 px-3.5 transition-all duration-[120ms] flex items-center gap-1 active:scale-95 disabled:cursor-not-allowed"
+              className="text-xs font-sans font-medium border-none rounded-md py-1.5 px-3.5 transition-all duration-150 flex items-center gap-1 active:scale-95 disabled:cursor-not-allowed"
               style={{
-                background: canSave ? 'hsl(var(--primary))' : 'hsl(var(--secondary))',
-                color: canSave ? 'hsl(var(--primary-foreground))' : 'hsl(var(--muted-foreground))',
+                background: canSave ? 'hsl(var(--card))' : 'hsl(var(--secondary))',
+                color: canSave ? 'hsl(var(--foreground))' : 'hsl(var(--muted-foreground))',
+                boxShadow: canSave ? '0 1px 3px hsl(var(--foreground) / 0.04)' : 'none',
+              }}
+              onMouseEnter={(e) => {
+                if (canSave) e.currentTarget.style.boxShadow = '0 2px 6px hsl(var(--foreground) / 0.05)';
+              }}
+              onMouseLeave={(e) => {
+                if (canSave) e.currentTarget.style.boxShadow = '0 1px 3px hsl(var(--foreground) / 0.04)';
               }}
             >
               {saving && <Loader2 size={12} className="animate-spin" />}
