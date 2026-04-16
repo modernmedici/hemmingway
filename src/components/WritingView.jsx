@@ -54,14 +54,15 @@ export default function WritingView({ post, defaultColumn, onSave, onCancel, cur
     });
   }, [postId, isCollaborative, presence]);
 
-  // Check if someone else has the edit lock
+  // Check if someone else (different user) has the edit lock
   const editorPeer = useMemo(() => {
     if (!presence?.peers || !currentUser) return null;
 
-    // Find the peer who has the edit lock (field === 'body' or 'title')
+    // Find a peer who has the edit lock AND is a different user (different email)
     const editorEntry = Object.entries(presence.peers).find(
       ([peerId, peerData]) =>
         peerId !== presence.user?.id &&
+        peerData?.email !== currentUser.email &&
         (peerData?.field === 'body' || peerData?.field === 'title')
     );
 
