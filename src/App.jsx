@@ -10,6 +10,7 @@ import Board from './components/Board'
 import WritingView from './components/WritingView'
 import ShareBoardModal from './components/ShareBoardModal'
 import InvitationBanner from './components/InvitationBanner'
+import SafariBanner from './components/SafariBanner'
 import './index.css'
 
 export default function App() {
@@ -177,6 +178,7 @@ export default function App() {
             exit={{ opacity: 0 }}
             transition={{ duration: 0.15 }}
           >
+            <SafariBanner />
             <AppShell
               onNewIdea={() => handleNewPost('ideas')}
               user={user}
