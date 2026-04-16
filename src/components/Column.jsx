@@ -2,7 +2,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { FileText } from 'lucide-react';
 import PostCard from './PostCard';
 
-export default function Column({ column, posts, onMovePost, onDeletePost, onNewPost, onEditPost, showAttribution }) {
+export default function Column({ column, posts, onMovePost, onDeletePost, onNewPost, onEditPost, showAttribution, boardName }) {
   return (
     <div
       className="flex flex-col min-w-0 bg-card rounded-lg p-5"
@@ -81,6 +81,7 @@ export default function Column({ column, posts, onMovePost, onDeletePost, onNewP
               onDelete={onDeletePost}
               onEdit={onEditPost}
               showAttribution={showAttribution}
+              boardName={boardName}
               columnId={column.id}
             />
           ))}

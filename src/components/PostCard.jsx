@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { MoreHorizontal, Trash2 } from 'lucide-react';
+import { MoreHorizontal, Trash2, Download } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns/formatDistanceToNow';
 import { COLUMN_IDS, COLUMN_LABELS } from '../lib/constants';
+import { downloadMarkdown } from '../lib/markdown-export';
 
 const wordCount = (text) => {
   const trimmed = text?.trim();
@@ -19,7 +20,7 @@ function getInitials(email) {
   return email.substring(0, 2).toUpperCase()
 }
 
-export default function PostCard({ post, onMove, onDelete, onEdit, showAttribution, columnId }) {
+export default function PostCard({ post, onMove, onDelete, onEdit, showAttribution, boardName, columnId }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [hovered, setHovered] = useState(false);
@@ -37,6 +38,12 @@ export default function PostCard({ post, onMove, onDelete, onEdit, showAttributi
   const handleMove = (e, targetCol) => {
     e.stopPropagation();
     onMove(post.id, targetCol);
+    setMenuOpen(false);
+  };
+
+  const handleDownload = (e) => {
+    e.stopPropagation();
+    downloadMarkdown(post, boardName);
     setMenuOpen(false);
   };
 
@@ -94,6 +101,14 @@ export default function PostCard({ post, onMove, onDelete, onEdit, showAttributi
                 Move to {COLUMN_LABELS[col]}
               </button>
             ))}
+
+            <button
+              onClick={handleDownload}
+              className="flex items-center w-full px-2 py-1.5 bg-transparent border-none cursor-pointer text-foreground rounded-sm text-xs font-sans text-left transition-colors duration-100 hover:bg-accent"
+            >
+              <Download size={12} className="mr-1.5" />
+              Download .md
+            </button>
 
             <div className="h-px bg-border my-1" />
 

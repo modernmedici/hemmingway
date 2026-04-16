@@ -153,6 +153,36 @@ export default function App() {
 
   return (
     <>
+      <AppShell
+        onNewIdea={() => handleNewPost('ideas')}
+        user={user}
+        boards={boards}
+        activeBoardId={activeBoardId}
+        onSelectBoard={handleSelectBoard}
+        onCreateBoard={handleCreateBoard}
+        isOwner={isOwner}
+        pendingInvitations={pendingInvitations}
+        onAcceptInvitation={handleAcceptInvitation}
+        onDeclineInvitation={handleDeclineInvitation}
+        posts={posts}
+      >
+
+        <main style={{ flex: 1, padding: '32px 36px', overflow: 'hidden' }}>
+          <Board
+            board={activeBoard}
+            posts={posts}
+            loading={loading}
+            error={error}
+            onMovePost={movePost}
+            onDeletePost={deletePost}
+            onNewPost={handleNewPost}
+            onEditPost={handleEditPost}
+            onShareBoard={handleShareBoard}
+            isOwner={isOwner}
+            currentUser={user}
+          />
+        </main>
+      </AppShell>
       <AnimatePresence mode="wait">
         {view === 'editor' ? (
           <motion.div

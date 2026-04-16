@@ -1,7 +1,8 @@
 import { useState } from 'react'
-import { BookOpen, LogOut, Mail, Check, X, Loader2 } from 'lucide-react'
+import { BookOpen, LogOut, Mail, Check, X, Loader2, Download } from 'lucide-react'
 import db from '../lib/db'
 import BoardSwitcher from './BoardSwitcher'
+import { downloadBulkMarkdown } from '../lib/markdown-export'
 
 export default function AppShell({
   children,
@@ -14,7 +15,8 @@ export default function AppShell({
   isOwner,
   pendingInvitations = [],
   onAcceptInvitation,
-  onDeclineInvitation
+  onDeclineInvitation,
+  posts = []
 }) {
   const [isHovering, setIsHovering] = useState(false)
   const [sidebarExpanded, setSidebarExpanded] = useState(false)
@@ -133,7 +135,7 @@ export default function AppShell({
         )}
 
         {/* Nav */}
-        <nav className="flex-1">
+        <nav className="flex-1 space-y-2">
           <button
             onClick={onNewIdea}
             className={`w-full flex items-center rounded-md bg-card cursor-pointer text-xs font-medium text-foreground transition-all duration-150 hover:shadow-[0_2px_6px_hsl(var(--foreground)/0.05)] active:scale-[0.98] ${sidebarExpanded ? 'justify-center gap-1.5 px-2.5 py-2' : 'justify-center py-2'}`}
@@ -151,6 +153,32 @@ export default function AppShell({
               '+'
             )}
           </button>
+
+          {/* Export Published Posts button - only show when expanded */}
+          {sidebarExpanded && (
+            <button
+              onClick={() => {
+                const activeBoard = boards.find(b => b.id === activeBoardId);
+                if (!activeBoard) return;
+
+                const publishedPosts = posts.filter(p => p.column === 'finalized');
+                if (publishedPosts.length === 0) {
+                  alert('No published posts to export.');
+                  return;
+                }
+
+                downloadBulkMarkdown(publishedPosts, activeBoard.name);
+              }}
+              className="w-full flex items-center justify-center gap-1.5 px-2.5 py-2 rounded-md bg-card cursor-pointer text-xs font-medium text-foreground transition-all duration-150 hover:shadow-[0_2px_6px_hsl(var(--foreground)/0.05)] active:scale-[0.98]"
+              style={{
+                boxShadow: '0 1px 3px hsl(var(--foreground) / 0.04)',
+              }}
+              title="Export Published Posts"
+            >
+              <Download size={14} />
+              <span className="font-serif">Export Published Posts</span>
+            </button>
+          )}
         </nav>
 
         {/* User info & sign out */}
