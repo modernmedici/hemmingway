@@ -20,8 +20,7 @@ function getInitials(email) {
   return email.substring(0, 2).toUpperCase()
 }
 
-export default function PostCard({ post, onMove, onDelete, onEdit, showAttribution, boardName }) {
-export default function PostCard({ post, onMove, onDelete, onEdit, showAttribution, columnId }) {
+export default function PostCard({ post, onMove, onDelete, onEdit, showAttribution, boardName, columnId }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [hovered, setHovered] = useState(false);
