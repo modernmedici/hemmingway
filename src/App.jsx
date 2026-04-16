@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import { useKanban } from './hooks/useKanban'
 import { useBoards } from './hooks/useBoards'
 import db from './lib/db'
@@ -132,51 +133,67 @@ export default function App() {
     setView('board')
   }
 
-  if (view === 'editor') {
-    return (
-      <WritingView
-        post={editingPost}
-        defaultColumn={pendingColumn}
-        onSave={handleSave}
-        onCancel={() => setView('board')}
-        currentUser={user}
-      />
-    )
-  }
-
   const activeBoard = boards.find(b => b.id === activeBoardId)
 
   return (
     <>
-      <AppShell
-        onNewIdea={() => handleNewPost('ideas')}
-        user={user}
-        boards={boards}
-        activeBoardId={activeBoardId}
-        onSelectBoard={handleSelectBoard}
-        onCreateBoard={handleCreateBoard}
-        isOwner={isOwner}
-        pendingInvitations={pendingInvitations}
-        onAcceptInvitation={handleAcceptInvitation}
-        onDeclineInvitation={handleDeclineInvitation}
-      >
+      <AnimatePresence mode="wait">
+        {view === 'editor' ? (
+          <motion.div
+            key="editor"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+          >
+            <WritingView
+              post={editingPost}
+              defaultColumn={pendingColumn}
+              onSave={handleSave}
+              onCancel={() => setView('board')}
+              currentUser={user}
+            />
+          </motion.div>
+        ) : (
+          <motion.div
+            key="board"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.15 }}
+          >
+            <AppShell
+              onNewIdea={() => handleNewPost('ideas')}
+              user={user}
+              boards={boards}
+              activeBoardId={activeBoardId}
+              onSelectBoard={handleSelectBoard}
+              onCreateBoard={handleCreateBoard}
+              isOwner={isOwner}
+              pendingInvitations={pendingInvitations}
+              onAcceptInvitation={handleAcceptInvitation}
+              onDeclineInvitation={handleDeclineInvitation}
+            >
 
-        <main style={{ flex: 1, padding: '32px 36px', overflow: 'hidden' }}>
-          <Board
-            board={activeBoard}
-            posts={posts}
-            loading={loading}
-            error={error}
-            onMovePost={movePost}
-            onDeletePost={deletePost}
-            onNewPost={handleNewPost}
-            onEditPost={handleEditPost}
-            onShareBoard={handleShareBoard}
-            isOwner={isOwner}
-            currentUser={user}
-          />
-        </main>
-      </AppShell>
+              <main style={{ flex: 1, padding: '32px 36px', overflow: 'hidden' }}>
+                <Board
+                  board={activeBoard}
+                  posts={posts}
+                  loading={loading}
+                  error={error}
+                  onMovePost={movePost}
+                  onDeletePost={deletePost}
+                  onNewPost={handleNewPost}
+                  onEditPost={handleEditPost}
+                  onShareBoard={handleShareBoard}
+                  isOwner={isOwner}
+                  currentUser={user}
+                />
+              </main>
+            </AppShell>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Share board modal */}
       {shareModalBoard && (
