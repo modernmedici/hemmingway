@@ -286,7 +286,7 @@ export default function WritingView({ post, defaultColumn, onSave, onCancel, cur
   const canSave = title.trim().length > 0 && !saving;
 
   return (
-    <div ref={containerRef} className="min-h-screen bg-background flex flex-col font-sans relative">
+    <div ref={containerRef} className="fixed inset-0 bg-background flex flex-col font-sans overflow-auto">
       {/* Zen mode indicator */}
       {zenMode && (
         <div
