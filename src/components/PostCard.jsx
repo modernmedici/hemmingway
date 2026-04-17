@@ -73,7 +73,6 @@ export default function PostCard({ post, onMove, onDelete, onEdit, showAttributi
     <motion.div
       ref={setNodeRef}
       {...attributes}
-      {...listeners}
       layout
       variants={{
         hidden: { opacity: 0, y: 8 },
@@ -165,8 +164,11 @@ export default function PostCard({ post, onMove, onDelete, onEdit, showAttributi
         )}
       </div>
 
-      {/* Title (hero element) */}
-      <p className="text-base font-bold font-serif text-foreground leading-[1.4] mb-2 pr-6">
+      {/* Title (hero element) - also drag handle */}
+      <p
+        {...listeners}
+        className="text-base font-bold font-serif text-foreground leading-[1.4] mb-2 pr-6 cursor-grab active:cursor-grabbing"
+      >
         {post.title}
       </p>
 
