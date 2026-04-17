@@ -139,14 +139,16 @@ export default function App() {
     setView('editor')
   }
 
-  const handleSave = (title, body, column) => {
+  const handleSave = (title, body, column, closeAfterSave = true) => {
     if (editingPost) {
       updatePost(editingPost.id, { title, body })
       if (column !== editingPost.column) movePost(editingPost.id, column)
     } else {
       createPost(title, body, column)
     }
-    setView('board')
+    if (closeAfterSave) {
+      setView('board')
+    }
   }
 
   const activeBoard = boards.find(b => b.id === activeBoardId)
