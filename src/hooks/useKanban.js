@@ -78,7 +78,6 @@ export function useKanban(boardId) {
         db.tx.posts[p.id].update({
           column: targetColumn,
           order: idx,
-          updatedAt: now,
         })
       )
     })
@@ -90,7 +89,6 @@ export function useKanban(boardId) {
         transactions.push(
           db.tx.posts[p.id].update({
             order: idx,
-            updatedAt: now,
           })
         )
       })
