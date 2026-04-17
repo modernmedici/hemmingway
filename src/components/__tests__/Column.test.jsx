@@ -48,22 +48,22 @@ describe('Column — empty state', () => {
   it('shows empty state when no posts in Ideas column', () => {
     render(<Column {...mockProps} column={{ id: 'ideas', label: 'Scratchpad' }} posts={[]} />);
 
-    expect(screen.getByText(/no scratchpad yet/i)).toBeInTheDocument();
-    expect(screen.getByText(/click "\+ new idea" to start writing/i)).toBeInTheDocument();
+    expect(screen.getByText(/start with a rough idea/i)).toBeInTheDocument();
+    expect(screen.getByText(/just a title is enough/i)).toBeInTheDocument();
   });
 
   it('shows empty state when no posts in Drafts column', () => {
     render(<Column {...mockProps} column={{ id: 'drafts', label: 'Drafts' }} posts={[]} />);
 
-    expect(screen.getByText(/no drafts yet/i)).toBeInTheDocument();
-    expect(screen.getByText(/move ideas here to develop them/i)).toBeInTheDocument();
+    expect(screen.getByText(/flesh out your thoughts/i)).toBeInTheDocument();
+    expect(screen.getByText(/move ideas here when you're ready to develop them/i)).toBeInTheDocument();
   });
 
   it('shows empty state when no posts in Finalized column', () => {
     render(<Column {...mockProps} column={{ id: 'finalized', label: 'Published' }} posts={[]} />);
 
-    expect(screen.getByText(/no published yet/i)).toBeInTheDocument();
-    expect(screen.getByText(/publish your finished work here/i)).toBeInTheDocument();
+    expect(screen.getByText(/your finished work lives here/i)).toBeInTheDocument();
+    expect(screen.getByText(/posts you're proud to share/i)).toBeInTheDocument();
   });
 
   it('renders FileText icon in empty state', () => {

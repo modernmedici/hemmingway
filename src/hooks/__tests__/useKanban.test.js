@@ -33,6 +33,8 @@ const mockUser = {
   email: 'test@example.com',
 };
 
+const mockBoardId = 'board-xyz789';
+
 const mockPost = {
   id: 'post-abc123',
   title: 'Test post',
@@ -42,6 +44,14 @@ const mockPost = {
   updatedAt: new Date('2026-01-01T00:00:00.000Z'),
 };
 
+const mockBoard = {
+  id: mockBoardId,
+  name: 'Test Board',
+  posts: [mockPost],
+  members: [],
+  owner: mockUser,
+};
+
 function setupInstantDB(overrides = {}) {
   const defaults = {
     useAuth: () => ({ user: mockUser }),
@@ -49,10 +59,7 @@ function setupInstantDB(overrides = {}) {
       isLoading: false,
       error: null,
       data: {
-        $users: [{
-          id: mockUser.id,
-          posts: [mockPost],
-        }],
+        boards: [mockBoard],
       },
     }),
     transact: vi.fn().mockResolvedValue(undefined),
@@ -69,10 +76,11 @@ beforeEach(() => {
 describe('useKanban — loading', () => {
   it('loads posts from InstantDB on mount', async () => {
     setupInstantDB();
-    const { result } = renderHook(() => useKanban());
+    const { result } = renderHook(() => useKanban(mockBoardId));
 
     expect(result.current.loading).toBe(false);
     expect(result.current.posts).toEqual([mockPost]);
+    expect(result.current.board).toEqual(mockBoard);
   });
 
   it('shows loading=true while InstantDB query is loading', () => {
@@ -83,7 +91,7 @@ describe('useKanban — loading', () => {
         data: null,
       }),
     });
-    const { result } = renderHook(() => useKanban());
+    const { result } = renderHook(() => useKanban(mockBoardId));
 
     expect(result.current.loading).toBe(true);
     expect(result.current.posts).toEqual([]);
@@ -97,7 +105,7 @@ describe('useKanban — loading', () => {
         data: null,
       }),
     });
-    const { result } = renderHook(() => useKanban());
+    const { result } = renderHook(() => useKanban(mockBoardId));
 
     expect(result.current.loading).toBe(false);
     expect(result.current.error).toBe('Network error');
@@ -110,14 +118,14 @@ describe('useKanban — loading', () => {
         isLoading: false,
         error: null,
         data: {
-          $users: [{
-            id: mockUser.id,
+          boards: [{
+            ...mockBoard,
             posts: [],
           }],
         },
       }),
     });
-    const { result } = renderHook(() => useKanban());
+    const { result } = renderHook(() => useKanban(mockBoardId));
 
     expect(result.current.posts).toEqual([]);
   });
@@ -131,7 +139,7 @@ describe('useKanban — loading', () => {
         data: null,
       }),
     });
-    const { result } = renderHook(() => useKanban());
+    const { result } = renderHook(() => useKanban(mockBoardId));
 
     expect(result.current.posts).toEqual([]);
   });
@@ -140,7 +148,7 @@ describe('useKanban — loading', () => {
 describe('useKanban — createPost', () => {
   it('creates a post with title, body, and column', async () => {
     setupInstantDB();
-    const { result } = renderHook(() => useKanban());
+    const { result } = renderHook(() => useKanban(mockBoardId));
 
     await act(async () => {
       const created = await result.current.createPost('My idea', 'body text', 'ideas');
@@ -156,11 +164,12 @@ describe('useKanban — createPost', () => {
     expect(txArray[0].data.column).toBe('ideas');
     expect(txArray[1].type).toBe('link');
     expect(txArray[1].link.creator).toBe(mockUser.id);
+    expect(txArray[1].link.board).toBe(mockBoardId);
   });
 
   it('trims title and body whitespace', async () => {
     setupInstantDB();
-    const { result } = renderHook(() => useKanban());
+    const { result } = renderHook(() => useKanban(mockBoardId));
 
     await act(async () => {
       await result.current.createPost('  padded  ', '  body  ');
@@ -173,7 +182,7 @@ describe('useKanban — createPost', () => {
 
   it('defaults to "ideas" column when not specified', async () => {
     setupInstantDB();
-    const { result } = renderHook(() => useKanban());
+    const { result } = renderHook(() => useKanban(mockBoardId));
 
     await act(async () => {
       await result.current.createPost('Title', 'Body');
@@ -187,7 +196,7 @@ describe('useKanban — createPost', () => {
     setupInstantDB({
       useAuth: () => ({ user: null }),
     });
-    const { result } = renderHook(() => useKanban());
+    const { result } = renderHook(() => useKanban(mockBoardId));
 
     await act(async () => {
       const created = await result.current.createPost('Title', 'Body');
@@ -199,7 +208,7 @@ describe('useKanban — createPost', () => {
 
   it('sets createdAt and updatedAt timestamps', async () => {
     setupInstantDB();
-    const { result } = renderHook(() => useKanban());
+    const { result } = renderHook(() => useKanban(mockBoardId));
     const beforeCreate = Date.now();
 
     await act(async () => {
@@ -219,7 +228,7 @@ describe('useKanban — createPost', () => {
 describe('useKanban — updatePost', () => {
   it('updates a post with new data', async () => {
     setupInstantDB();
-    const { result } = renderHook(() => useKanban());
+    const { result } = renderHook(() => useKanban(mockBoardId));
 
     await act(async () => {
       await result.current.updatePost('post-abc123', { title: 'Updated title' });
@@ -235,7 +244,7 @@ describe('useKanban — updatePost', () => {
 
   it('can update multiple fields at once', async () => {
     setupInstantDB();
-    const { result } = renderHook(() => useKanban());
+    const { result } = renderHook(() => useKanban(mockBoardId));
 
     await act(async () => {
       await result.current.updatePost('post-abc123', {
@@ -253,7 +262,7 @@ describe('useKanban — updatePost', () => {
 
   it('always updates updatedAt timestamp', async () => {
     setupInstantDB();
-    const { result } = renderHook(() => useKanban());
+    const { result } = renderHook(() => useKanban(mockBoardId));
     const beforeUpdate = Date.now();
 
     await act(async () => {
@@ -270,7 +279,7 @@ describe('useKanban — updatePost', () => {
 describe('useKanban — movePost', () => {
   it('moves a post to a new column', async () => {
     setupInstantDB();
-    const { result } = renderHook(() => useKanban());
+    const { result } = renderHook(() => useKanban(mockBoardId));
 
     await act(async () => {
       await result.current.movePost('post-abc123', 'drafts');
@@ -286,7 +295,7 @@ describe('useKanban — movePost', () => {
 
   it('can move to any column (ideas, drafts, finalized)', async () => {
     setupInstantDB();
-    const { result } = renderHook(() => useKanban());
+    const { result } = renderHook(() => useKanban(mockBoardId));
 
     for (const column of ['ideas', 'drafts', 'finalized']) {
       await act(async () => {
@@ -302,7 +311,7 @@ describe('useKanban — movePost', () => {
 describe('useKanban — deletePost', () => {
   it('deletes a post by id', async () => {
     setupInstantDB();
-    const { result } = renderHook(() => useKanban());
+    const { result } = renderHook(() => useKanban(mockBoardId));
 
     await act(async () => {
       await result.current.deletePost('post-abc123');
