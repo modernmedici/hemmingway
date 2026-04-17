@@ -74,12 +74,17 @@ export function useKanban(boardId) {
 
     // Recalculate orders for all posts in target column
     targetPosts.forEach((p, idx) => {
-      transactions.push(
-        db.tx.posts[p.id].update({
-          column: targetColumn,
-          order: idx,
-        })
-      )
+      const update = {
+        column: targetColumn,
+        order: idx,
+      }
+
+      // Column change = progress, update timestamp for the moved card only
+      if (p.id === postId && post.column !== targetColumn) {
+        update.updatedAt = now
+      }
+
+      transactions.push(db.tx.posts[p.id].update(update))
     })
 
     // If source column changed, reorder source column too
