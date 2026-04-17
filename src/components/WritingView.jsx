@@ -271,6 +271,25 @@ export default function WritingView({ post, defaultColumn, onSave, onCancel, cur
     return () => window.removeEventListener('keydown', handler);
   }, [handleCancel, zenMode, defaultColumn, enterZenMode, exitZenMode]);
 
+  // Auto-save on browser navigation (back button, refresh, close tab)
+  useEffect(() => {
+    const handler = (e) => {
+      const { title, body, onSave } = latestRef.current;
+      const dirty = title !== originalTitle || body !== originalBody;
+
+      if (dirty && title.trim()) {
+        // Trigger auto-save
+        onSave(title.trim(), body.trim(), defaultColumn);
+        // Show browser warning if there are unsaved changes
+        e.preventDefault();
+        e.returnValue = '';
+      }
+    };
+
+    window.addEventListener('beforeunload', handler);
+    return () => window.removeEventListener('beforeunload', handler);
+  }, [originalTitle, originalBody, defaultColumn]);
+
   const handleSave = async () => {
     if (!title.trim() || saving) return;
     setSaving(true);
@@ -409,7 +428,7 @@ export default function WritingView({ post, defaultColumn, onSave, onCancel, cur
           paddingLeft: '32px',
           paddingRight: '32px',
           paddingTop: zenMode ? '128px' : '64px',
-          paddingBottom: '48px',
+          paddingBottom: '50vh',
         }}
       >
         {/* Edit lock banner */}
@@ -421,6 +440,12 @@ export default function WritingView({ post, defaultColumn, onSave, onCancel, cur
           ref={titleRef}
           value={title}
           onChange={e => { setTitle(e.target.value); autoResizeTitle(); }}
+          onKeyDown={e => {
+            if (e.key === 'Enter') {
+              e.preventDefault();
+              bodyRef.current?.focus();
+            }
+          }}
           placeholder={isReadOnly ? "Read only - someone else is editing" : "Essay Title"}
           rows={1}
           readOnly={isReadOnly}
