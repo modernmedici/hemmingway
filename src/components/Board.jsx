@@ -121,7 +121,7 @@ export default function Board({
   }
   if (loading) {
     return (
-      <div className="grid grid-cols-3 gap-5 h-full">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-5 h-full">
         {COLUMNS.map(col => (
           <div key={col.id} className="flex flex-col gap-2">
             <div className="h-5 w-20 rounded-md bg-muted mb-1" />
@@ -189,7 +189,7 @@ export default function Board({
         onDragCancel={handleDragCancel}
         accessibility={{ announcements }}
       >
-        <div className="grid grid-cols-3 gap-5 flex-1">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5 flex-1">
           {COLUMNS.map((column) => (
             <Column
               key={column.id}
