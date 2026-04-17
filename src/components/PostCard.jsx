@@ -91,12 +91,14 @@ export default function PostCard({ post, onMove, onDelete, onEdit, showAttributi
       style={style}
     >
       {/* Three-dot menu (top-right, absolute) */}
-      <div className="absolute top-3 right-3">
+      <div className="absolute top-0 right-0">
         <button
           onClick={e => { e.stopPropagation(); setMenuOpen(m => !m); }}
-          className="bg-transparent border-none cursor-pointer p-0.5 leading-none transition-colors duration-100"
+          className="bg-transparent border-none cursor-pointer leading-none transition-colors duration-100 flex items-center justify-center"
           style={{
             color: hovered ? 'hsl(var(--muted-foreground))' : 'transparent',
+            width: '44px',
+            height: '44px',
           }}
         >
           <MoreHorizontal size={14} />
