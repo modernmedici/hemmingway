@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import PostCard from '../PostCard';
+import { DndWrapper } from '../../test/dnd-wrapper';
 
 const mockPost = {
   id: '1',
@@ -23,7 +24,7 @@ beforeEach(() => {
 
 describe('PostCard — word count', () => {
   it('displays correct word count for title + body', () => {
-    render(<PostCard post={mockPost} {...mockHandlers} />);
+    render(<DndWrapper><PostCard post={mockPost} {...mockHandlers} /></DndWrapper>);
 
     // "Test Post" (2) + "This is a test body with some content." (8) = 10 words
     expect(screen.getByText('10 words')).toBeInTheDocument();

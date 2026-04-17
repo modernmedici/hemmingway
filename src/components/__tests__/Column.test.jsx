@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import Column from '../Column';
+import { DndWrapper } from '../../test/dnd-wrapper';
 
 const mockColumn = { id: 'ideas', label: 'Scratchpad' };
 
@@ -24,7 +25,7 @@ beforeEach(() => {
 
 describe('Column — header', () => {
   it('renders column label', () => {
-    render(<Column {...mockProps} />);
+    render(<DndWrapper><Column {...mockProps} /></DndWrapper>);
 
     expect(screen.getByText('Scratchpad')).toBeInTheDocument();
   });

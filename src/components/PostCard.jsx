@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { MoreHorizontal, Trash2, Download } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns/formatDistanceToNow';
+import { useDraggable } from '@dnd-kit/core';
 import { COLUMN_IDS, COLUMN_LABELS } from '../lib/constants';
 import { downloadMarkdown } from '../lib/markdown-export';
 
@@ -26,6 +27,11 @@ export default function PostCard({ post, onMove, onDelete, onEdit, showAttributi
   const [hovered, setHovered] = useState(false);
   const totalWords = wordCount((post.title ?? '') + ' ' + (post.body ?? ''));
 
+  const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
+    id: post.id,
+    data: { post, columnId },
+  });
+
   const handleDelete = (e) => {
     e.stopPropagation();
     if (confirmDelete) {
@@ -49,6 +55,9 @@ export default function PostCard({ post, onMove, onDelete, onEdit, showAttributi
 
   return (
     <motion.div
+      ref={setNodeRef}
+      {...attributes}
+      {...listeners}
       layout
       variants={{
         hidden: { opacity: 0, y: 8 },
@@ -59,13 +68,14 @@ export default function PostCard({ post, onMove, onDelete, onEdit, showAttributi
       exit={{ opacity: 0, y: -8 }}
       whileTap={{ scale: 0.98 }}
       transition={{ duration: 0.18 }}
-      onClick={() => { if (menuOpen) return; onEdit(post); }}
+      onClick={() => { if (menuOpen || isDragging) return; onEdit(post); }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => { setHovered(false); setConfirmDelete(false); setMenuOpen(false); }}
       className="rounded-md bg-card p-3.5 cursor-pointer relative transition-shadow duration-150"
       style={{
         border: '1px solid hsl(var(--border) / 0.5)',
         boxShadow: hovered ? '0 2px 8px hsl(var(--foreground) / 0.06)' : '0 1px 3px hsl(var(--foreground) / 0.04)',
+        opacity: isDragging ? 0.3 : 1,
       }}
     >
       {/* Three-dot menu (top-right, absolute) */}

@@ -1,14 +1,28 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { FileText } from 'lucide-react';
+import { useDroppable } from '@dnd-kit/core';
 import PostCard from './PostCard';
 
 export default function Column({ column, posts, onMovePost, onDeletePost, onNewPost, onEditPost, showAttribution, boardName }) {
+  const { setNodeRef, isOver } = useDroppable({
+    id: column.id,
+  });
+
   return (
     <div
+      ref={setNodeRef}
       className="flex flex-col min-w-0 bg-card rounded-lg p-5"
       style={{
-        border: '1px solid hsl(var(--border) / 0.5)',
-        boxShadow: '0 1px 2px hsl(var(--foreground) / 0.03)',
+        border: isOver
+          ? '1.5px solid hsl(var(--primary) / 0.4)'
+          : '1px solid hsl(var(--border) / 0.5)',
+        backgroundColor: isOver
+          ? 'hsl(var(--accent) / 0.15)'
+          : undefined,
+        boxShadow: isOver
+          ? '0 0 0 3px hsl(var(--primary) / 0.08)'
+          : '0 1px 2px hsl(var(--foreground) / 0.03)',
+        transition: 'border 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease',
       }}
     >
       {/* Header */}
