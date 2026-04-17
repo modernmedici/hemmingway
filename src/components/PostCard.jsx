@@ -89,9 +89,10 @@ export default function PostCard({ post, onMove, onDelete, onEdit, showAttributi
       style={style}
     >
       {/* Three-dot menu (top-right, absolute) */}
-      <div className="absolute top-0 right-0">
+      <div className="absolute top-0 right-0" style={{ touchAction: 'auto' }}>
         <button
           onClick={e => { e.stopPropagation(); setMenuOpen(m => !m); }}
+          onPointerDown={e => e.stopPropagation()}
           className="bg-transparent border-none cursor-pointer leading-none transition-colors duration-100 flex items-center justify-center"
           style={{
             color: hovered ? 'hsl(var(--muted-foreground))' : 'transparent',
