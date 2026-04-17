@@ -36,6 +36,7 @@ export default function Board({
   currentUser
 }) {
   const [activePost, setActivePost] = useState(null);
+  const [dragError, setDragError] = useState(null);
 
   const pointerSensor = useSensor(PointerSensor, {
     activationConstraint: {
@@ -74,9 +75,10 @@ export default function Board({
     setActivePost({ post, columnId });
   }
 
-  function handleDragEnd(event) {
+  async function handleDragEnd(event) {
     const { active, over } = event;
     setActivePost(null);
+    setDragError(null);
 
     if (!over) return;
 
@@ -113,7 +115,12 @@ export default function Board({
       if (oldIndex === targetIndex) return;
     }
 
-    onMovePost(activeId, targetColumn, targetIndex);
+    try {
+      await onMovePost(activeId, targetColumn, targetIndex);
+    } catch (error) {
+      setDragError(error.message || 'Failed to move card');
+      setTimeout(() => setDragError(null), 3000);
+    }
   }
 
   function handleDragCancel() {
@@ -148,6 +155,16 @@ export default function Board({
 
   return (
     <div className="flex flex-col h-full">
+      {/* Error toast */}
+      {dragError && (
+        <div
+          className="fixed top-4 left-1/2 -translate-x-1/2 z-50 px-4 py-2 rounded-md bg-destructive text-white text-sm font-sans shadow-lg"
+          style={{ animation: 'fadeIn 0.2s ease-out' }}
+        >
+          {dragError}
+        </div>
+      )}
+
       {/* Board header */}
       {board && (
         <div className="flex items-center justify-between mb-6">

@@ -104,7 +104,7 @@ describe('WritingView — save functionality', () => {
     fireEvent.click(saveButton);
 
     await waitFor(() => {
-      expect(mockOnSave).toHaveBeenCalledWith('Test Post', 'This is the body text.', 'ideas');
+      expect(mockOnSave).toHaveBeenCalledWith('Test Post', 'This is the body text.', 'ideas', false);
     });
   });
 
@@ -122,7 +122,7 @@ describe('WritingView — save functionality', () => {
     fireEvent.click(screen.getByRole('button', { name: /save/i }));
 
     await waitFor(() => {
-      expect(mockOnSave).toHaveBeenCalledWith('Title with spaces', 'Body with spaces', 'drafts');
+      expect(mockOnSave).toHaveBeenCalledWith('Title with spaces', 'Body with spaces', 'drafts', false);
     });
   });
 
@@ -188,7 +188,7 @@ describe('WritingView — cancel/navigation', () => {
     fireEvent.click(screen.getByRole('button', { name: /back to board/i }));
 
     await waitFor(() => {
-      expect(mockOnSave).toHaveBeenCalledWith('Modified Title', 'This is the body text.', 'ideas');
+      expect(mockOnSave).toHaveBeenCalledWith('Modified Title', 'This is the body text.', 'ideas', false);
       expect(mockOnCancel).toHaveBeenCalledOnce();
     });
   });
@@ -229,7 +229,7 @@ describe('WritingView — keyboard shortcuts', () => {
     fireEvent.keyDown(window, { key: 'Enter', metaKey: true });
 
     await waitFor(() => {
-      expect(mockOnSave).toHaveBeenCalledWith('Test Post', 'This is the body text.', 'ideas');
+      expect(mockOnSave).toHaveBeenCalledWith('Test Post', 'This is the body text.', 'ideas', true);
     });
   });
 
@@ -240,7 +240,7 @@ describe('WritingView — keyboard shortcuts', () => {
     fireEvent.keyDown(window, { key: 'Enter', ctrlKey: true });
 
     await waitFor(() => {
-      expect(mockOnSave).toHaveBeenCalledWith('Test Post', 'This is the body text.', 'ideas');
+      expect(mockOnSave).toHaveBeenCalledWith('Test Post', 'This is the body text.', 'ideas', true);
     });
   });
 
