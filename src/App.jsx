@@ -193,20 +193,22 @@ export default function App() {
               posts={posts}
             >
 
-              <main style={{ flex: 1, padding: '32px 36px', overflow: 'hidden' }}>
-                <Board
-                  board={activeBoard}
-                  posts={posts}
-                  loading={loading}
-                  error={error}
-                  onMovePost={movePost}
-                  onDeletePost={deletePost}
-                  onNewPost={handleNewPost}
-                  onEditPost={handleEditPost}
-                  onShareBoard={handleShareBoard}
-                  isOwner={isOwner}
-                  currentUser={user}
-                />
+              <main className="flex-1 overflow-hidden flex items-start justify-center" style={{ padding: '32px 36px' }}>
+                <div className="w-full max-w-[1400px]">
+                  <Board
+                    board={activeBoard}
+                    posts={posts}
+                    loading={loading}
+                    error={error}
+                    onMovePost={movePost}
+                    onDeletePost={deletePost}
+                    onNewPost={handleNewPost}
+                    onEditPost={handleEditPost}
+                    onShareBoard={handleShareBoard}
+                    isOwner={isOwner}
+                    currentUser={user}
+                  />
+                </div>
               </main>
             </AppShell>
           </motion.div>
