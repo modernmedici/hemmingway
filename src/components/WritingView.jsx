@@ -58,11 +58,11 @@ export default function WritingView({ post, defaultColumn, onSave, onCancel, cur
   const editorPeer = useMemo(() => {
     if (!presence?.peers || !currentUser) return null;
 
-    // Find a peer who has the edit lock AND is a different user (different email)
+    // Find a peer who has the edit lock AND is a different user (different userId)
     const editorEntry = Object.entries(presence.peers).find(
       ([peerId, peerData]) =>
         peerId !== presence.user?.id &&
-        peerData?.email !== currentUser.email &&
+        peerData?.userId !== currentUser.id &&
         (peerData?.field === 'body' || peerData?.field === 'title')
     );
 
@@ -201,6 +201,7 @@ export default function WritingView({ post, defaultColumn, onSave, onCancel, cur
 
     // Publish presence to claim the edit lock
     presence.publishPresence({
+      userId: currentUser.id,
       name: currentUser.email?.split('@')[0] || 'Anonymous',
       email: currentUser.email,
       color,
@@ -210,6 +211,7 @@ export default function WritingView({ post, defaultColumn, onSave, onCancel, cur
     // Update presence every 10 seconds to maintain lock
     const interval = setInterval(() => {
       presence.publishPresence({
+        userId: currentUser.id,
         name: currentUser.email?.split('@')[0] || 'Anonymous',
         email: currentUser.email,
         color,
