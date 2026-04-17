@@ -337,16 +337,16 @@ export default function WritingView({ post, defaultColumn, onSave, onCancel, cur
       )}
 
       {/* Sticky header */}
-      {!zenMode && (<div className="sticky top-0 z-10 bg-background/80 backdrop-blur-sm py-3.5 px-10 pl-[88px] flex items-center">
+      {!zenMode && (<div className="sticky top-0 z-10 bg-background/80 backdrop-blur-sm py-3 px-4 md:px-10 md:pl-[88px] flex items-center">
         <button
           onClick={handleCancel}
           className="flex items-center gap-1.5 bg-transparent border-none cursor-pointer text-muted-foreground/70 text-xs font-sans p-0 transition-all duration-[120ms] hover:text-foreground active:scale-95"
         >
           <ArrowLeft size={14} />
-          Back to Board
+          <span className="hidden sm:inline">Back to Board</span>
         </button>
 
-        <div className="ml-auto flex items-center gap-3">
+        <div className="ml-auto flex items-center gap-2 sm:gap-3">
           {/* Saved indicator */}
           {saved && (
             <span className="text-xs font-sans text-primary flex items-center gap-1 animate-[fadeOut_1.5s_ease-out_forwards]">
@@ -363,7 +363,7 @@ export default function WritingView({ post, defaultColumn, onSave, onCancel, cur
           )}
 
           {/* Metadata group: timer + word count */}
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 sm:gap-4">
             {/* Timer */}
             <span
               onClick={toggleTimer}
@@ -394,7 +394,7 @@ export default function WritingView({ post, defaultColumn, onSave, onCancel, cur
             <button
               onClick={enterZenMode}
               title="Fullscreen (⌘⇧F)"
-              className="flex items-center gap-1 bg-transparent border-none cursor-pointer text-muted-foreground text-xs font-sans py-1.5 px-2 transition-all duration-[120ms] hover:text-foreground active:scale-95"
+              className="hidden sm:flex items-center gap-1 bg-transparent border-none cursor-pointer text-muted-foreground text-xs font-sans py-1.5 px-2 transition-all duration-[120ms] hover:text-foreground active:scale-95"
             >
               <Maximize2 size={14} />
             </button>
@@ -481,9 +481,9 @@ export default function WritingView({ post, defaultColumn, onSave, onCancel, cur
       </div>
 
       {!zenMode && (
-        <div className="py-2.5 px-10 text-center">
+        <div className="py-2.5 px-4 md:px-10 text-center">
           <span className="text-[10px] tracking-widest text-muted-foreground font-sans">
-            ⌘↵ to save · ⌘⇧F for fullscreen · Esc to go back
+            ⌘↵ to save<span className="hidden sm:inline"> · ⌘⇧F for fullscreen</span> · Esc to go back
           </span>
         </div>
       )}
