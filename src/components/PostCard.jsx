@@ -2,7 +2,8 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { MoreHorizontal, Trash2, Download } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns/formatDistanceToNow';
-import { useDraggable } from '@dnd-kit/core';
+import { useSortable } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 import { COLUMN_IDS, COLUMN_LABELS } from '../lib/constants';
 import { downloadMarkdown } from '../lib/markdown-export';
 
@@ -27,7 +28,14 @@ export default function PostCard({ post, onMove, onDelete, onEdit, showAttributi
   const [hovered, setHovered] = useState(false);
   const totalWords = wordCount((post.title ?? '') + ' ' + (post.body ?? ''));
 
-  const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({
     id: post.id,
     data: { post, columnId },
   });
@@ -53,6 +61,14 @@ export default function PostCard({ post, onMove, onDelete, onEdit, showAttributi
     setMenuOpen(false);
   };
 
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    border: '1px solid hsl(var(--border) / 0.5)',
+    boxShadow: hovered ? '0 2px 8px hsl(var(--foreground) / 0.06)' : '0 1px 3px hsl(var(--foreground) / 0.04)',
+    opacity: isDragging ? 0.3 : 1,
+  };
+
   return (
     <motion.div
       ref={setNodeRef}
@@ -72,11 +88,7 @@ export default function PostCard({ post, onMove, onDelete, onEdit, showAttributi
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => { setHovered(false); setConfirmDelete(false); setMenuOpen(false); }}
       className="rounded-md bg-card p-3.5 cursor-pointer relative transition-shadow duration-150"
-      style={{
-        border: '1px solid hsl(var(--border) / 0.5)',
-        boxShadow: hovered ? '0 2px 8px hsl(var(--foreground) / 0.06)' : '0 1px 3px hsl(var(--foreground) / 0.04)',
-        opacity: isDragging ? 0.3 : 1,
-      }}
+      style={style}
     >
       {/* Three-dot menu (top-right, absolute) */}
       <div className="absolute top-3 right-3">

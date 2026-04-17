@@ -8,7 +8,15 @@ import {
   useSensor,
   useSensors,
   closestCenter,
+  closestCorners,
+  pointerWithin,
+  rectIntersection,
 } from '@dnd-kit/core';
+import {
+  SortableContext,
+  verticalListSortingStrategy,
+  arrayMove,
+} from '@dnd-kit/sortable';
 import { COLUMNS, COLUMN_LABELS } from '../lib/constants';
 import Column from './Column';
 import CollaboratorAvatars from './CollaboratorAvatars';
@@ -72,12 +80,40 @@ export default function Board({
 
     if (!over) return;
 
+    const activeId = active.id;
+    const overId = over.id;
     const sourceColumn = active.data.current.columnId;
-    const targetColumn = over.id;
 
-    if (sourceColumn === targetColumn) return;
+    // Determine target column and position
+    let targetColumn;
+    let targetIndex;
 
-    onMovePost(active.id, targetColumn);
+    // Check if dropped over a column container
+    if (COLUMNS.find(col => col.id === overId)) {
+      targetColumn = overId;
+      // Append to end if dropped on empty space
+      const columnPosts = posts.filter(p => p.column === targetColumn);
+      targetIndex = columnPosts.length;
+    } else {
+      // Dropped over another card - insert at that position
+      const overPost = posts.find(p => p.id === overId);
+      if (overPost) {
+        targetColumn = overPost.column;
+        const columnPosts = posts.filter(p => p.column === targetColumn);
+        targetIndex = columnPosts.findIndex(p => p.id === overId);
+      } else {
+        return;
+      }
+    }
+
+    // If same position, do nothing
+    if (sourceColumn === targetColumn) {
+      const columnPosts = posts.filter(p => p.column === sourceColumn);
+      const oldIndex = columnPosts.findIndex(p => p.id === activeId);
+      if (oldIndex === targetIndex) return;
+    }
+
+    onMovePost(activeId, targetColumn, targetIndex);
   }
 
   function handleDragCancel() {

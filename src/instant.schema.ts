@@ -25,6 +25,7 @@ const _schema = i.schema({
       createdAt: i.date(),
       title: i.string(),
       updatedAt: i.date(),
+      order: i.number(),
     }),
     boards: i.entity({
       name: i.string(),

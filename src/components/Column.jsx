@@ -1,6 +1,7 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { FileText } from 'lucide-react';
 import { useDroppable } from '@dnd-kit/core';
+import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import PostCard from './PostCard';
 
 export default function Column({ column, posts, onMovePost, onDeletePost, onNewPost, onEditPost, showAttribution, boardName }) {
@@ -38,20 +39,21 @@ export default function Column({ column, posts, onMovePost, onDeletePost, onNewP
       </div>
 
       {/* Cards */}
-      <motion.div
-        initial="hidden"
-        animate="visible"
-        variants={{
-          visible: {
-            transition: {
-              staggerChildren: 0.05,
+      <SortableContext items={posts.map(p => p.id)} strategy={verticalListSortingStrategy}>
+        <motion.div
+          initial="hidden"
+          animate="visible"
+          variants={{
+            visible: {
+              transition: {
+                staggerChildren: 0.05,
+              },
             },
-          },
-        }}
-        className="flex-1 overflow-y-auto max-h-[calc(100vh-14rem)] flex flex-col gap-4"
-      >
-        <AnimatePresence>
-          {posts.length === 0 && (
+          }}
+          className="flex-1 overflow-y-auto max-h-[calc(100vh-14rem)] flex flex-col gap-4"
+        >
+          <AnimatePresence>
+            {posts.length === 0 && (
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -99,9 +101,9 @@ export default function Column({ column, posts, onMovePost, onDeletePost, onNewP
               columnId={column.id}
             />
           ))}
-        </AnimatePresence>
-      </motion.div>
-
+          </AnimatePresence>
+        </motion.div>
+      </SortableContext>
     </div>
   );
 }
