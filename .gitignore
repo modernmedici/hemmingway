@@ -38,3 +38,4 @@ build.log
 xcodegen
 .gstack/
 jiva-website/
+.gstack/
