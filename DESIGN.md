@@ -100,8 +100,9 @@ theme: {
 - `text-4xl` (36px) - App logo, auth headlines
 - `text-2xl` (24px) - Board name
 - `text-sm` (14px) - Post title (card view)
+- `text-[13px]` - Column headers (uppercase) — increased from 12px for readability
 - `text-xs` (12px) - Post body preview (card view), UI labels, buttons
-- `text-[11px]` - Column headers (uppercase), timestamps, metadata (word count, attribution)
+- `text-[11px]` - Timestamps, metadata (word count, attribution)
 
 **Why smaller text in cards:** Kanban board views require tighter density for scanning. Titles at 14px and previews at 12px let users quickly parse many cards. The WritingView uses much larger serif text (28-40px titles, 17px body) for focused reading and composition.
 
@@ -447,7 +448,10 @@ initial={{ opacity: 0, y: -8 }}
 - Loading buttons should announce state change (future enhancement)
 
 **Touch targets:**
-- Minimum 44px (py-2.5 on buttons achieves this)
+- Minimum 44×44px (WCAG 2.5.5)
+- PostCard three-dot menu: 44×44px (icon 14px, centered with flex)
+- Share Board button: 44px min-height
+- Icon buttons: width and height both set to 44px minimum
 - Clickable areas extend beyond visual bounds where needed
 
 **Color contrast:**
@@ -506,11 +510,10 @@ initial={{ opacity: 0, y: -8 }}
 
 - ✅ Sidebar auto-hide works on all viewports
 - ✅ Modals are responsive (max-width + padding)
-- ❌ Board columns don't adapt (overflow below 1024px)
-- ❌ No mobile navigation implemented
-- ❌ Touch targets not increased for mobile
-
-**Next steps:** Add Tailwind responsive classes (`md:grid-cols-2 lg:grid-cols-3`) to Board.jsx and AppShell.jsx.
+- ✅ Board columns stack on mobile (`grid-cols-1 md:grid-cols-3`)
+- ✅ Touch targets meet 44px minimum (PostCard three-dot menu, Share button)
+- ❌ No mobile navigation tabs yet (columns stack vertically)
+- ❌ Touch targets not optimized for all buttons (sidebar still needs work)
 
 ---
 
@@ -555,7 +558,8 @@ initial={{ opacity: 0, y: -8 }}
 | 2026-04-14 | Reduced PostCard text sizes for better scanning density | Title reduced from `text-base` (16px) to `text-sm` (14px). Body preview reduced from `text-sm` (14px) to `text-xs` (12px). Kanban board views need tighter density to scan many cards at once. WritingView retains large text (28-40px titles) for focused reading. |
 | 2026-04-14 | Standardized form input patterns and removed hardcoded blue from auth | Auth buttons used hardcoded SaaS blue (`hsl(200, 70%, 50%)`) that violated warm academic palette. Replaced with `bg-primary`. Unified all form inputs: `bg-card`, `border-border`, `focus:ring-2 ring-primary/20`, `rounded-md`. Removed inconsistent patterns (`bg-secondary/30`, varying focus states). Documented standard and compact input patterns. |
 | 2026-04-14 | Replaced Inter with Plus Jakarta Sans for UI typography | Rounded humanist sans with warmth that complements Libre Baskerville. Better small-size rendering at 12px (UI labels). Less generic than Inter - adds character without competing with content. Creates unified warm aesthetic across UI and content. |
+| 2026-04-17 | Design audit + UX fixes (CRITICAL mobile issues) | Fixed undersized touch targets (18px → 44px on three-dot menus), broken mobile layout (3 columns side-by-side → stacked), increased column header size (12px → 13px), padded Share button to 44px height. Mobile board now usable. Touch targets meet WCAG 2.5.5. |
 
 ---
 
-Last updated: 2026-04-14
+Last updated: 2026-04-17

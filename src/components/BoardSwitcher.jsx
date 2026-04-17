@@ -1,16 +1,21 @@
 import { useState } from 'react'
-import { ChevronDown, Plus, Users } from 'lucide-react'
+import { ChevronDown, Plus, Users, Trash2, Pencil } from 'lucide-react'
 
 export default function BoardSwitcher({
   boards,
   activeBoardId,
   onSelectBoard,
   onCreateBoard,
+  onUpdateBoard,
+  onDeleteBoard,
   isOwner
 }) {
   const [isOpen, setIsOpen] = useState(false)
   const [isCreating, setIsCreating] = useState(false)
   const [newBoardName, setNewBoardName] = useState('')
+  const [editingBoardId, setEditingBoardId] = useState(null)
+  const [editingBoardName, setEditingBoardName] = useState('')
+  const [confirmDelete, setConfirmDelete] = useState(null)
 
   const activeBoard = boards.find(b => b.id === activeBoardId)
 
@@ -26,6 +31,42 @@ export default function BoardSwitcher({
   const handleSelectBoard = (boardId) => {
     onSelectBoard(boardId)
     setIsOpen(false)
+  }
+
+  const handleStartEdit = (board, e) => {
+    e.stopPropagation()
+    setEditingBoardId(board.id)
+    setEditingBoardName(board.name)
+  }
+
+  const handleSaveEdit = async (boardId) => {
+    if (!editingBoardName.trim()) return
+    await onUpdateBoard(boardId, editingBoardName.trim())
+    setEditingBoardId(null)
+    setEditingBoardName('')
+  }
+
+  const handleCancelEdit = () => {
+    setEditingBoardId(null)
+    setEditingBoardName('')
+    setConfirmDelete(null)
+  }
+
+  const handleDelete = async (boardId) => {
+    if (confirmDelete === boardId) {
+      await onDeleteBoard(boardId)
+      setConfirmDelete(null)
+      setEditingBoardId(null)
+      // If deleting active board, switch to first remaining board
+      if (boardId === activeBoardId && boards.length > 1) {
+        const remainingBoards = boards.filter(b => b.id !== boardId)
+        if (remainingBoards[0]) {
+          onSelectBoard(remainingBoards[0].id)
+        }
+      }
+    } else {
+      setConfirmDelete(boardId)
+    }
   }
 
   return (
@@ -72,20 +113,90 @@ export default function BoardSwitcher({
               {boards.map(board => {
                 const isActive = board.id === activeBoardId
                 const isShared = board.members && board.members.length > 0
+                const isEditing = editingBoardId === board.id
+                const canEdit = isOwner(board.id)
+
+                if (isEditing) {
+                  return (
+                    <div key={board.id} className="p-3">
+                      <input
+                        type="text"
+                        value={editingBoardName}
+                        onChange={(e) => setEditingBoardName(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') handleSaveEdit(board.id)
+                          if (e.key === 'Escape') handleCancelEdit()
+                        }}
+                        autoFocus
+                        className="w-full px-3 py-2 text-sm font-serif bg-card rounded-md text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-shadow mb-2"
+                        style={{
+                          boxShadow: '0 1px 3px hsl(var(--foreground) / 0.04)',
+                        }}
+                      />
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => handleSaveEdit(board.id)}
+                          className="flex-1 px-3 py-1.5 text-xs font-sans font-medium rounded-md bg-primary text-primary-foreground hover:opacity-90 transition-opacity active:scale-[0.98]"
+                        >
+                          Save
+                        </button>
+                        <button
+                          onClick={handleCancelEdit}
+                          className="flex-1 px-3 py-1.5 text-xs font-sans font-medium rounded-md bg-transparent text-foreground/70 hover:bg-secondary transition-colors"
+                          style={{
+                            boxShadow: '0 1px 3px hsl(var(--foreground) / 0.04)',
+                          }}
+                        >
+                          Cancel
+                        </button>
+                        {confirmDelete === board.id ? (
+                          <button
+                            onClick={() => handleDelete(board.id)}
+                            className="px-3 py-1.5 text-xs font-sans font-medium rounded-md bg-destructive text-white hover:opacity-90 transition-opacity active:scale-[0.98]"
+                          >
+                            Confirm
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => handleDelete(board.id)}
+                            className="px-3 py-1.5 rounded-md bg-transparent text-destructive hover:bg-destructive/10 transition-colors active:scale-[0.98]"
+                            title="Delete board"
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  )
+                }
 
                 return (
                   <button
                     key={board.id}
                     onClick={() => handleSelectBoard(board.id)}
-                    className="w-full px-3 py-2 flex items-center justify-between text-left text-sm transition-colors duration-100 hover:bg-accent"
+                    className="w-full px-3 py-2 flex items-center justify-between text-left text-sm transition-colors duration-100 hover:bg-accent group"
                     style={{
                       background: isActive ? 'hsl(var(--accent))' : 'transparent',
                     }}
                   >
                     <span className={`truncate font-serif ${isActive ? 'font-bold' : 'font-normal'}`}>{board.name}</span>
-                    {isShared && (
-                      <Users size={12} className="text-muted-foreground/50 flex-shrink-0 ml-2" />
-                    )}
+                    <div className="flex items-center gap-1.5 flex-shrink-0 ml-2">
+                      {isShared && (
+                        <Users size={12} className="text-muted-foreground/50" />
+                      )}
+                      {canEdit && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            handleStartEdit(board, e)
+                          }}
+                          className="opacity-0 group-hover:opacity-100 transition-opacity p-0.5 hover:text-foreground text-muted-foreground/50"
+                          title="Rename board"
+                        >
+                          <Pencil size={11} />
+                        </button>
+                      )}
+                    </div>
                   </button>
                 )
               })}

@@ -1,19 +1,34 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { FileText } from 'lucide-react';
+import { useDroppable } from '@dnd-kit/core';
+import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import PostCard from './PostCard';
 
 export default function Column({ column, posts, onMovePost, onDeletePost, onNewPost, onEditPost, showAttribution, boardName }) {
+  const { setNodeRef, isOver } = useDroppable({
+    id: column.id,
+  });
+
   return (
     <div
+      ref={setNodeRef}
       className="flex flex-col min-w-0 bg-card rounded-lg p-5"
       style={{
-        border: '1px solid hsl(var(--border) / 0.5)',
-        boxShadow: '0 1px 2px hsl(var(--foreground) / 0.03)',
+        border: isOver
+          ? '1.5px solid hsl(var(--primary) / 0.4)'
+          : '1px solid hsl(var(--border) / 0.5)',
+        backgroundColor: isOver
+          ? 'hsl(var(--accent) / 0.15)'
+          : undefined,
+        boxShadow: isOver
+          ? '0 0 0 3px hsl(var(--primary) / 0.08)'
+          : '0 1px 2px hsl(var(--foreground) / 0.03)',
+        transition: 'border 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease',
       }}
     >
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-[12px] font-medium tracking-widest uppercase text-muted-foreground font-sans">
+        <h2 className="text-[13px] font-medium tracking-widest uppercase text-muted-foreground font-sans">
           {column.label}
         </h2>
         {posts.length > 0 && (
@@ -24,20 +39,21 @@ export default function Column({ column, posts, onMovePost, onDeletePost, onNewP
       </div>
 
       {/* Cards */}
-      <motion.div
-        initial="hidden"
-        animate="visible"
-        variants={{
-          visible: {
-            transition: {
-              staggerChildren: 0.05,
+      <SortableContext items={posts.map(p => p.id)} strategy={verticalListSortingStrategy}>
+        <motion.div
+          initial="hidden"
+          animate="visible"
+          variants={{
+            visible: {
+              transition: {
+                staggerChildren: 0.05,
+              },
             },
-          },
-        }}
-        className="flex-1 overflow-y-auto max-h-[calc(100vh-14rem)] flex flex-col gap-4"
-      >
-        <AnimatePresence>
-          {posts.length === 0 && (
+          }}
+          className="flex-1 overflow-y-auto max-h-[calc(100vh-14rem)] flex flex-col gap-4"
+        >
+          <AnimatePresence>
+            {posts.length === 0 && (
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -85,9 +101,9 @@ export default function Column({ column, posts, onMovePost, onDeletePost, onNewP
               columnId={column.id}
             />
           ))}
-        </AnimatePresence>
-      </motion.div>
-
+          </AnimatePresence>
+        </motion.div>
+      </SortableContext>
     </div>
   );
 }

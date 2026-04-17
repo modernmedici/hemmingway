@@ -58,11 +58,11 @@ export default function WritingView({ post, defaultColumn, onSave, onCancel, cur
   const editorPeer = useMemo(() => {
     if (!presence?.peers || !currentUser) return null;
 
-    // Find a peer who has the edit lock AND is a different user (different email)
+    // Find a peer who has the edit lock AND is a different user (different userId)
     const editorEntry = Object.entries(presence.peers).find(
       ([peerId, peerData]) =>
         peerId !== presence.user?.id &&
-        peerData?.email !== currentUser.email &&
+        peerData?.userId !== currentUser.id &&
         (peerData?.field === 'body' || peerData?.field === 'title')
     );
 
@@ -134,7 +134,7 @@ export default function WritingView({ post, defaultColumn, onSave, onCancel, cur
 
     // Auto-save if there are changes and title is not empty
     if (dirty && title.trim()) {
-      await onSave(title.trim(), body.trim(), defaultColumn);
+      await onSave(title.trim(), body.trim(), defaultColumn, false); // false = already closing via onCancel
     }
 
     // Reset timer when leaving
@@ -201,6 +201,7 @@ export default function WritingView({ post, defaultColumn, onSave, onCancel, cur
 
     // Publish presence to claim the edit lock
     presence.publishPresence({
+      userId: currentUser.id,
       name: currentUser.email?.split('@')[0] || 'Anonymous',
       email: currentUser.email,
       color,
@@ -210,6 +211,7 @@ export default function WritingView({ post, defaultColumn, onSave, onCancel, cur
     // Update presence every 10 seconds to maintain lock
     const interval = setInterval(() => {
       presence.publishPresence({
+        userId: currentUser.id,
         name: currentUser.email?.split('@')[0] || 'Anonymous',
         email: currentUser.email,
         color,
@@ -228,7 +230,7 @@ export default function WritingView({ post, defaultColumn, onSave, onCancel, cur
     if (!isDirty || !title.trim()) return;
 
     const timer = setTimeout(() => {
-      onSave(title.trim(), body.trim(), defaultColumn);
+      onSave(title.trim(), body.trim(), defaultColumn, false); // false = don't close editor
     }, 3000); // 3-second debounce
 
     return () => clearTimeout(timer);
@@ -256,7 +258,7 @@ export default function WritingView({ post, defaultColumn, onSave, onCancel, cur
       }
       if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
         const { title, body, onSave } = latestRef.current;
-        if (title.trim()) onSave(title.trim(), body.trim(), defaultColumn);
+        if (title.trim()) onSave(title.trim(), body.trim(), defaultColumn, true); // true = close after explicit save
       }
       if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key === 'F') {
         e.preventDefault();
@@ -279,7 +281,7 @@ export default function WritingView({ post, defaultColumn, onSave, onCancel, cur
 
       if (dirty && title.trim()) {
         // Trigger auto-save
-        onSave(title.trim(), body.trim(), defaultColumn);
+        onSave(title.trim(), body.trim(), defaultColumn, false); // false = beforeunload already closing
         // Show browser warning if there are unsaved changes
         e.preventDefault();
         e.returnValue = '';
@@ -294,7 +296,7 @@ export default function WritingView({ post, defaultColumn, onSave, onCancel, cur
     if (!title.trim() || saving) return;
     setSaving(true);
     try {
-      await onSave(title.trim(), body.trim(), defaultColumn);
+      await onSave(title.trim(), body.trim(), defaultColumn, false); // false = explicit "Save" button doesn't close
       setSaved(true);
       setTimeout(() => setSaved(false), 1500);
     } finally {

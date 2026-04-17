@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { MoreHorizontal, Trash2, Download } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns/formatDistanceToNow';
+import { useSortable } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 import { COLUMN_IDS, COLUMN_LABELS } from '../lib/constants';
 import { downloadMarkdown } from '../lib/markdown-export';
 
@@ -26,6 +28,18 @@ export default function PostCard({ post, onMove, onDelete, onEdit, showAttributi
   const [hovered, setHovered] = useState(false);
   const totalWords = wordCount((post.title ?? '') + ' ' + (post.body ?? ''));
 
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({
+    id: post.id,
+    data: { post, columnId },
+  });
+
   const handleDelete = (e) => {
     e.stopPropagation();
     if (confirmDelete) {
@@ -47,8 +61,17 @@ export default function PostCard({ post, onMove, onDelete, onEdit, showAttributi
     setMenuOpen(false);
   };
 
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    border: '1px solid hsl(var(--border) / 0.5)',
+    boxShadow: hovered ? '0 2px 8px hsl(var(--foreground) / 0.06)' : '0 1px 3px hsl(var(--foreground) / 0.04)',
+    opacity: isDragging ? 0.3 : 1,
+  };
+
   return (
     <motion.div
+      ref={setNodeRef}
       layout
       variants={{
         hidden: { opacity: 0, y: 8 },
@@ -59,22 +82,22 @@ export default function PostCard({ post, onMove, onDelete, onEdit, showAttributi
       exit={{ opacity: 0, y: -8 }}
       whileTap={{ scale: 0.98 }}
       transition={{ duration: 0.18 }}
-      onClick={() => { if (menuOpen) return; onEdit(post); }}
+      onClick={() => { if (menuOpen || isDragging) return; onEdit(post); }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => { setHovered(false); setConfirmDelete(false); setMenuOpen(false); }}
       className="rounded-md bg-card p-3.5 cursor-pointer relative transition-shadow duration-150"
-      style={{
-        border: '1px solid hsl(var(--border) / 0.5)',
-        boxShadow: hovered ? '0 2px 8px hsl(var(--foreground) / 0.06)' : '0 1px 3px hsl(var(--foreground) / 0.04)',
-      }}
+      style={style}
     >
       {/* Three-dot menu (top-right, absolute) */}
-      <div className="absolute top-3 right-3">
+      <div className="absolute top-0 right-0" style={{ touchAction: 'auto' }}>
         <button
           onClick={e => { e.stopPropagation(); setMenuOpen(m => !m); }}
-          className="bg-transparent border-none cursor-pointer p-0.5 leading-none transition-colors duration-100"
+          onPointerDown={e => e.stopPropagation()}
+          className="bg-transparent border-none cursor-pointer leading-none transition-colors duration-100 flex items-center justify-center"
           style={{
             color: hovered ? 'hsl(var(--muted-foreground))' : 'transparent',
+            width: '44px',
+            height: '44px',
           }}
         >
           <MoreHorizontal size={14} />
@@ -141,8 +164,13 @@ export default function PostCard({ post, onMove, onDelete, onEdit, showAttributi
         )}
       </div>
 
-      {/* Title (hero element) */}
-      <p className="text-base font-bold font-serif text-foreground leading-[1.4] mb-2 pr-6">
+      {/* Title (hero element) - also drag handle */}
+      <p
+        {...listeners}
+        {...attributes}
+        className="text-base font-bold font-serif text-foreground leading-[1.4] mb-2 pr-6 cursor-grab active:cursor-grabbing"
+        style={{ touchAction: 'none' }}
+      >
         {post.title}
       </p>
 

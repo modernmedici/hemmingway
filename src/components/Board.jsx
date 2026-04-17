@@ -1,7 +1,26 @@
+import { useState } from 'react';
 import { Users } from 'lucide-react';
-import { COLUMNS } from '../lib/constants';
+import {
+  DndContext,
+  DragOverlay,
+  PointerSensor,
+  KeyboardSensor,
+  useSensor,
+  useSensors,
+  closestCenter,
+  closestCorners,
+  pointerWithin,
+  rectIntersection,
+} from '@dnd-kit/core';
+import {
+  SortableContext,
+  verticalListSortingStrategy,
+  arrayMove,
+} from '@dnd-kit/sortable';
+import { COLUMNS, COLUMN_LABELS } from '../lib/constants';
 import Column from './Column';
 import CollaboratorAvatars from './CollaboratorAvatars';
+import DragOverlayCard from './DragOverlayCard';
 
 export default function Board({
   board,
@@ -16,9 +35,93 @@ export default function Board({
   isOwner,
   currentUser
 }) {
+  const [activePost, setActivePost] = useState(null);
+
+  const pointerSensor = useSensor(PointerSensor, {
+    activationConstraint: {
+      distance: 8,
+    },
+  });
+  const keyboardSensor = useSensor(KeyboardSensor);
+  const sensors = useSensors(pointerSensor, keyboardSensor);
+
+  const announcements = {
+    onDragStart({ active }) {
+      const title = active.data.current.post.title;
+      return `Picked up card "${title}".`;
+    },
+    onDragOver({ active, over }) {
+      if (!over) return;
+      const title = active.data.current.post.title;
+      const col = COLUMN_LABELS[over.id];
+      return `Card "${title}" is over ${col}.`;
+    },
+    onDragEnd({ active, over }) {
+      const title = active.data.current.post.title;
+      if (!over || active.data.current.columnId === over.id) {
+        return `Card "${title}" was dropped back in its original column.`;
+      }
+      const col = COLUMN_LABELS[over.id];
+      return `Card "${title}" was moved to ${col}.`;
+    },
+    onDragCancel({ active }) {
+      return `Dragging cancelled. Card "${active.data.current.post.title}" returned to its original position.`;
+    },
+  };
+
+  function handleDragStart(event) {
+    const { post, columnId } = event.active.data.current;
+    setActivePost({ post, columnId });
+  }
+
+  function handleDragEnd(event) {
+    const { active, over } = event;
+    setActivePost(null);
+
+    if (!over) return;
+
+    const activeId = active.id;
+    const overId = over.id;
+    const sourceColumn = active.data.current.columnId;
+
+    // Determine target column and position
+    let targetColumn;
+    let targetIndex;
+
+    // Check if dropped over a column container
+    if (COLUMNS.find(col => col.id === overId)) {
+      targetColumn = overId;
+      // Append to end if dropped on empty space
+      const columnPosts = posts.filter(p => p.column === targetColumn);
+      targetIndex = columnPosts.length;
+    } else {
+      // Dropped over another card - insert at that position
+      const overPost = posts.find(p => p.id === overId);
+      if (overPost) {
+        targetColumn = overPost.column;
+        const columnPosts = posts.filter(p => p.column === targetColumn);
+        targetIndex = columnPosts.findIndex(p => p.id === overId);
+      } else {
+        return;
+      }
+    }
+
+    // If same position, do nothing
+    if (sourceColumn === targetColumn) {
+      const columnPosts = posts.filter(p => p.column === sourceColumn);
+      const oldIndex = columnPosts.findIndex(p => p.id === activeId);
+      if (oldIndex === targetIndex) return;
+    }
+
+    onMovePost(activeId, targetColumn, targetIndex);
+  }
+
+  function handleDragCancel() {
+    setActivePost(null);
+  }
   if (loading) {
     return (
-      <div className="grid grid-cols-3 gap-5 h-full">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-5 h-full">
         {COLUMNS.map(col => (
           <div key={col.id} className="flex flex-col gap-2">
             <div className="h-5 w-20 rounded-md bg-muted mb-1" />
@@ -78,21 +181,36 @@ export default function Board({
       )}
 
       {/* Columns grid */}
-      <div className="grid grid-cols-3 gap-5 flex-1">
-        {COLUMNS.map((column) => (
-          <Column
-            key={column.id}
-            column={column}
-            posts={posts.filter(p => p.column === column.id)}
-            onMovePost={onMovePost}
-            onDeletePost={onDeletePost}
-            onNewPost={onNewPost}
-            onEditPost={onEditPost}
-            showAttribution={isShared}
-            boardName={board?.name}
-          />
-        ))}
-      </div>
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCenter}
+        onDragStart={handleDragStart}
+        onDragEnd={handleDragEnd}
+        onDragCancel={handleDragCancel}
+        accessibility={{ announcements }}
+      >
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5 flex-1">
+          {COLUMNS.map((column) => (
+            <Column
+              key={column.id}
+              column={column}
+              posts={posts.filter(p => p.column === column.id)}
+              onMovePost={onMovePost}
+              onDeletePost={onDeletePost}
+              onNewPost={onNewPost}
+              onEditPost={onEditPost}
+              showAttribution={isShared}
+              boardName={board?.name}
+            />
+          ))}
+        </div>
+
+        <DragOverlay>
+          {activePost ? (
+            <DragOverlayCard post={activePost.post} columnId={activePost.columnId} />
+          ) : null}
+        </DragOverlay>
+      </DndContext>
     </div>
   );
 }

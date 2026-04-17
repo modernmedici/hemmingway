@@ -30,6 +30,8 @@ export default function App() {
     boards,
     loading: boardsLoading,
     createBoard,
+    updateBoard,
+    deleteBoard,
     isOwner,
     pendingInvitations,
     inviteToBoard,
@@ -79,6 +81,23 @@ export default function App() {
     const result = await createBoard(name)
     if (result?.id) {
       setActiveBoardId(result.id)
+    }
+  }
+
+  // Handle board update
+  const handleUpdateBoard = async (boardId, name) => {
+    await updateBoard(boardId, name)
+  }
+
+  // Handle board deletion
+  const handleDeleteBoard = async (boardId) => {
+    await deleteBoard(boardId)
+    // If deleting active board, switch to first remaining board
+    if (boardId === activeBoardId) {
+      const remainingBoards = boards.filter(b => b.id !== boardId)
+      if (remainingBoards[0]) {
+        setActiveBoardId(remainingBoards[0].id)
+      }
     }
   }
 
@@ -139,14 +158,16 @@ export default function App() {
     setView('editor')
   }
 
-  const handleSave = (title, body, column) => {
+  const handleSave = (title, body, column, closeAfterSave = true) => {
     if (editingPost) {
       updatePost(editingPost.id, { title, body })
       if (column !== editingPost.column) movePost(editingPost.id, column)
     } else {
       createPost(title, body, column)
     }
-    setView('board')
+    if (closeAfterSave) {
+      setView('board')
+    }
   }
 
   const activeBoard = boards.find(b => b.id === activeBoardId)
@@ -186,10 +207,13 @@ export default function App() {
               activeBoardId={activeBoardId}
               onSelectBoard={handleSelectBoard}
               onCreateBoard={handleCreateBoard}
+              onUpdateBoard={handleUpdateBoard}
+              onDeleteBoard={handleDeleteBoard}
               isOwner={isOwner}
               pendingInvitations={pendingInvitations}
               onAcceptInvitation={handleAcceptInvitation}
               onDeclineInvitation={handleDeclineInvitation}
+              posts={posts}
             >
 
               <main style={{ flex: 1, padding: '32px 36px', overflow: 'hidden' }}>
