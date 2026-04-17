@@ -167,10 +167,9 @@ export default function Board({
             {isOwner && isOwner(board.id) && onShareBoard && (
               <button
                 onClick={() => onShareBoard(board)}
-                className="flex items-center gap-1.5 px-3 text-xs font-sans font-medium rounded-md bg-card text-foreground/70 transition-all duration-150 hover:bg-secondary hover:text-foreground hover:shadow-[0_2px_6px_hsl(var(--foreground)/0.05)] active:scale-95"
+                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-sans font-medium rounded-md bg-card text-foreground/70 transition-all duration-150 hover:bg-secondary hover:text-foreground hover:shadow-[0_2px_6px_hsl(var(--foreground)/0.05)] active:scale-95"
                 style={{
                   boxShadow: '0 1px 3px hsl(var(--foreground) / 0.04)',
-                  minHeight: '44px',
                 }}
               >
                 <Users size={14} />
