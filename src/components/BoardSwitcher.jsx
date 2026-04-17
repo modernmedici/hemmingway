@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { ChevronDown, Plus, Users, Trash2 } from 'lucide-react'
+import { ChevronDown, Plus, Users, Trash2, Pencil } from 'lucide-react'
 
 export default function BoardSwitcher({
   boards,
@@ -174,16 +174,29 @@ export default function BoardSwitcher({
                   <button
                     key={board.id}
                     onClick={() => handleSelectBoard(board.id)}
-                    onDoubleClick={(e) => canEdit && handleStartEdit(board, e)}
-                    className="w-full px-3 py-2 flex items-center justify-between text-left text-sm transition-colors duration-100 hover:bg-accent"
+                    className="w-full px-3 py-2 flex items-center justify-between text-left text-sm transition-colors duration-100 hover:bg-accent group"
                     style={{
                       background: isActive ? 'hsl(var(--accent))' : 'transparent',
                     }}
                   >
                     <span className={`truncate font-serif ${isActive ? 'font-bold' : 'font-normal'}`}>{board.name}</span>
-                    {isShared && (
-                      <Users size={12} className="text-muted-foreground/50 flex-shrink-0 ml-2" />
-                    )}
+                    <div className="flex items-center gap-1.5 flex-shrink-0 ml-2">
+                      {isShared && (
+                        <Users size={12} className="text-muted-foreground/50" />
+                      )}
+                      {canEdit && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            handleStartEdit(board, e)
+                          }}
+                          className="opacity-0 group-hover:opacity-100 transition-opacity p-0.5 hover:text-foreground text-muted-foreground/50"
+                          title="Rename board"
+                        >
+                          <Pencil size={11} />
+                        </button>
+                      )}
+                    </div>
                   </button>
                 )
               })}
