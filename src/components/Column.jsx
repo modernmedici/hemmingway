@@ -28,7 +28,7 @@ export default function Column({ column, posts, onMovePost, onDeletePost, onNewP
     >
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-[12px] font-medium tracking-widest uppercase text-muted-foreground font-sans">
+        <h2 className="text-[13px] font-medium tracking-widest uppercase text-muted-foreground font-sans">
           {column.label}
         </h2>
         {posts.length > 0 && (
