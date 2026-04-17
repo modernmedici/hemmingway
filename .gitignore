@@ -37,3 +37,5 @@ build.log
 # Tools
 xcodegen
 .gstack/
+jiva-website/
+.gstack/
