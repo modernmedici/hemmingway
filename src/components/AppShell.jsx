@@ -12,6 +12,8 @@ export default function AppShell({
   activeBoardId,
   onSelectBoard,
   onCreateBoard,
+  onUpdateBoard,
+  onDeleteBoard,
   isOwner,
   pendingInvitations = [],
   onAcceptInvitation,
@@ -53,6 +55,8 @@ export default function AppShell({
               activeBoardId={activeBoardId}
               onSelectBoard={onSelectBoard}
               onCreateBoard={onCreateBoard}
+              onUpdateBoard={onUpdateBoard}
+              onDeleteBoard={onDeleteBoard}
               isOwner={isOwner}
             />
           </div>

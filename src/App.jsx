@@ -30,6 +30,8 @@ export default function App() {
     boards,
     loading: boardsLoading,
     createBoard,
+    updateBoard,
+    deleteBoard,
     isOwner,
     pendingInvitations,
     inviteToBoard,
@@ -79,6 +81,23 @@ export default function App() {
     const result = await createBoard(name)
     if (result?.id) {
       setActiveBoardId(result.id)
+    }
+  }
+
+  // Handle board update
+  const handleUpdateBoard = async (boardId, name) => {
+    await updateBoard(boardId, name)
+  }
+
+  // Handle board deletion
+  const handleDeleteBoard = async (boardId) => {
+    await deleteBoard(boardId)
+    // If deleting active board, switch to first remaining board
+    if (boardId === activeBoardId) {
+      const remainingBoards = boards.filter(b => b.id !== boardId)
+      if (remainingBoards[0]) {
+        setActiveBoardId(remainingBoards[0].id)
+      }
     }
   }
 
@@ -188,6 +207,8 @@ export default function App() {
               activeBoardId={activeBoardId}
               onSelectBoard={handleSelectBoard}
               onCreateBoard={handleCreateBoard}
+              onUpdateBoard={handleUpdateBoard}
+              onDeleteBoard={handleDeleteBoard}
               isOwner={isOwner}
               pendingInvitations={pendingInvitations}
               onAcceptInvitation={handleAcceptInvitation}
