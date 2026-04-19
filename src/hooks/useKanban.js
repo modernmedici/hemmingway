@@ -1,6 +1,16 @@
-import { useCallback } from 'react'
+import { useCallback, useMemo } from 'react'
 import db from '../lib/db'
 import { id } from '@instantdb/react'
+
+// Helper: wrap database operations with consistent error handling
+const wrapDbOperation = (actionLabel) => async (operation) => {
+  try {
+    return await operation();
+  } catch (error) {
+    console.error(`Failed to ${actionLabel}:`, error);
+    throw new Error(`Failed to ${actionLabel}. Check your connection and try again.`);
+  }
+};
 
 export function useKanban(boardId) {
   const { user } = db.useAuth()
@@ -12,7 +22,10 @@ export function useKanban(boardId) {
       : null
   )
 
-  const posts = (data?.boards?.[0]?.posts ?? []).sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+  const posts = useMemo(
+    () => (data?.boards?.[0]?.posts ?? []).sort((a, b) => (a.order ?? 0) - (b.order ?? 0)),
+    [data?.boards]
+  )
   const board = data?.boards?.[0]
 
   const createPost = useCallback(async (title, body, column = 'ideas') => {
@@ -22,7 +35,8 @@ export function useKanban(boardId) {
     // Assign order as max + 1 for the column
     const columnPosts = posts.filter(p => p.column === column)
     const maxOrder = columnPosts.length > 0 ? Math.max(...columnPosts.map(p => p.order ?? 0)) : 0
-    try {
+
+    return await wrapDbOperation('create post')(async () => {
       await db.transact([
         db.tx.posts[postId].update({
           title: title.trim(),
@@ -35,25 +49,19 @@ export function useKanban(boardId) {
         db.tx.posts[postId].link({ creator: user.id, board: boardId }),
       ])
       return { id: postId }
-    } catch (error) {
-      console.error('Failed to create post:', error)
-      throw new Error('Failed to create post. Check your connection and try again.')
-    }
+    });
   }, [user, boardId, posts])
 
   const updatePost = useCallback(async (postId, updates) => {
     const now = new Date()
-    try {
+    return await wrapDbOperation('update post')(async () => {
       await db.transact(
         db.tx.posts[postId].update({
           ...updates,
           updatedAt: now,
         })
       )
-    } catch (error) {
-      console.error('Failed to update post:', error)
-      throw new Error('Failed to update post. Check your connection and try again.')
-    }
+    });
   }, [])
 
   const movePost = useCallback(async (postId, targetColumn, targetIndex) => {
@@ -61,7 +69,7 @@ export function useKanban(boardId) {
     const post = posts.find(p => p.id === postId)
     if (!post) return
 
-    try {
+    return await wrapDbOperation('move card')(async () => {
       // If no targetIndex provided (old behavior), append to end
       if (targetIndex === undefined) {
         const columnPosts = posts.filter(p => p.column === targetColumn && p.id !== postId)
@@ -111,19 +119,13 @@ export function useKanban(boardId) {
       }
 
       await db.transact(transactions)
-    } catch (error) {
-      console.error('Failed to move post:', error)
-      throw new Error('Failed to move card. Check your connection and try again.')
-    }
+    });
   }, [posts])
 
   const deletePost = useCallback(async (postId) => {
-    try {
+    return await wrapDbOperation('delete post')(async () => {
       await db.transact(db.tx.posts[postId].delete())
-    } catch (error) {
-      console.error('Failed to delete post:', error)
-      throw new Error('Failed to delete post. Check your connection and try again.')
-    }
+    });
   }, [])
 
   return {

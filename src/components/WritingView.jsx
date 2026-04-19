@@ -128,13 +128,31 @@ export default function WritingView({ post, defaultColumn, onSave, onCancel, cur
     return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
   }, [zenMode]);
 
+  // Centralized save with guard logic
+  const saveWithGuard = useCallback(async (closeAfter = false) => {
+    if (!title.trim() || saving) return false;
+    setSaving(true);
+    try {
+      await onSave(title.trim(), body.trim(), defaultColumn, closeAfter);
+      return true;
+    } catch (err) {
+      console.error('Save failed:', err);
+      return false;
+    } finally {
+      setSaving(false);
+    }
+  }, [title, body, saving, onSave, defaultColumn]);
+
+  // Update latestRef to include saveWithGuard after it's defined
+  latestRef.current.saveWithGuard = saveWithGuard;
+
   const handleCancel = useCallback(async () => {
-    const { title, body, onCancel, onSave, saving } = latestRef.current;
+    const { onCancel } = latestRef.current;
     const dirty = title !== originalTitle || body !== originalBody;
 
-    // Auto-save if there are changes and title is not empty (skip if already saving)
-    if (dirty && title.trim() && !saving) {
-      await onSave(title.trim(), body.trim(), defaultColumn, false); // false = already closing via onCancel
+    // Auto-save if there are changes and title is not empty
+    if (dirty && title.trim()) {
+      await saveWithGuard(false); // false = already closing via onCancel
     }
 
     // Reset timer when leaving
@@ -143,7 +161,7 @@ export default function WritingView({ post, defaultColumn, onSave, onCancel, cur
     setHasStartedTyping(false);
 
     onCancel();
-  }, [originalTitle, originalBody, defaultColumn]);
+  }, [originalTitle, originalBody, title, saveWithGuard]);
 
   useEffect(() => { titleRef.current?.focus(); }, []);
 
@@ -231,12 +249,12 @@ export default function WritingView({ post, defaultColumn, onSave, onCancel, cur
 
     const timer = setTimeout(() => {
       if (!saving) { // Double-check before calling onSave
-        onSave(title.trim(), body.trim(), defaultColumn, false); // false = don't close editor
+        saveWithGuard(false); // false = don't close editor
       }
     }, 3000); // 3-second debounce
 
     return () => clearTimeout(timer);
-  }, [title, body, isCollaborative, hasEditLock, post?.id, originalTitle, originalBody, onSave, defaultColumn, saving]);
+  }, [title, body, isCollaborative, hasEditLock, post?.id, originalTitle, originalBody, saving, saveWithGuard]);
 
   // Auto-start timer on first keystroke
   const [hasStartedTyping, setHasStartedTyping] = useState(false);
@@ -260,13 +278,8 @@ export default function WritingView({ post, defaultColumn, onSave, onCancel, cur
       }
       if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
         e.preventDefault(); // Prevent default to avoid duplicate triggering
-        const { title, body, saving } = latestRef.current;
-        if (title.trim() && !saving) {
-          setSaving(true);
-          onSave(title.trim(), body.trim(), defaultColumn, true) // true = close after explicit save
-            .catch(err => console.error('Save failed:', err))
-            .finally(() => setSaving(false));
-        }
+        const { saveWithGuard } = latestRef.current;
+        saveWithGuard(true); // true = close after explicit save
       }
       if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key === 'F') {
         e.preventDefault();
@@ -284,12 +297,11 @@ export default function WritingView({ post, defaultColumn, onSave, onCancel, cur
   // Auto-save on browser navigation (back button, refresh, close tab)
   useEffect(() => {
     const handler = (e) => {
-      const { title, body, onSave } = latestRef.current;
       const dirty = title !== originalTitle || body !== originalBody;
 
       if (dirty && title.trim()) {
-        // Trigger auto-save
-        onSave(title.trim(), body.trim(), defaultColumn, false); // false = beforeunload already closing
+        // Trigger auto-save via saveWithGuard (handles saving flag)
+        saveWithGuard(false); // false = beforeunload already closing
         // Show browser warning if there are unsaved changes
         e.preventDefault();
         e.returnValue = '';
@@ -298,17 +310,13 @@ export default function WritingView({ post, defaultColumn, onSave, onCancel, cur
 
     window.addEventListener('beforeunload', handler);
     return () => window.removeEventListener('beforeunload', handler);
-  }, [originalTitle, originalBody, defaultColumn]);
+  }, [originalTitle, originalBody, title, saveWithGuard]);
 
   const handleSave = async () => {
-    if (!title.trim() || saving) return;
-    setSaving(true);
-    try {
-      await onSave(title.trim(), body.trim(), defaultColumn, false); // false = explicit "Save" button doesn't close
+    const success = await saveWithGuard(false); // false = explicit "Save" button doesn't close
+    if (success) {
       setSaved(true);
       setTimeout(() => setSaved(false), 1500);
-    } finally {
-      setSaving(false);
     }
   };
 
