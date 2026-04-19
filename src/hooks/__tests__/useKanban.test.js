@@ -223,6 +223,59 @@ describe('useKanban — createPost', () => {
     expect(createdAt).toBeLessThanOrEqual(Date.now());
     expect(updatedAt).toBe(createdAt);
   });
+
+  // Edge cases
+  it('handles empty title and body (after trimming)', async () => {
+    setupInstantDB();
+    const { result } = renderHook(() => useKanban(mockBoardId));
+
+    await act(async () => {
+      await result.current.createPost('   ', '   ');
+    });
+
+    const txArray = db.transact.mock.calls[0][0];
+    expect(txArray[0].data.title).toBe('');
+    expect(txArray[0].data.body).toBe('');
+  });
+
+  it('handles very long title (>1000 chars)', async () => {
+    setupInstantDB();
+    const { result } = renderHook(() => useKanban(mockBoardId));
+    const longTitle = 'A'.repeat(1500);
+
+    await act(async () => {
+      await result.current.createPost(longTitle, 'Body');
+    });
+
+    const txArray = db.transact.mock.calls[0][0];
+    expect(txArray[0].data.title).toBe(longTitle);
+  });
+
+  it('handles special characters in title and body', async () => {
+    setupInstantDB();
+    const { result } = renderHook(() => useKanban(mockBoardId));
+    const specialChars = '<script>alert("xss")</script> & "quotes" \' and 中文';
+
+    await act(async () => {
+      await result.current.createPost(specialChars, specialChars);
+    });
+
+    const txArray = db.transact.mock.calls[0][0];
+    expect(txArray[0].data.title).toBe(specialChars);
+    expect(txArray[0].data.body).toBe(specialChars);
+  });
+
+  it('handles undefined column gracefully', async () => {
+    setupInstantDB();
+    const { result } = renderHook(() => useKanban(mockBoardId));
+
+    await act(async () => {
+      await result.current.createPost('Title', 'Body', undefined);
+    });
+
+    const txArray = db.transact.mock.calls[0][0];
+    expect(txArray[0].data.column).toBe('ideas');
+  });
 });
 
 describe('useKanban — updatePost', () => {
@@ -323,3 +376,181 @@ describe('useKanban — deletePost', () => {
     expect(tx.postId).toBe('post-abc123');
   });
 });
+
+describe('useKanban — server error handling', () => {
+  it('throws user-friendly error when createPost transact fails', async () => {
+    setupInstantDB({
+      transact: vi.fn().mockRejectedValue(new Error('Network timeout')),
+    });
+    const { result } = renderHook(() => useKanban(mockBoardId));
+
+    await expect(async () => {
+      await act(async () => {
+        await result.current.createPost('Title', 'Body');
+      });
+    }).rejects.toThrow('Failed to create post. Check your connection and try again.');
+  });
+
+  it('throws user-friendly error when updatePost transact fails', async () => {
+    setupInstantDB({
+      transact: vi.fn().mockRejectedValue(new Error('Server error')),
+    });
+    const { result } = renderHook(() => useKanban(mockBoardId));
+
+    await expect(async () => {
+      await act(async () => {
+        await result.current.updatePost('post-abc123', { title: 'New' });
+      });
+    }).rejects.toThrow('Failed to update post. Check your connection and try again.');
+  });
+
+  it('throws user-friendly error when movePost transact fails', async () => {
+    setupInstantDB({
+      transact: vi.fn().mockRejectedValue(new Error('Permission denied')),
+    });
+    const { result } = renderHook(() => useKanban(mockBoardId));
+
+    await expect(async () => {
+      await act(async () => {
+        await result.current.movePost('post-abc123', 'drafts');
+      });
+    }).rejects.toThrow('Failed to move card. Check your connection and try again.');
+  });
+
+  it('throws user-friendly error when deletePost transact fails', async () => {
+    setupInstantDB({
+      transact: vi.fn().mockRejectedValue(new Error('Delete failed')),
+    });
+    const { result } = renderHook(() => useKanban(mockBoardId));
+
+    await expect(async () => {
+      await act(async () => {
+        await result.current.deletePost('post-abc123');
+      });
+    }).rejects.toThrow('Failed to delete post. Check your connection and try again.');
+  });
+
+  it('logs original error to console while throwing user-friendly message', async () => {
+    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const originalError = new Error('InstantDB connection lost');
+    setupInstantDB({
+      transact: vi.fn().mockRejectedValue(originalError),
+    });
+    const { result } = renderHook(() => useKanban(mockBoardId));
+
+    await act(async () => {
+      try {
+        await result.current.createPost('Title', 'Body');
+      } catch (err) {
+        // Expected to throw user-friendly error
+      }
+    });
+
+    expect(consoleErrorSpy).toHaveBeenCalledWith('Failed to create post:', originalError);
+    consoleErrorSpy.mockRestore();
+  });
+});
+
+describe('useKanban — concurrent operations', () => {
+  it('handles multiple createPost calls in parallel', async () => {
+    setupInstantDB();
+    const { result } = renderHook(() => useKanban(mockBoardId));
+
+    await act(async () => {
+      await Promise.all([
+        result.current.createPost('Post 1', 'Body 1'),
+        result.current.createPost('Post 2', 'Body 2'),
+        result.current.createPost('Post 3', 'Body 3'),
+      ]);
+    });
+
+    expect(db.transact).toHaveBeenCalledTimes(3);
+    const titles = db.transact.mock.calls.map(call => call[0][0].data.title);
+    expect(titles).toEqual(['Post 1', 'Post 2', 'Post 3']);
+  });
+
+  it('handles mixed operations (create, update, delete) in parallel', async () => {
+    setupInstantDB();
+    const { result } = renderHook(() => useKanban(mockBoardId));
+
+    await act(async () => {
+      await Promise.all([
+        result.current.createPost('New', 'Body'),
+        result.current.updatePost('post-abc123', { title: 'Updated' }),
+        result.current.deletePost('post-xyz789'),
+      ]);
+    });
+
+    expect(db.transact).toHaveBeenCalledTimes(3);
+    const operations = db.transact.mock.calls.map(call => {
+      const tx = Array.isArray(call[0]) ? call[0][0] : call[0];
+      return tx.type;
+    });
+    expect(operations).toContain('update');
+    expect(operations).toContain('delete');
+  });
+
+  it('continues with successful operations when one fails', async () => {
+    let callCount = 0;
+    setupInstantDB({
+      transact: vi.fn().mockImplementation(() => {
+        callCount++;
+        if (callCount === 2) {
+          return Promise.reject(new Error('Second operation failed'));
+        }
+        return Promise.resolve();
+      }),
+    });
+    const { result } = renderHook(() => useKanban(mockBoardId));
+
+    const results = await act(async () => {
+      return await Promise.allSettled([
+        result.current.createPost('Post 1', 'Body 1'),
+        result.current.createPost('Post 2', 'Body 2'),
+        result.current.createPost('Post 3', 'Body 3'),
+      ]);
+    });
+
+    expect(results[0].status).toBe('fulfilled');
+    expect(results[1].status).toBe('rejected');
+    expect(results[1].reason.message).toBe('Failed to create post. Check your connection and try again.');
+    expect(results[2].status).toBe('fulfilled');
+  });
+
+  // Duplicate submission test (note: no built-in dedup in useKanban)
+  it('allows double-submit when createPost called twice rapidly', async () => {
+    let resolveFirst;
+    const firstPromise = new Promise(resolve => { resolveFirst = resolve; });
+    let callCount = 0;
+
+    setupInstantDB({
+      transact: vi.fn().mockImplementation(() => {
+        callCount++;
+        if (callCount === 1) {
+          return firstPromise; // First call waits
+        }
+        return Promise.resolve(); // Second call resolves immediately
+      }),
+    });
+
+    const { result } = renderHook(() => useKanban(mockBoardId));
+
+    // Simulate rapid double-tap on mobile
+    const promise1 = act(async () => {
+      return result.current.createPost('Title', 'Body');
+    });
+
+    const promise2 = act(async () => {
+      return result.current.createPost('Title', 'Body');
+    });
+
+    // Resolve first call
+    resolveFirst();
+    await promise1;
+    await promise2;
+
+    // Both calls should have gone through (no built-in dedup in useKanban)
+    expect(db.transact).toHaveBeenCalledTimes(2);
+  });
+});
+
