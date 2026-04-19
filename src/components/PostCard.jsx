@@ -27,6 +27,7 @@ export default function PostCard({ post, onMove, onDelete, onEdit, showAttributi
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [hovered, setHovered] = useState(false);
   const [deleteError, setDeleteError] = useState(null);
+  const [closeTimeout, setCloseTimeout] = useState(null);
   const totalWords = wordCount((post.title ?? '') + ' ' + (post.body ?? ''));
 
   const {
@@ -93,8 +94,22 @@ export default function PostCard({ post, onMove, onDelete, onEdit, showAttributi
       whileTap={{ scale: 0.98 }}
       transition={{ duration: 0.18 }}
       onClick={() => { if (menuOpen || isDragging) return; onEdit(post); }}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => { setHovered(false); setConfirmDelete(false); setMenuOpen(false); }}
+      onMouseEnter={() => {
+        if (closeTimeout) {
+          clearTimeout(closeTimeout);
+          setCloseTimeout(null);
+        }
+        setHovered(true);
+      }}
+      onMouseLeave={() => {
+        // Delay closing to give user time to move to menu
+        const timeout = setTimeout(() => {
+          setHovered(false);
+          setConfirmDelete(false);
+          setMenuOpen(false);
+        }, 200);
+        setCloseTimeout(timeout);
+      }}
       className="rounded-md bg-card p-3.5 cursor-pointer relative transition-shadow duration-150"
       style={style}
     >
@@ -120,6 +135,16 @@ export default function PostCard({ post, onMove, onDelete, onEdit, showAttributi
             exit={{ opacity: 0, y: -8 }}
             transition={{ duration: 0.15 }}
             onClick={e => e.stopPropagation()}
+            onMouseEnter={() => {
+              if (closeTimeout) {
+                clearTimeout(closeTimeout);
+                setCloseTimeout(null);
+              }
+            }}
+            onMouseLeave={() => {
+              setMenuOpen(false);
+              setHovered(false);
+            }}
             className="absolute right-0 top-full z-50 bg-card rounded-md p-1 min-w-[160px] font-sans text-xs mt-1"
             style={{
               boxShadow: '0 4px 16px hsl(var(--foreground) / 0.08)',
