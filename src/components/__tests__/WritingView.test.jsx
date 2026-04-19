@@ -393,3 +393,58 @@ describe('WritingView — focus behavior', () => {
     });
   });
 });
+
+describe('WritingView — saveWithGuard helper', () => {
+  it('prevents concurrent saves', async () => {
+    let resolveFirst;
+    const firstSavePromise = new Promise(resolve => { resolveFirst = resolve; });
+
+    mockOnSave
+      .mockImplementationOnce(() => firstSavePromise) // First call waits
+      .mockResolvedValueOnce(undefined); // Second call would resolve immediately
+
+    render(<WritingView post={mockPost} defaultColumn="ideas" onSave={mockOnSave} onCancel={mockOnCancel} />);
+
+    const saveButton = screen.getByRole('button', { name: /save/i });
+
+    // Trigger first save
+    fireEvent.click(saveButton);
+
+    // Trigger second save immediately (should be blocked)
+    fireEvent.click(saveButton);
+
+    // Resolve first save
+    resolveFirst();
+
+    await waitFor(() => {
+      // Only one save call should have gone through
+      expect(mockOnSave).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  it('resets saving flag in finally block even on error', async () => {
+    mockOnSave.mockRejectedValueOnce(new Error('Save failed'));
+    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    render(<WritingView post={mockPost} defaultColumn="ideas" onSave={mockOnSave} onCancel={mockOnCancel} />);
+
+    const saveButton = screen.getByRole('button', { name: /save/i });
+
+    // First save fails
+    fireEvent.click(saveButton);
+
+    await waitFor(() => {
+      expect(mockOnSave).toHaveBeenCalledTimes(1);
+    });
+
+    // Second save should be allowed (saving flag was reset)
+    mockOnSave.mockResolvedValueOnce(undefined);
+    fireEvent.click(saveButton);
+
+    await waitFor(() => {
+      expect(mockOnSave).toHaveBeenCalledTimes(2);
+    });
+
+    consoleErrorSpy.mockRestore();
+  });
+});
