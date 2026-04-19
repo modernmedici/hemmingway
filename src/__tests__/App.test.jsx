@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, fireEvent, act } from '@testing-library/react';
 import App from '../App';
 
 // Mock InstantDB
@@ -30,6 +30,7 @@ vi.mock('../lib/db', () => ({
   default: {
     useAuth: vi.fn(),
     useQuery: vi.fn(),
+    useConnectionStatus: vi.fn(() => 'connected'),
     transact: vi.fn(),
     tx: {
       posts: new Proxy({}, {
@@ -51,6 +52,9 @@ vi.mock('../lib/db', () => ({
       sendMagicCode: vi.fn(),
       signInWithMagicCode: vi.fn(),
     },
+    room: vi.fn(() => ({
+      usePresence: vi.fn(() => ({ peers: {}, user: null, publishPresence: vi.fn() })),
+    })),
   },
 }));
 
@@ -169,5 +173,73 @@ describe('App — board view', () => {
 
     // Should show auth screen
     expect(screen.getByPlaceholderText('your@email.com')).toBeInTheDocument();
+  });
+});
+
+describe('App — handleSave awaits async operations', () => {
+  beforeEach(() => {
+    db.useAuth.mockReturnValue({ user: mockUser, isLoading: false });
+  });
+
+  it('does not switch to board view until createPost resolves', async () => {
+    let resolveCreate;
+    const createPromise = new Promise((resolve) => { resolveCreate = resolve; });
+    const mockCreatePost = vi.fn(() => createPromise);
+
+    const { useKanban } = await import('../hooks/useKanban');
+    useKanban.mockReturnValue({
+      board: mockBoard,
+      posts: mockPosts,
+      loading: false,
+      error: null,
+      createPost: mockCreatePost,
+      updatePost: vi.fn(),
+      movePost: vi.fn(),
+      deletePost: vi.fn(),
+    });
+
+    render(<App />);
+
+    await waitFor(() => {
+      expect(screen.getByLabelText(/sign out/i)).toBeInTheDocument();
+    });
+
+    // Open editor
+    const newButtons = screen.getAllByText('+');
+    fireEvent.click(newButtons[0]);
+
+    await waitFor(() => {
+      expect(screen.getByPlaceholderText('Essay Title')).toBeInTheDocument();
+    });
+
+    // Type a title and trigger save via Cmd+Enter
+    fireEvent.change(screen.getByPlaceholderText('Essay Title'), {
+      target: { value: 'New Post Title' },
+    });
+
+    await act(async () => {
+      fireEvent.keyDown(window, { key: 'Enter', metaKey: true });
+    });
+
+    expect(mockCreatePost).toHaveBeenCalled();
+
+    // Flush microtasks without resolving createPromise
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 0));
+    });
+
+    // With the fix: editor stays visible while createPost is pending
+    // Without the fix: editor is already gone (fire-and-forget)
+    expect(screen.queryByPlaceholderText('Essay Title')).toBeInTheDocument();
+
+    // Resolve createPost
+    await act(async () => {
+      resolveCreate({ id: 'new-post-id' });
+    });
+
+    // Now the editor should be gone
+    await waitFor(() => {
+      expect(screen.queryByPlaceholderText('Essay Title')).not.toBeInTheDocument();
+    });
   });
 });

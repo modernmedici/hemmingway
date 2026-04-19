@@ -90,8 +90,8 @@ export default function WritingView({ post, defaultColumn, onSave, onCancel, cur
   const originalBody  = post?.body  ?? '';
 
   // Keep latest values accessible in the keydown handler without re-registering
-  const latestRef = useRef({ title, body, onSave, onCancel });
-  latestRef.current = { title, body, onSave, onCancel };
+  const latestRef = useRef({ title, body, onSave, onCancel, saving });
+  latestRef.current = { title, body, onSave, onCancel, saving };
 
   const enterZenMode = useCallback(async () => {
     try {
@@ -129,11 +129,11 @@ export default function WritingView({ post, defaultColumn, onSave, onCancel, cur
   }, [zenMode]);
 
   const handleCancel = useCallback(async () => {
-    const { title, body, onCancel, onSave } = latestRef.current;
+    const { title, body, onCancel, onSave, saving } = latestRef.current;
     const dirty = title !== originalTitle || body !== originalBody;
 
-    // Auto-save if there are changes and title is not empty
-    if (dirty && title.trim()) {
+    // Auto-save if there are changes and title is not empty (skip if already saving)
+    if (dirty && title.trim() && !saving) {
       await onSave(title.trim(), body.trim(), defaultColumn, false); // false = already closing via onCancel
     }
 
@@ -227,14 +227,16 @@ export default function WritingView({ post, defaultColumn, onSave, onCancel, cur
     if (!isCollaborative || !hasEditLock || !post?.id) return;
 
     const isDirty = title !== originalTitle || body !== originalBody;
-    if (!isDirty || !title.trim()) return;
+    if (!isDirty || !title.trim() || saving) return; // Skip if already saving
 
     const timer = setTimeout(() => {
-      onSave(title.trim(), body.trim(), defaultColumn, false); // false = don't close editor
+      if (!saving) { // Double-check before calling onSave
+        onSave(title.trim(), body.trim(), defaultColumn, false); // false = don't close editor
+      }
     }, 3000); // 3-second debounce
 
     return () => clearTimeout(timer);
-  }, [title, body, isCollaborative, hasEditLock, post?.id, originalTitle, originalBody, onSave, defaultColumn]);
+  }, [title, body, isCollaborative, hasEditLock, post?.id, originalTitle, originalBody, onSave, defaultColumn, saving]);
 
   // Auto-start timer on first keystroke
   const [hasStartedTyping, setHasStartedTyping] = useState(false);
@@ -257,8 +259,14 @@ export default function WritingView({ post, defaultColumn, onSave, onCancel, cur
         }
       }
       if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
-        const { title, body, onSave } = latestRef.current;
-        if (title.trim()) onSave(title.trim(), body.trim(), defaultColumn, true); // true = close after explicit save
+        e.preventDefault(); // Prevent default to avoid duplicate triggering
+        const { title, body, saving } = latestRef.current;
+        if (title.trim() && !saving) {
+          setSaving(true);
+          onSave(title.trim(), body.trim(), defaultColumn, true) // true = close after explicit save
+            .catch(err => console.error('Save failed:', err))
+            .finally(() => setSaving(false));
+        }
       }
       if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key === 'F') {
         e.preventDefault();
@@ -337,16 +345,16 @@ export default function WritingView({ post, defaultColumn, onSave, onCancel, cur
       )}
 
       {/* Sticky header */}
-      {!zenMode && (<div className="sticky top-0 z-10 bg-background/80 backdrop-blur-sm py-3.5 px-10 pl-[88px] flex items-center">
+      {!zenMode && (<div className="sticky top-0 z-10 bg-background/80 backdrop-blur-sm py-3 px-4 md:px-10 md:pl-[88px] flex items-center">
         <button
           onClick={handleCancel}
           className="flex items-center gap-1.5 bg-transparent border-none cursor-pointer text-muted-foreground/70 text-xs font-sans p-0 transition-all duration-[120ms] hover:text-foreground active:scale-95"
         >
           <ArrowLeft size={14} />
-          Back to Board
+          <span className="hidden sm:inline">Back to Board</span>
         </button>
 
-        <div className="ml-auto flex items-center gap-3">
+        <div className="ml-auto flex items-center gap-2 sm:gap-3">
           {/* Saved indicator */}
           {saved && (
             <span className="text-xs font-sans text-primary flex items-center gap-1 animate-[fadeOut_1.5s_ease-out_forwards]">
@@ -363,7 +371,7 @@ export default function WritingView({ post, defaultColumn, onSave, onCancel, cur
           )}
 
           {/* Metadata group: timer + word count */}
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 sm:gap-4">
             {/* Timer */}
             <span
               onClick={toggleTimer}
@@ -394,7 +402,7 @@ export default function WritingView({ post, defaultColumn, onSave, onCancel, cur
             <button
               onClick={enterZenMode}
               title="Fullscreen (⌘⇧F)"
-              className="flex items-center gap-1 bg-transparent border-none cursor-pointer text-muted-foreground text-xs font-sans py-1.5 px-2 transition-all duration-[120ms] hover:text-foreground active:scale-95"
+              className="hidden sm:flex items-center gap-1 bg-transparent border-none cursor-pointer text-muted-foreground text-xs font-sans py-1.5 px-2 transition-all duration-[120ms] hover:text-foreground active:scale-95"
             >
               <Maximize2 size={14} />
             </button>
@@ -481,9 +489,9 @@ export default function WritingView({ post, defaultColumn, onSave, onCancel, cur
       </div>
 
       {!zenMode && (
-        <div className="py-2.5 px-10 text-center">
+        <div className="py-2.5 px-4 md:px-10 text-center">
           <span className="text-[10px] tracking-widest text-muted-foreground font-sans">
-            ⌘↵ to save · ⌘⇧F for fullscreen · Esc to go back
+            ⌘↵ to save<span className="hidden sm:inline"> · ⌘⇧F for fullscreen</span> · Esc to go back
           </span>
         </div>
       )}

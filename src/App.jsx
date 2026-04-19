@@ -10,7 +10,7 @@ import Board from './components/Board'
 import WritingView from './components/WritingView'
 import ShareBoardModal from './components/ShareBoardModal'
 import InvitationBanner from './components/InvitationBanner'
-import SafariBanner from './components/SafariBanner'
+import ConnectionBanner from './components/ConnectionBanner'
 import './index.css'
 
 export default function App() {
@@ -158,12 +158,12 @@ export default function App() {
     setView('editor')
   }
 
-  const handleSave = (title, body, column, closeAfterSave = true) => {
+  const handleSave = async (title, body, column, closeAfterSave = true) => {
     if (editingPost) {
-      updatePost(editingPost.id, { title, body })
-      if (column !== editingPost.column) movePost(editingPost.id, column)
+      await updatePost(editingPost.id, { title, body })
+      if (column !== editingPost.column) await movePost(editingPost.id, column)
     } else {
-      createPost(title, body, column)
+      await createPost(title, body, column)
     }
     if (closeAfterSave) {
       setView('board')
@@ -199,7 +199,7 @@ export default function App() {
             exit={{ opacity: 0 }}
             transition={{ duration: 0.15 }}
           >
-            <SafariBanner />
+            <ConnectionBanner />
             <AppShell
               onNewIdea={() => handleNewPost('ideas')}
               user={user}
