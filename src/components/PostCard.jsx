@@ -26,6 +26,7 @@ export default function PostCard({ post, onMove, onDelete, onEdit, showAttributi
   const [menuOpen, setMenuOpen] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [hovered, setHovered] = useState(false);
+  const [deleteError, setDeleteError] = useState(null);
   const totalWords = wordCount((post.title ?? '') + ' ' + (post.body ?? ''));
 
   const {
@@ -40,12 +41,21 @@ export default function PostCard({ post, onMove, onDelete, onEdit, showAttributi
     data: { post, columnId },
   });
 
-  const handleDelete = (e) => {
+  const handleDelete = async (e) => {
     e.stopPropagation();
     if (confirmDelete) {
-      onDelete(post.id);
+      try {
+        setDeleteError(null);
+        await onDelete(post.id);
+        setMenuOpen(false);
+      } catch (error) {
+        console.error('Delete failed:', error);
+        setDeleteError(error.message || 'Failed to delete post');
+        setConfirmDelete(false);
+      }
     } else {
       setConfirmDelete(true);
+      setDeleteError(null);
     }
   };
 
@@ -134,6 +144,12 @@ export default function PostCard({ post, onMove, onDelete, onEdit, showAttributi
             </button>
 
             <div className="h-px bg-border my-1" />
+
+            {deleteError && (
+              <div className="px-2 py-1.5 text-[11px] text-destructive">
+                {deleteError}
+              </div>
+            )}
 
             {confirmDelete ? (
               <div className="px-2 py-1 flex gap-2 items-center">
