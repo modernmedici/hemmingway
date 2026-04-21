@@ -175,12 +175,57 @@ export default function WritingView({ post, defaultColumn, onSave, onCancel, cur
   const autoResizeBody = useCallback(() => {
     const el = bodyRef.current;
     if (!el) return;
+
     el.style.height = 'auto';
     el.style.height = el.scrollHeight + 'px';
   }, []);
 
+  // Typewriter mode: keep cursor locked at 1/3 down the viewport
+  const typewriterScroll = useCallback(() => {
+    const el = bodyRef.current;
+    const container = containerRef.current;
+    if (!el || !container) return;
+
+    // Get cursor position in the textarea
+    const cursorPos = el.selectionStart;
+
+    // Create a temporary element to measure cursor position
+    const textBeforeCursor = el.value.substring(0, cursorPos);
+    const lines = textBeforeCursor.split('\n');
+    const currentLine = lines.length;
+
+    // Calculate line height from computed styles
+    const computedStyle = window.getComputedStyle(el);
+    const lineHeight = parseFloat(computedStyle.lineHeight);
+
+    // Calculate where cursor is relative to textarea top
+    const cursorTopInTextarea = (currentLine - 1) * lineHeight;
+
+    // Get textarea position relative to viewport
+    const textareaRect = el.getBoundingClientRect();
+    const containerRect = container.getBoundingClientRect();
+
+    // Calculate where cursor currently appears in viewport
+    const cursorTopInViewport = textareaRect.top - containerRect.top + cursorTopInTextarea;
+
+    // Target: lock cursor at 1/3 down the viewport
+    const targetPosition = containerRect.height / 3;
+
+    // Calculate scroll adjustment needed
+    const scrollAdjustment = cursorTopInViewport - targetPosition;
+
+    // Only scroll if cursor is trying to move below the lock line
+    // (Don't fight user's manual scrolling upward)
+    if (scrollAdjustment > 0) {
+      container.scrollTop += scrollAdjustment;
+    }
+  }, []);
+
   useEffect(() => { autoResizeTitle(); }, [title, autoResizeTitle]);
-  useEffect(() => { autoResizeBody(); }, [body, autoResizeBody]);
+  useEffect(() => {
+    autoResizeBody();
+    typewriterScroll();
+  }, [body, autoResizeBody, typewriterScroll]);
 
   // Timer countdown effect
   useEffect(() => {
