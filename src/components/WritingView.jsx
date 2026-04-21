@@ -27,6 +27,7 @@ export default function WritingView({ post, defaultColumn, onSave, onCancel, cur
   const [body,   setBody]   = useState(post?.body  ?? '');
   const [saved, setSaved] = useState(false);
   const [saving, setSaving] = useState(false);
+  const lastSavedContent = useRef({ title: post?.title ?? '', body: post?.body ?? '' });
   const [countChanged, setCountChanged] = useState(false);
   const [zenMode, setZenMode] = useState(false);
   const [timeLeft, setTimeLeft] = useState(25 * 60); // 25 minutes in seconds
@@ -131,9 +132,16 @@ export default function WritingView({ post, defaultColumn, onSave, onCancel, cur
   // Centralized save with guard logic
   const saveWithGuard = useCallback(async (closeAfter = false) => {
     if (!title.trim() || saving) return false;
+
+    // Skip if content hasn't changed since last save
+    if (title === lastSavedContent.current.title && body === lastSavedContent.current.body) {
+      return false;
+    }
+
     setSaving(true);
     try {
       await onSave(title.trim(), body.trim(), defaultColumn, closeAfter);
+      lastSavedContent.current = { title, body };
       return true;
     } catch (err) {
       console.error('Save failed:', err);
@@ -174,9 +182,17 @@ export default function WritingView({ post, defaultColumn, onSave, onCancel, cur
 
   const autoResizeBody = useCallback(() => {
     const el = bodyRef.current;
-    if (!el) return;
+    const container = containerRef.current;
+    if (!el || !container) return;
+
+    // Save scroll position before resize
+    const scrollTop = container.scrollTop;
+
     el.style.height = 'auto';
     el.style.height = el.scrollHeight + 'px';
+
+    // Restore scroll position (prevents cursor jump to bottom)
+    container.scrollTop = scrollTop;
   }, []);
 
   useEffect(() => { autoResizeTitle(); }, [title, autoResizeTitle]);

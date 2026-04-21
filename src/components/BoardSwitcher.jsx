@@ -171,13 +171,13 @@ export default function BoardSwitcher({
                 }
 
                 return (
-                  <button
+                  <div
                     key={board.id}
-                    onClick={() => handleSelectBoard(board.id)}
-                    className="w-full px-3 py-2 flex items-center justify-between text-left text-sm transition-colors duration-100 hover:bg-accent group"
+                    className="w-full px-3 py-2 flex items-center justify-between text-left text-sm transition-colors duration-100 hover:bg-accent group cursor-pointer"
                     style={{
                       background: isActive ? 'hsl(var(--accent))' : 'transparent',
                     }}
+                    onClick={() => handleSelectBoard(board.id)}
                   >
                     <span className={`truncate font-serif ${isActive ? 'font-bold' : 'font-normal'}`}>{board.name}</span>
                     <div className="flex items-center gap-1.5 flex-shrink-0 ml-2">
@@ -197,7 +197,7 @@ export default function BoardSwitcher({
                         </button>
                       )}
                     </div>
-                  </button>
+                  </div>
                 )
               })}
             </div>
