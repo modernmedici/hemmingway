@@ -174,9 +174,17 @@ export default function WritingView({ post, defaultColumn, onSave, onCancel, cur
 
   const autoResizeBody = useCallback(() => {
     const el = bodyRef.current;
-    if (!el) return;
+    const container = containerRef.current;
+    if (!el || !container) return;
+
+    // Save scroll position before resize
+    const scrollTop = container.scrollTop;
+
     el.style.height = 'auto';
     el.style.height = el.scrollHeight + 'px';
+
+    // Restore scroll position (prevents cursor jump to bottom)
+    container.scrollTop = scrollTop;
   }, []);
 
   useEffect(() => { autoResizeTitle(); }, [title, autoResizeTitle]);
