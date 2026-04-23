@@ -22,6 +22,56 @@ function getUserColor(userId) {
   return COLORS[hash % COLORS.length];
 }
 
+// Canvas-based cursor Y position measurement (no DOM flicker)
+function getCursorYOffset(textarea) {
+  if (!textarea) return 0;
+
+  const text = textarea.value;
+  const cursorPos = textarea.selectionStart;
+  const textBeforeCursor = text.substring(0, cursorPos);
+
+  // Get computed styles
+  const computed = window.getComputedStyle(textarea);
+  const font = `${computed.fontWeight} ${computed.fontSize} ${computed.fontFamily}`;
+  const lineHeight = parseFloat(computed.lineHeight);
+  const width = textarea.clientWidth - parseFloat(computed.paddingLeft) - parseFloat(computed.paddingRight);
+
+  // Create offscreen canvas
+  const canvas = document.createElement('canvas');
+  const ctx = canvas.getContext('2d');
+  ctx.font = font;
+
+  // Split into lines and measure
+  const lines = [];
+  let currentLine = '';
+  let yOffset = 0;
+
+  for (let i = 0; i < textBeforeCursor.length; i++) {
+    const char = textBeforeCursor[i];
+
+    if (char === '\n') {
+      lines.push(currentLine);
+      yOffset += lineHeight;
+      currentLine = '';
+      continue;
+    }
+
+    const testLine = currentLine + char;
+    const metrics = ctx.measureText(testLine);
+
+    if (metrics.width > width && currentLine.length > 0) {
+      // Line would wrap
+      lines.push(currentLine);
+      yOffset += lineHeight;
+      currentLine = char;
+    } else {
+      currentLine = testLine;
+    }
+  }
+
+  return yOffset;
+}
+
 export default function WritingView({ post, defaultColumn, onSave, onCancel, currentUser }) {
   const [title,  setTitle]  = useState(post?.title ?? '');
   const [body,   setBody]   = useState(post?.body  ?? '');
@@ -32,9 +82,15 @@ export default function WritingView({ post, defaultColumn, onSave, onCancel, cur
   const [zenMode, setZenMode] = useState(false);
   const [timeLeft, setTimeLeft] = useState(25 * 60); // 25 minutes in seconds
   const [timerRunning, setTimerRunning] = useState(false);
+  const [hasStartedTyping, setHasStartedTyping] = useState(false);
   const titleRef = useRef(null);
   const bodyRef = useRef(null);
   const containerRef = useRef(null);
+
+  // Typewriter mode refs
+  const lastActiveTextareaRef = useRef(null);
+  const manualScrollRef = useRef(false);
+  const manualScrollTimerRef = useRef(null);
 
   // Collaborative editing state
   const isCollaborative = !!post?.id; // Only enable for existing posts
@@ -185,18 +241,46 @@ export default function WritingView({ post, defaultColumn, onSave, onCancel, cur
     const container = containerRef.current;
     if (!el || !container) return;
 
-    // Save scroll position before resize
-    const scrollTop = container.scrollTop;
-
     el.style.height = 'auto';
     el.style.height = el.scrollHeight + 'px';
 
-    // Restore scroll position (prevents cursor jump to bottom)
-    container.scrollTop = scrollTop;
+    // Don't restore scroll - typewriter mode will handle it
   }, []);
 
-  useEffect(() => { autoResizeTitle(); }, [title, autoResizeTitle]);
-  useEffect(() => { autoResizeBody(); }, [body, autoResizeBody]);
+  // Typewriter mode: keep cursor vertically centered
+  const scrollToKeepCursorCentered = useCallback(() => {
+    if (manualScrollRef.current) return; // Don't fight manual scrolling
+
+    const textarea = lastActiveTextareaRef.current;
+    const container = containerRef.current;
+    if (!textarea || !container) return;
+
+    requestAnimationFrame(() => {
+      const cursorY = getCursorYOffset(textarea);
+
+      // Walk up offset chain from textarea to scroll container
+      let offsetTop = 0;
+      let el = textarea;
+      while (el && el !== container) {
+        offsetTop += el.offsetTop;
+        el = el.offsetParent;
+      }
+
+      const absoluteCursorY = offsetTop + cursorY;
+      const targetScrollTop = absoluteCursorY - (container.clientHeight / 2);
+      container.scrollTop = Math.max(0, targetScrollTop);
+    });
+  }, []);
+
+  useEffect(() => {
+    autoResizeTitle();
+    scrollToKeepCursorCentered();
+  }, [title, autoResizeTitle, scrollToKeepCursorCentered]);
+
+  useEffect(() => {
+    autoResizeBody();
+    scrollToKeepCursorCentered();
+  }, [body, autoResizeBody, scrollToKeepCursorCentered]);
 
   // Timer countdown effect
   useEffect(() => {
@@ -226,6 +310,37 @@ export default function WritingView({ post, defaultColumn, onSave, onCancel, cur
     setTimeLeft(25 * 60);
     setTimerRunning(false);
   };
+
+  // Manual scroll detection - temporarily disable typewriter
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    const handleManualScroll = () => {
+      manualScrollRef.current = true;
+      clearTimeout(manualScrollTimerRef.current);
+      // Re-enable after 2 seconds of no scrolling
+      manualScrollTimerRef.current = setTimeout(() => {
+        manualScrollRef.current = false;
+      }, 2000);
+    };
+
+    container.addEventListener('wheel', handleManualScroll, { passive: true });
+    container.addEventListener('touchmove', handleManualScroll, { passive: true });
+
+    return () => {
+      container.removeEventListener('wheel', handleManualScroll);
+      container.removeEventListener('touchmove', handleManualScroll);
+      clearTimeout(manualScrollTimerRef.current);
+    };
+  }, []);
+
+  // Auto-start timer on first keystroke
+  useEffect(() => {
+    if (hasStartedTyping && timeLeft === 25 * 60 && !timerRunning) {
+      setTimerRunning(true);
+    }
+  }, [hasStartedTyping, timeLeft, timerRunning]);
 
   // Publish presence when entering the editor
   useEffect(() => {
@@ -271,17 +386,6 @@ export default function WritingView({ post, defaultColumn, onSave, onCancel, cur
 
     return () => clearTimeout(timer);
   }, [title, body, isCollaborative, hasEditLock, post?.id, originalTitle, originalBody, saving, saveWithGuard]);
-
-  // Auto-start timer on first keystroke
-  const [hasStartedTyping, setHasStartedTyping] = useState(false);
-  useEffect(() => {
-    if (!hasStartedTyping && (title.length > 0 || body.length > 0)) {
-      setHasStartedTyping(true);
-      if (timeLeft === 25 * 60 && !timerRunning) {
-        setTimerRunning(true);
-      }
-    }
-  }, [title, body, hasStartedTyping, timeLeft, timerRunning]);
 
   useEffect(() => {
     const handler = (e) => {
@@ -483,13 +587,21 @@ export default function WritingView({ post, defaultColumn, onSave, onCancel, cur
         <textarea
           ref={titleRef}
           value={title}
-          onChange={e => { setTitle(e.target.value); autoResizeTitle(); }}
+          onChange={e => {
+            if (!hasStartedTyping) setHasStartedTyping(true);
+            manualScrollRef.current = false; // Re-enable typewriter on typing
+            setTitle(e.target.value);
+            autoResizeTitle();
+          }}
           onKeyDown={e => {
             if (e.key === 'Enter') {
               e.preventDefault();
               bodyRef.current?.focus();
             }
           }}
+          onFocus={() => { lastActiveTextareaRef.current = titleRef.current; }}
+          onKeyUp={() => { scrollToKeepCursorCentered(); }}
+          onClick={() => { scrollToKeepCursorCentered(); }}
           placeholder={isReadOnly ? "Read only - someone else is editing" : "Essay Title"}
           rows={1}
           readOnly={isReadOnly}
@@ -507,7 +619,15 @@ export default function WritingView({ post, defaultColumn, onSave, onCancel, cur
         <textarea
           ref={bodyRef}
           value={body}
-          onChange={e => { setBody(e.target.value); autoResizeBody(); }}
+          onChange={e => {
+            if (!hasStartedTyping) setHasStartedTyping(true);
+            manualScrollRef.current = false; // Re-enable typewriter on typing
+            setBody(e.target.value);
+            autoResizeBody();
+          }}
+          onFocus={() => { lastActiveTextareaRef.current = bodyRef.current; }}
+          onKeyUp={() => { scrollToKeepCursorCentered(); }}
+          onClick={() => { scrollToKeepCursorCentered(); }}
           placeholder={isReadOnly ? "Read only - you'll see changes in real time" : "Start writing your thoughts..."}
           readOnly={isReadOnly}
           className="block w-full text-foreground border-none outline-none bg-transparent resize-none overflow-hidden"
