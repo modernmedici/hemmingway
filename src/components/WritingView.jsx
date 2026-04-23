@@ -181,7 +181,7 @@ export default function WritingView({ post, defaultColumn, onSave, onCancel, cur
   useEffect(() => {
     if (zenMode) {
       const mirror = document.createElement('div');
-      mirror.style.cssText = 'position:fixed;top:-99999px;left:-99999px;width:0;height:0;overflow:hidden;opacity:0;pointer-events:none;white-space:pre-wrap;overflow-wrap:break-word;z-index:-9999;';
+      mirror.style.cssText = 'position:absolute;clip:rect(0,0,0,0);clip-path:inset(50%);width:1px;height:1px;overflow:hidden;white-space:pre-wrap;overflow-wrap:break-word;';
       document.body.appendChild(mirror);
       mirrorRef.current = mirror;
     } else {
