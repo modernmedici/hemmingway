@@ -22,43 +22,6 @@ function getUserColor(userId) {
   return COLORS[hash % COLORS.length];
 }
 
-// Measures cursor Y offset in a textarea, accounting for word-wrap
-// Uses computed line height to estimate cursor position
-function getCursorYOffset(textarea) {
-  if (!textarea) return 0;
-
-  const text = textarea.value;
-  const cursorPos = textarea.selectionStart;
-
-  // Get computed line height
-  const computed = window.getComputedStyle(textarea);
-  const lineHeight = parseFloat(computed.lineHeight);
-
-  // Count visual lines by creating a temporary element with same styles
-  const temp = document.createElement('div');
-  temp.style.cssText = `
-    position: absolute;
-    visibility: hidden;
-    width: ${textarea.clientWidth}px;
-    font-family: ${computed.fontFamily};
-    font-size: ${computed.fontSize};
-    font-weight: ${computed.fontWeight};
-    line-height: ${computed.lineHeight};
-    letter-spacing: ${computed.letterSpacing};
-    word-spacing: ${computed.wordSpacing};
-    white-space: pre-wrap;
-    overflow-wrap: break-word;
-    padding: ${computed.paddingTop} ${computed.paddingRight} ${computed.paddingBottom} ${computed.paddingLeft};
-  `;
-  temp.textContent = text.substring(0, cursorPos);
-  document.body.appendChild(temp);
-
-  const height = temp.offsetHeight;
-  document.body.removeChild(temp);
-
-  return height;
-}
-
 export default function WritingView({ post, defaultColumn, onSave, onCancel, currentUser }) {
   const [title,  setTitle]  = useState(post?.title ?? '');
   const [body,   setBody]   = useState(post?.body  ?? '');
@@ -72,11 +35,6 @@ export default function WritingView({ post, defaultColumn, onSave, onCancel, cur
   const titleRef = useRef(null);
   const bodyRef = useRef(null);
   const containerRef = useRef(null);
-
-  // Typewriter mode refs (zen mode only)
-  const manualScrollRef = useRef(false);
-  const manualScrollTimerRef = useRef(null);
-  const lastActiveTextareaRef = useRef(null);
 
   // Collaborative editing state
   const isCollaborative = !!post?.id; // Only enable for existing posts
@@ -171,37 +129,6 @@ export default function WritingView({ post, defaultColumn, onSave, onCancel, cur
     return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
   }, [zenMode]);
 
-  // Reset manual scroll state when exiting zen mode
-  useEffect(() => {
-    if (!zenMode) {
-      manualScrollRef.current = false;
-      clearTimeout(manualScrollTimerRef.current);
-    }
-  }, [zenMode]);
-
-  // Manual scroll override for typewriter mode
-  useEffect(() => {
-    if (!zenMode) return;
-    const container = containerRef.current;
-    if (!container) return;
-
-    const handleManualScroll = () => {
-      manualScrollRef.current = true;
-      clearTimeout(manualScrollTimerRef.current);
-      manualScrollTimerRef.current = setTimeout(() => {
-        manualScrollRef.current = false;
-      }, 3000);
-    };
-
-    container.addEventListener('wheel', handleManualScroll, { passive: true });
-    container.addEventListener('touchmove', handleManualScroll, { passive: true });
-    return () => {
-      container.removeEventListener('wheel', handleManualScroll);
-      container.removeEventListener('touchmove', handleManualScroll);
-      clearTimeout(manualScrollTimerRef.current);
-    };
-  }, [zenMode]);
-
   // Centralized save with guard logic
   const saveWithGuard = useCallback(async (closeAfter = false) => {
     if (!title.trim() || saving) return false;
@@ -265,50 +192,11 @@ export default function WritingView({ post, defaultColumn, onSave, onCancel, cur
     el.style.height = el.scrollHeight + 'px';
 
     // Restore scroll position (prevents cursor jump to bottom)
-    // Skip restoration in zen mode - typewriter scroll will handle it
-    if (!zenMode) {
-      container.scrollTop = scrollTop;
-    }
-  }, [zenMode]);
+    container.scrollTop = scrollTop;
+  }, []);
 
-  // Typewriter mode: keep cursor vertically centered (zen mode only)
-  const scrollToKeepCursorCentered = useCallback(() => {
-    if (!zenMode || manualScrollRef.current) return;
-
-    const textarea = lastActiveTextareaRef.current;
-    const container = containerRef.current;
-    if (!textarea || !container) return;
-
-    requestAnimationFrame(() => {
-      const cursorY = getCursorYOffset(textarea);
-
-      // Walk up offset chain from textarea to scroll container
-      let offsetTop = 0;
-      let el = textarea;
-      while (el && el !== container) {
-        offsetTop += el.offsetTop;
-        el = el.offsetParent;
-      }
-
-      const absoluteCursorY = offsetTop + cursorY;
-      const targetScrollTop = absoluteCursorY - (container.clientHeight / 2);
-      container.scrollTop = Math.max(0, targetScrollTop);
-    });
-  }, [zenMode]);
-
-  useEffect(() => {
-    autoResizeTitle();
-    if (zenMode) {
-      requestAnimationFrame(() => scrollToKeepCursorCentered());
-    }
-  }, [title, autoResizeTitle, zenMode, scrollToKeepCursorCentered]);
-
-  useEffect(() => {
-    autoResizeBody();
-    if (zenMode) {
-      requestAnimationFrame(() => scrollToKeepCursorCentered());
-    }
-  }, [body, autoResizeBody, zenMode, scrollToKeepCursorCentered]);
+  useEffect(() => { autoResizeTitle(); }, [title, autoResizeTitle]);
+  useEffect(() => { autoResizeBody(); }, [body, autoResizeBody]);
 
   // Timer countdown effect
   useEffect(() => {
@@ -595,20 +483,13 @@ export default function WritingView({ post, defaultColumn, onSave, onCancel, cur
         <textarea
           ref={titleRef}
           value={title}
-          onChange={e => {
-            manualScrollRef.current = false; // Re-engage typewriter on typing
-            setTitle(e.target.value);
-            autoResizeTitle();
-          }}
+          onChange={e => { setTitle(e.target.value); autoResizeTitle(); }}
           onKeyDown={e => {
             if (e.key === 'Enter') {
               e.preventDefault();
               bodyRef.current?.focus();
             }
           }}
-          onFocus={() => { lastActiveTextareaRef.current = titleRef.current; }}
-          onKeyUp={() => { scrollToKeepCursorCentered(); }}
-          onClick={() => { scrollToKeepCursorCentered(); }}
           placeholder={isReadOnly ? "Read only - someone else is editing" : "Essay Title"}
           rows={1}
           readOnly={isReadOnly}
@@ -626,14 +507,7 @@ export default function WritingView({ post, defaultColumn, onSave, onCancel, cur
         <textarea
           ref={bodyRef}
           value={body}
-          onChange={e => {
-            manualScrollRef.current = false; // Re-engage typewriter on typing
-            setBody(e.target.value);
-            autoResizeBody();
-          }}
-          onFocus={() => { lastActiveTextareaRef.current = bodyRef.current; }}
-          onKeyUp={() => { scrollToKeepCursorCentered(); }}
-          onClick={() => { scrollToKeepCursorCentered(); }}
+          onChange={e => { setBody(e.target.value); autoResizeBody(); }}
           placeholder={isReadOnly ? "Read only - you'll see changes in real time" : "Start writing your thoughts..."}
           readOnly={isReadOnly}
           className="block w-full text-foreground border-none outline-none bg-transparent resize-none overflow-hidden"
