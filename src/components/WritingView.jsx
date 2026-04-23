@@ -492,6 +492,16 @@ export default function WritingView({ post, defaultColumn, onSave, onCancel, cur
             >
               {formatTime(timeLeft)}
             </span>
+            {/* Word count in zen mode */}
+            <span
+              className="text-xs font-sans tabular-nums transition-all duration-200 ease-in-out"
+              style={{
+                color: countChanged ? 'hsl(var(--primary))' : 'hsl(var(--muted-foreground))',
+                transform: countChanged ? 'scale(1.05)' : 'scale(1)',
+              }}
+            >
+              {wordCount.toLocaleString()} {wordCount === 1 ? 'word' : 'words'}
+            </span>
             <button
               onClick={exitZenMode}
               className="text-xs font-sans bg-muted text-muted-foreground border-none rounded-sm px-3 py-1.5 cursor-pointer transition-all duration-[120ms] hover:bg-secondary"
