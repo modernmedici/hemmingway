@@ -23,45 +23,40 @@ function getUserColor(userId) {
 }
 
 // Measures cursor Y offset in a textarea, accounting for word-wrap
-function getCursorYOffset(textarea, mirrorRef) {
-  const mirror = mirrorRef.current;
-  if (!mirror || !textarea) return 0;
+// Uses computed line height to estimate cursor position
+function getCursorYOffset(textarea) {
+  if (!textarea) return 0;
 
-  const computed = window.getComputedStyle(textarea);
-
-  // Sync styles that affect text layout
-  const properties = [
-    'fontFamily', 'fontSize', 'fontWeight', 'fontStyle',
-    'lineHeight', 'letterSpacing', 'wordSpacing',
-    'textIndent', 'textTransform',
-    'paddingTop', 'paddingRight', 'paddingBottom', 'paddingLeft',
-    'borderTopWidth', 'borderRightWidth', 'borderBottomWidth', 'borderLeftWidth',
-    'boxSizing',
-  ];
-  properties.forEach(prop => {
-    mirror.style[prop] = computed[prop];
-  });
-
-  // Mirror width must match textarea's content width for correct wrapping
-  mirror.style.width = textarea.clientWidth + 'px';
-
-  // Split text at cursor
   const text = textarea.value;
   const cursorPos = textarea.selectionStart;
-  const textBeforeCursor = text.substring(0, cursorPos);
 
-  // Clear mirror and add text span + marker
-  mirror.textContent = '';
+  // Get computed line height
+  const computed = window.getComputedStyle(textarea);
+  const lineHeight = parseFloat(computed.lineHeight);
 
-  const textSpan = document.createElement('span');
-  textSpan.textContent = textBeforeCursor;
-  mirror.appendChild(textSpan);
+  // Count visual lines by creating a temporary element with same styles
+  const temp = document.createElement('div');
+  temp.style.cssText = `
+    position: absolute;
+    visibility: hidden;
+    width: ${textarea.clientWidth}px;
+    font-family: ${computed.fontFamily};
+    font-size: ${computed.fontSize};
+    font-weight: ${computed.fontWeight};
+    line-height: ${computed.lineHeight};
+    letter-spacing: ${computed.letterSpacing};
+    word-spacing: ${computed.wordSpacing};
+    white-space: pre-wrap;
+    overflow-wrap: break-word;
+    padding: ${computed.paddingTop} ${computed.paddingRight} ${computed.paddingBottom} ${computed.paddingLeft};
+  `;
+  temp.textContent = text.substring(0, cursorPos);
+  document.body.appendChild(temp);
 
-  const marker = document.createElement('span');
-  marker.textContent = '​'; // zero-width space
-  mirror.appendChild(marker);
+  const height = temp.offsetHeight;
+  document.body.removeChild(temp);
 
-  return marker.offsetTop;
+  return height;
 }
 
 export default function WritingView({ post, defaultColumn, onSave, onCancel, currentUser }) {
@@ -79,7 +74,6 @@ export default function WritingView({ post, defaultColumn, onSave, onCancel, cur
   const containerRef = useRef(null);
 
   // Typewriter mode refs (zen mode only)
-  const mirrorRef = useRef(null);
   const manualScrollRef = useRef(false);
   const manualScrollTimerRef = useRef(null);
   const lastActiveTextareaRef = useRef(null);
@@ -177,28 +171,12 @@ export default function WritingView({ post, defaultColumn, onSave, onCancel, cur
     return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
   }, [zenMode]);
 
-  // Mirror div lifecycle for typewriter mode
+  // Reset manual scroll state when exiting zen mode
   useEffect(() => {
-    if (zenMode) {
-      const mirror = document.createElement('div');
-      mirror.style.cssText = 'position:absolute;top:-9999px;left:-9999px;visibility:hidden;white-space:pre-wrap;overflow-wrap:break-word;';
-      document.body.appendChild(mirror);
-      mirrorRef.current = mirror;
-    } else {
-      if (mirrorRef.current) {
-        document.body.removeChild(mirrorRef.current);
-        mirrorRef.current = null;
-      }
-      // Reset manual scroll state
+    if (!zenMode) {
       manualScrollRef.current = false;
       clearTimeout(manualScrollTimerRef.current);
     }
-    return () => {
-      if (mirrorRef.current) {
-        document.body.removeChild(mirrorRef.current);
-        mirrorRef.current = null;
-      }
-    };
   }, [zenMode]);
 
   // Manual scroll override for typewriter mode
@@ -302,7 +280,7 @@ export default function WritingView({ post, defaultColumn, onSave, onCancel, cur
     if (!textarea || !container) return;
 
     requestAnimationFrame(() => {
-      const cursorY = getCursorYOffset(textarea, mirrorRef);
+      const cursorY = getCursorYOffset(textarea);
 
       // Walk up offset chain from textarea to scroll container
       let offsetTop = 0;
